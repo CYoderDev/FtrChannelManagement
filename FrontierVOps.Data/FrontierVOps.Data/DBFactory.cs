@@ -10,5 +10,9 @@ namespace FrontierVOps.Data
 {
     public class DBFactory
     {
+        DBFactory()
+        {
+
+        }
     }
 }
