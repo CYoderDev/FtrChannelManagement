@@ -74,5 +74,36 @@ namespace FrontierVOps.Data
                 }
             }
         }
+
+        public static int SQL_ExecuteNonQuery(string ConnectionString, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters)
+        {
+            Parameters = Parameters ?? new Tuple<string, object>[0];
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                using (SqlCommand command = new SqlCommand(CommandString, connection, transaction))
+                {
+                    try
+                    {
+                        for (int i = 0; i < Parameters.Length; i++)
+                        {
+                            command.Parameters.AddWithValue(Parameters[i].Item1, Parameters[i].Item2);
+                        }
+
+                        int retVal = command.ExecuteNonQuery();
+
+                        transaction.Commit();
+                        return retVal;
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw ex;
+                    }
+                }
+            }
+        }
     }
 }
