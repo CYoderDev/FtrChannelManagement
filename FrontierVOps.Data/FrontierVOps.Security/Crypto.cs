@@ -26,7 +26,7 @@ namespace FrontierVOps.Security
         }
 
         /// <summary>
-        /// Encrypts a string value
+        /// Encrypts a string value.
         /// </summary>
         /// <param name="Input">Value to encrypt</param>
         /// <param name="Key">Encryption key</param>
@@ -38,7 +38,7 @@ namespace FrontierVOps.Security
         }
 
         /// <summary>
-        /// Encrypts a string value
+        /// Encrypts a string value.
         /// </summary>
         /// <param name="Input">Value to encrypt</param>
         /// <param name="Key">Encryption key</param>
@@ -61,7 +61,51 @@ namespace FrontierVOps.Security
         #endregion //Encryption
 
         #region Decryption
-            
+        /// <summary>
+        /// Decrypts a secure string.
+        /// </summary>
+        /// <param name="Input">Value to decrypt</param>
+        /// <param name="Key">Encryption key</param>
+        /// <param name="EncryptionAlgorithm">Type of encryption algorithm</param>
+        /// <returns>Decrypted data as a secure string</returns>
+        public static SecureString DecryptSecure(SecureString Input, SecureString Key, Algorithm EncryptionAlgorithm)
+        {
+            return Toolset.CreateSecureString(Decrypt(Input, Toolset.ConvertToInsecureString(Key), EncryptionAlgorithm));
+        }
+
+        /// <summary>
+        /// Decrypts a string value.
+        /// </summary>
+        /// <param name="Input">Value to decrypt</param>
+        /// <param name="Key">Encryption key</param>
+        /// <param name="EncryptionAlgorithm">Type of encryption algorithm</param>
+        /// <returns>Decrypted data</returns>
+        public static string Decrypt(SecureString Input, string Key, Algorithm EncryptionAlgorithm)
+        {
+            return Decrypt(Toolset.ConvertToInsecureString(Input), Key, EncryptionAlgorithm);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Input">Value to decrypt</param>
+        /// <param name="Key">Encryption key</param>
+        /// <param name="EncryptionAlgorithm">Type of encryption algorithm</param>
+        /// <returns>Decrypted data</returns>
+        public static string Decrypt(string Input, string Key, Algorithm EncryptionAlgorithm)
+        {
+            if (string.IsNullOrEmpty(Key))
+                throw new ArgumentNullException("Key cannot be null or empty");
+
+            ICryptoTransformer cryptoTransformer = new DecryptTransform();
+
+            return Encoding.ASCII.GetString(
+                Transform(
+                    Convert.FromBase64String(Input),
+                    Encoding.ASCII.GetBytes(Key),
+                    EncryptionAlgorithm,
+                    cryptoTransformer)).TrimEnd('\0');
+        }
         #endregion //Decryption
 
         #region Transform
