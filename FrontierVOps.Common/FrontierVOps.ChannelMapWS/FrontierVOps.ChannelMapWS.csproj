@@ -42,6 +42,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -154,6 +155,8 @@
     </Compile>
     <Compile Include="Models\Channel.cs" />
     <Compile Include="Models\ChannelLogo.cs" />
+    <Compile Include="Models\ChannelRepository.cs" />
+    <Compile Include="Models\IChannelRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -207,7 +210,24 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\FrontierVOps.Data\FrontierVOps.Data.Objects\FrontierVOps.Data.Objects.csproj">
+      <Project>{a15c34d5-112e-4534-82ef-fb5a5c73cf8c}</Project>
+      <Name>FrontierVOps.Data.Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FrontierVOps.Data\FrontierVOps.Data\FrontierVOps.Data.csproj">
+      <Project>{2791d577-7fe8-40e6-b10c-3493543542a1}</Project>
+      <Name>FrontierVOps.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FrontierVOps.Data\FrontierVOps.Security\FrontierVOps.Security.csproj">
+      <Project>{b4f4072e-3ef1-418c-a271-98cf32f04e90}</Project>
+      <Name>FrontierVOps.Security</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FrontierVOps.Common\FrontierVOps.Common.csproj">
+      <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>
+      <Name>FrontierVOps.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
