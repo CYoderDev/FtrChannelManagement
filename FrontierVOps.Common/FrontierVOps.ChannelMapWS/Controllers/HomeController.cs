@@ -10,7 +10,7 @@ namespace FrontierVOps.ChannelMapWS.Controllers
     {
         public ActionResult Index()
         {
-            ViewBag.Title = "Home Page";
+            ViewBag.Title = "FiOS UI";
 
             return View();
         }
