@@ -9,13 +9,13 @@ namespace FrontierVOps.Security
 {
     internal class DecryptTransform : ICryptoTransformer
     {
-        internal byte[] IV { get { return this._iv; } private set { this._iv = value; } }
+        public byte[] IV { get { return this._iv; } set { this._iv = value; } }
         private byte[] _iv;
 
-        internal byte[] EncryptionKey { get { return this._encryptionKey; } private set { this._encryptionKey = value; } }
+        public byte[] EncryptionKey { get { return this._encryptionKey; } set { this._encryptionKey = value; } }
         private byte[] _encryptionKey;
 
-        internal ICryptoTransform CreateCypher(byte[] bytesKey, Algorithm algorithmID)
+        public ICryptoTransform CreateCypher(byte[] bytesKey, Algorithm algorithmID)
         {
             switch (algorithmID)
             {

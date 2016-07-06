@@ -8,7 +8,7 @@ namespace FrontierVOps.Security
         /// <summary>
         /// Initialization Vector
         /// </summary>
-        byte[] IV { get; private set; }
+        byte[] IV { get; set; }
 
         /// <summary>
         /// Symmetric Encryption Key
@@ -21,6 +21,6 @@ namespace FrontierVOps.Security
         /// <param name="bytesKey">Encryption Key Bytes</param>
         /// <param name="algorithmID">Encryption Algorithm</param>
         /// <returns>Encryption/Decryption Object</returns>
-        ICryptoTransform CreateCrypter(byte[] bytesKey, Algorithm algorithmID);
+        ICryptoTransform CreateCypher(byte[] bytesKey, Algorithm algorithmID);
     }
 }

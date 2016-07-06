@@ -149,7 +149,7 @@ namespace FrontierVOps.Security
                 if (!isDecrypt)
                     memStream.Write(cryptoTransformer.IV, 0, cryptoTransformer.IV.Length);
 
-                using (CryptoStream cryptoStream = new CryptoStream(memStream, cryptoTransformer.CreateCrypter(keyBytes, algorithmId), CryptoStreamMode.Write))
+                using (CryptoStream cryptoStream = new CryptoStream(memStream, cryptoTransformer.CreateCypher(keyBytes, algorithmId), CryptoStreamMode.Write))
                 {
                     try
                     {

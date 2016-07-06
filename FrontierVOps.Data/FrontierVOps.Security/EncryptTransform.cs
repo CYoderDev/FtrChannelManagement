@@ -4,21 +4,21 @@ using System.Security.Cryptography;
 
 namespace FrontierVOps.Security
 {
-    internal class EncryptTransform : ICryptoTransformer
+    public class EncryptTransform : ICryptoTransformer
     {
         /// <summary>
         /// Get the encryption initialization vector.
         /// </summary>
-        internal byte[] IV { get { return _iv; } private set { _iv = value; } }
+        public byte[] IV { get { return _iv; } set { _iv = value; } }
         private byte[] _iv;
 
         /// <summary>
         /// Get or set the encryption key used to encrypt the data.
         /// </summary>
-        internal byte[] EncryptionKey { get { return _encryptionKey; } set { _encryptionKey = value; } }
+        public byte[] EncryptionKey { get { return _encryptionKey; } set { _encryptionKey = value; } }
         private byte[] _encryptionKey;
 
-        internal ICryptoTransform CreateCypher(byte[] bytesKey, Algorithm alorithmID)
+        public ICryptoTransform CreateCypher(byte[] bytesKey, Algorithm alorithmID)
         {
             switch (alorithmID)
             {
