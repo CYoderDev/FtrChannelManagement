@@ -173,13 +173,20 @@ namespace FrontierVOps.Data
             {
                 connection.Open();
                 using (SqlTransaction transaction = connection.BeginTransaction())
-                using (SqlCommand command = new SqlCommand(CommandString, connection, transaction))
+                using (SqlCommand command = connection.CreateCommand())
                 {
                     try
                     {
-                        for (int i = 0; i < Parameters.Length; i++)
+                        command.CommandType = CmdType;
+                        command.CommandText = CommandString;
+                        command.Transaction = transaction;
+
+                        if (CmdType != CommandType.Text)
                         {
-                            command.Parameters.AddWithValue(Parameters[i].Item1, Parameters[i].Item2);
+                            for (int i = 0; i < Parameters.Length; i++)
+                            {
+                                command.Parameters.AddWithValue(Parameters[i].Item1, Parameters[i].Item2);
+                            }
                         }
 
                         int retVal = command.ExecuteNonQuery();
