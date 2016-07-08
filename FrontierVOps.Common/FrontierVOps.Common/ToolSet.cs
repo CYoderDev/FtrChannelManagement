@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -120,5 +123,133 @@ namespace FrontierVOps.Common
             return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(Epoch).ToUniversalTime();
         }
         #endregion //Epoch-DateTime Conversion
+
+        #region Bitmaps 
+        public static bool CompareBitmaps(Bitmap firstImage, Bitmap secondImage)
+        {
+            using (var ms = new MemoryStream())
+            {
+                firstImage.Save(ms, ImageFormat.Png);
+                //string firstBitmap = Convert.ToBase64String(ms.ToArray());
+                string firstBitmap = Encoding.UTF8.GetString(ms.ToArray());
+                ms.Position = 0;
+
+                secondImage.Save(ms, ImageFormat.Png);
+                //string secondBitmap = Convert.ToBase64String(ms.ToArray());
+                string secondBitmap = Encoding.UTF8.GetString(ms.ToArray());
+
+                return firstBitmap.Equals(secondBitmap);
+            }
+        }
+
+        public static bool CompareBitmaps(byte[] firstImage, byte[] secondImage)
+        {
+            return firstImage.SequenceEqual(secondImage);
+        }
+
+        public static bool CompareBitmaps(string firstImage, Bitmap secondImage)
+        {
+            using (var ms = new MemoryStream())
+            {
+                secondImage.Save(ms, ImageFormat.Png);
+                string secondBitmap = Convert.ToBase64String(ms.ToArray());
+
+                return firstImage.Equals(secondBitmap);
+            }
+        }
+
+        public static byte[] ConvertToBytes(Bitmap bitmap)
+        {
+            using (var ms = new MemoryStream())
+            {
+                bitmap.Save(ms, ImageFormat.Png);
+                return ms.ToArray();
+            }
+        }
+
+        public static Bitmap ConvertToBitmap(byte[] ImgBytes)
+        {
+            Bitmap bmp;
+            using (var ms = new MemoryStream(ImgBytes))
+            {
+                bmp = new Bitmap(ms);
+            }
+            return bmp;
+        }
+
+        public static Bitmap ResizeBitmap(Bitmap OriginalBM, int? NewWidthPx, int? NewHeightPx, float? DPIWidth, float? DPIHeight, bool FixedSize = false)
+        {
+            int oldWidth = OriginalBM.Width;
+            int oldHeight = OriginalBM.Height;
+
+            //if a dimenion is null or 0, set it to the original image dimension
+            if ((!NewWidthPx.HasValue) || NewWidthPx.Value == 0)
+                NewWidthPx = oldWidth;
+            if ((!NewHeightPx.HasValue) || NewHeightPx.Value == 0)
+                NewHeightPx = oldHeight;
+
+            //create placeholders for the new dimensions
+            int tempWidth = 0;
+            int tempHeight = 0;
+
+            if (FixedSize)
+            {
+                tempWidth = NewWidthPx.Value;
+                tempHeight = NewHeightPx.Value;
+            }
+            else
+            {
+                //PORTRAIT STYLE
+                if (oldWidth < oldHeight)
+                {
+                    tempWidth = NewWidthPx.Value;
+                    //calculate new height based on max width
+                    tempHeight = (int)Math.Round((tempWidth * oldHeight) / (double)oldWidth);
+
+                    //if the temp height calculation is larger than the specified max height, recalculate the width
+                    if (tempHeight > NewHeightPx.Value)
+                    {
+                        tempHeight = NewHeightPx.Value;
+                        tempWidth = (int)Math.Round((tempHeight * oldWidth) / (double)oldHeight);
+                    }
+                }
+                //LANDSCAPE STYLE
+                else
+                {
+                    tempHeight = NewHeightPx.Value;
+                    //calculate new width based on max height
+                    tempWidth = (int)Math.Round((tempHeight * oldWidth) / (double)oldHeight);
+
+                    //if the temp width calculation is larger than the specified max width, recalculate the height
+                    if (tempWidth > NewWidthPx.Value)
+                    {
+                        tempWidth = NewWidthPx.Value;
+                        tempHeight = (int)Math.Round((tempWidth * oldHeight) / (double)oldWidth);
+                    }
+                }
+            }
+
+            //create new bitmap with new dimensions
+            Bitmap newBitmap = new Bitmap(tempWidth, tempHeight);
+
+            //re-draw image from the provided image
+            using (Graphics graphic = Graphics.FromImage(newBitmap))
+            {
+                graphic.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+
+                graphic.DrawImage(OriginalBM, 0, 0, tempWidth, tempHeight);
+            }
+
+            //Set DPI resolution values if provided
+            if (DPIWidth.HasValue && DPIHeight.HasValue)
+                newBitmap.SetResolution((float)DPIWidth.Value, (float)DPIHeight.Value);
+            else if (DPIWidth.HasValue)
+                newBitmap.SetResolution((float)DPIWidth.Value, newBitmap.VerticalResolution);
+            else if (DPIHeight.HasValue)
+                newBitmap.SetResolution(newBitmap.HorizontalResolution, (float)DPIHeight.Value);
+
+            return newBitmap;
+        }
+        #endregion Bitmaps
     }
 }
