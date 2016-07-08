@@ -8,10 +8,12 @@ using System.Web.Configuration;
 
 namespace FrontierVOps.ChannelMapWS.Models
 {
-    public class ChannelLogo : Logo
+    public class ChannelLogo
     {
         public int? ID { get; set; }
         public FileInfo LogoFile { get; set; }
+        public byte[] Image { get; set; }
+        public bool IsAssigned { get; set; }
 
         #region PublicMethods
         
