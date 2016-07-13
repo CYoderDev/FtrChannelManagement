@@ -26,6 +26,8 @@ namespace FrontierVOps.ChannelMapWS
             // Web API configuration and services
             config.Filters.Add(new AuthorizeAttribute());
 
+            config.Formatters.Add(new FrontierVOps.ChannelMapWS.Formatters.ImageFormatter());
+
             // Web API routes
             config.MapHttpAttributeRoutes();
 

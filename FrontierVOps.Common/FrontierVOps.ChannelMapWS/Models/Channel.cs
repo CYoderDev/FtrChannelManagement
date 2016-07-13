@@ -14,7 +14,7 @@ namespace FrontierVOps.ChannelMapWS.Models
         public int ChannelNumber { get; set; }
         public string StationName { get; set; }
         public string CallSign { get; set; }
-        public ChannelLogo Logo { get; set; }
+        public ChannelLogoInfo Logo { get; set; }
         public string Version { get; set; }
         public string VHO { get; set; }
         public DateTime? LastUpdate { get; set; }
@@ -25,7 +25,7 @@ namespace FrontierVOps.ChannelMapWS.Models
 
         public Channel()
         {
-            this.Logo = new ChannelLogo();
+            this.Logo = new ChannelLogoInfo();
         }
     }
 }

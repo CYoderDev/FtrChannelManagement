@@ -6,11 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Configuration;
 using System.Web.Http;
 using FrontierVOps.Common;
+using FrontierVOps.Common.Web.ActionResults;
 using FrontierVOps.Data;
+using FrontierVOps.ChannelMapWS.Filters;
 using FrontierVOps.ChannelMapWS.Models;
 
 namespace FrontierVOps.ChannelMapWS.Controllers
@@ -18,43 +22,52 @@ namespace FrontierVOps.ChannelMapWS.Controllers
     [RoutePrefix("api/logo/channel")]
     public class ChannelLogoController : ApiController
     {
-        private string _logoDir;
+        private string _logoRepository;
+        private string _activeLogoDir;
+        private string _archiveLogoDir;
+        private string _stagingDir;
 
         public ChannelLogoController()
         {
-#if DEBUG
-            this._logoDir = WebConfigurationManager.AppSettings["LogoRepositoryDEV"];
-#else
-            this._logoDir = WebConfigurationManager.AppSettings["LogoRespositoryPROD"];
-#endif
+            this._logoRepository = HttpContext.Current.Server.MapPath("~/LogoRepository");
+
+            this._activeLogoDir = Path.Combine(_logoRepository, "Active");
+            this._archiveLogoDir = Path.Combine(_logoRepository, "Archive");
+            this._stagingDir = Path.Combine(_logoRepository, "Staging");
         }
 
         #region GET
         [HttpGet]
         [Route("bitmapId/{bitmapId:int:min(1):max(9999)}")]
-        public ChannelLogo GetByBitmapId(int bitmapId)
+        public ChannelLogoInfo GetByBitmapId(int bitmapId, bool active = true)
         {
-            ChannelLogo logo = new ChannelLogo();
-            logo.LogoFile = logo.TryGetLogoFile(bitmapId);
-            logo.ID = bitmapId;
+            ChannelLogoInfo logo = null;
 
-            if (null != logo.LogoFile)
+            string srchDir = active ? this._activeLogoDir : this._archiveLogoDir;
+            string filePath = Path.Combine(srchDir, string.Format("{0}.png", bitmapId));
+
+            if (File.Exists(filePath))
             {
-                using (var bm = new Bitmap(logo.LogoFile.FullName))
-                {
-                    logo.Image = Toolset.ConvertToBytes(bm);
-                }
-                return logo;
+                logo = new ChannelLogoInfo();
+
+                logo.FileName = filePath;
+                logo.BitmapId = bitmapId;
+                logo.IsAssigned = IsAssigned(bitmapId);
             }
-            return null;
+
+            return logo;
         }
 
         [HttpGet]
-        [Route("Image/Exists/String")]
-        public bool GetBitmapExists([FromBody]string bitmap, bool searchArchive = false)
+        [Route("Image/Exists")]
+        public bool GetBitmapExists([FromBody]Bitmap bitmap, bool searchArchive = false)
         {
-            SearchOption srchOpt = searchArchive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            foreach (var file in Directory.EnumerateFiles(this._logoDir, "*.png", srchOpt))
+            string srchDir = this._activeLogoDir;
+
+            if (searchArchive)
+                srchDir = this._archiveLogoDir;
+
+            foreach (var file in Directory.EnumerateFiles(srchDir, "*.png", SearchOption.TopDirectoryOnly))
             {
                 int logoId;
                 FileInfo fInfo = new FileInfo(file);
@@ -63,6 +76,8 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                 {
                     if (logoId > 0 && logoId < 10000)
                     {
+                        if (logoId == 3)
+                            Console.Write(logoId);
                         using (var serverBM = new Bitmap(file))
                         {
                             if (Toolset.CompareBitmaps(bitmap, serverBM))
@@ -71,47 +86,27 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                     }
                 }
             }
-            return false;
-        }
-
-        [HttpGet]
-        [Route("Image/Exists/Bytes")]
-        public bool GetBitmapExists([FromBody]byte[] bitmap, bool searchArchive = false)
-        {
-            SearchOption srchOpt = searchArchive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-            foreach (var file in Directory.EnumerateFiles(this._logoDir, "*.png", srchOpt))
-            {
-                int logoId;
-                FileInfo fInfo = new FileInfo(file);
-
-                if (int.TryParse(fInfo.Name.Replace(".png", "").Trim(), out logoId))
-                {
-                    if (logoId > 0 && logoId < 10000)
-                    {
-                        if (logoId == 4019)
-                            Console.Write(logoId);
-                        using (var serverBM = new Bitmap(file))
-                        {
-                            var svrBytes = Toolset.ConvertToBytes(serverBM);
-                            if (Toolset.CompareBitmaps(bitmap, svrBytes))
-                                return true;
-                        }
-                    }
-                }
-            }
 
             return false;
         }
 
         [HttpGet]
-        [Route("Image/Find/String")]
-        public IEnumerable<ChannelLogo> FindChannelLogo([FromBody]string bitmap, bool searchArchive = false)
+        [Route("Image/Find")]
+        public async Task<IHttpActionResult> FindChannelLogo(bool searchArchive = false)
         {
-            SearchOption srchOpt = searchArchive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            foreach (var file in Directory.EnumerateFiles(this._logoDir, "*.png", srchOpt))
+            string srchDir = this._activeLogoDir;
+
+            if (searchArchive)
+                srchDir = this._archiveLogoDir;
+
+            var readTask = await Request.Content.ReadAsStreamAsync();
+
+            var chLogos = new List<ChannelLogoInfo>();
+
+            foreach (var file in Directory.EnumerateFiles(srchDir, "*.png", SearchOption.TopDirectoryOnly))
             {
                 FileInfo fInfo = new FileInfo(file);
+                
                 int id;
 
                 if (int.TryParse(fInfo.Name.Replace(".png", "").Trim(), out id))
@@ -119,59 +114,48 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                     if (id > 0 && id < 10000)
                     {
                         using (var serverBM = new Bitmap(file))
+                        using (var clientBM = new Bitmap(readTask))
                         {
-                            if (Toolset.CompareBitmaps(bitmap, serverBM))
+                            if (Toolset.CompareBitmaps(clientBM, serverBM))
                             {
-                                var chLogo = new ChannelLogo();
-                                chLogo.LogoFile = new FileInfo(file);
-                                int idVal;
-                                int.TryParse(chLogo.LogoFile.Name.Replace(".png", "").Trim(), out idVal);
-                                chLogo.ID = idVal;
-                                chLogo.Image = Toolset.ConvertToBytes(serverBM);
-                                if (chLogo.ID.HasValue)
-                                    chLogo.IsAssigned = IsAssigned(chLogo.ID.Value);
+                                var chLogo = new ChannelLogoInfo();
+                                chLogo.FileName = fInfo.Name;
+                                chLogo.BitmapId = id;
+                                chLogo.IsAssigned = IsAssigned(id);
 
-                                yield return chLogo;
+                                chLogos.Add(chLogo);
                             }
                         }
                     }
                 }
             }
+            if (chLogos.Count > 0)
+            {
+                return Ok(chLogos);
+            }
+
+            return NotFound();
         }
 
         [HttpGet]
-        [Route("Image/Find/Bytes")]
-        public IEnumerable<ChannelLogo> FindChannelLogo([FromBody]byte[] bitmap, bool searchArchive = false)
+        [Route("Image/GetBitmap/{bitmapId:int:range(0,10000)}")]
+        public IHttpActionResult GetImage(int bitmapId, bool archive = false)
         {
-            SearchOption srchOpt = searchArchive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            foreach (var file in Directory.EnumerateFiles(this._logoDir, "*.png", srchOpt))
-            {
-                FileInfo fInfo = new FileInfo(file);
-                int id;
+            var fileName = string.Format("{0}.png", bitmapId);
+            var path = archive ? Path.Combine(this._archiveLogoDir, fileName) : Path.Combine(this._activeLogoDir, fileName);
 
-                if (int.TryParse(fInfo.Name.Replace(".png", ""), out id))
-                {
-                    if (id > 0 && id < 10000)
-                    {
-                        using (var serverBM = new Bitmap(file))
-                        {
-                            if (Toolset.CompareBitmaps(bitmap, Toolset.ConvertToBytes(serverBM)))
-                            {
-                                var chLogo = new ChannelLogo();
-                                chLogo.LogoFile = new FileInfo(file);
-                                int idVal;
-                                int.TryParse(chLogo.LogoFile.Name.Replace(".png", "").Trim(), out idVal);
-                                chLogo.ID = idVal;
-                                chLogo.Image = Toolset.ConvertToBytes(serverBM);
-                                if (chLogo.ID.HasValue)
-                                    chLogo.IsAssigned = IsAssigned(chLogo.ID.Value);
+            path = Path.GetFullPath(path);
 
-                                yield return chLogo;
-                            }
-                        }
-                    }
-                }
-            }
+            if (!path.StartsWith(this._logoRepository))
+                throw new HttpException(403, "Forbidden");
+
+            //var result = new HttpResponseMessage(HttpStatusCode.OK);
+
+            //var stream = new FileStream(path, FileMode.Open);
+            
+            //result.Content = new StreamContent(stream);
+            //result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+            return new FileResult(path, "image/png");
         }
 
         [HttpGet]
@@ -180,18 +164,19 @@ namespace FrontierVOps.ChannelMapWS.Controllers
         {
             string command = "SELECT TOP 1 * FROM vChannelMap WHERE strFIOSVersionAliasId = '" + version + "' AND intBitmapId = " + bitmapId;
 
-            if (DBFactory.SQL_ExecuteReader(WebApiConfig.ConnectionString, command, System.Data.CommandType.Text).Count() > 0)
-                return true;
-
-            return false;
+            return DBFactory.SQL_ExecuteReader(WebApiConfig.ConnectionString, command, System.Data.CommandType.Text).Count() > 0;
         }
 
         [HttpGet]
         [Route("Exists/{bitmapId:int:range(0,10000)}")]
         public bool IdExists(int bitmapId, bool searchArchive = false)
         {
-            var srchOpt = searchArchive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            foreach(var file in Directory.EnumerateFiles(this._logoDir, "*.png", srchOpt))
+            string srchDir = this._activeLogoDir;
+
+            if (searchArchive)
+                srchDir = this._archiveLogoDir;
+
+            foreach(var file in Directory.EnumerateFiles(srchDir, "*.png", SearchOption.TopDirectoryOnly))
             {
                 var fileInfo = new FileInfo(file);
                 int fileId;
@@ -210,86 +195,92 @@ namespace FrontierVOps.ChannelMapWS.Controllers
 
         [HttpGet]
         [Route("NextAvailableId")]
-        public int GetNextAvailableId()
+        public IHttpActionResult GetNextAvailableId(bool archive = false)
         {
+            string srchDir = this._activeLogoDir;
+            HttpResponseMessage responseMsg = new HttpResponseMessage(HttpStatusCode.OK);
+
+            if (archive)
+                srchDir = this._archiveLogoDir;
+
             for (int i = 1; i < 10000; i++ )
             {
                 string fileName = i + ".png";
-                string filePath = Path.Combine(this._logoDir, fileName);
-                string archivePath = Path.Combine(this._logoDir, "Archive", fileName);
+                string filePath = Path.Combine(srchDir, fileName);
 
-                if (!(File.Exists(filePath) || File.Exists(archivePath)))
-                    return i;
+                if (!(File.Exists(filePath)))
+                    return Ok(i);
             }
-
-            throw new Exception("No available ID's left, please run cleanup job");
+            
+            HttpError err = new HttpError("No available id's left.");
+            return Content(HttpStatusCode.NotFound, err);
         }
         #endregion GET
 
-        #region PUT
-
+        #region PUT      
+        
         #endregion PUT
 
         #region POST
+        [MimeMultipart]
         [HttpPost]
-        [Authorize(Roles="VHE\\FUI-IMG, CORP\\FTW Data Center")]
-        [Route("Image/New")]
-        public ChannelLogo AddNewLogo([FromBody]ChannelLogo chLogo)
+        [Authorize(Roles = "VHE\\FUI-IMG, CORP\\FTW Data Center")]
+        [Route("Image/Upload")]
+        public async Task<ChannelLogoInfo> Upload()
         {
-            if (!chLogo.ID.HasValue)
-                chLogo.ID = GetNextAvailableId();
+            var uploadPath = HttpContext.Current.Server.MapPath("~/LogoRepository/Active");
+            int bmId;
+            GetNextAvailableId().ExecuteAsync(CancellationToken.None).Result.TryGetContentValue(out bmId);
 
-            if (chLogo.ID < 0 || chLogo.ID > 10000)
-                throw new Exception("Channel Logo ID value is outside acceptable range");
+            var streamProvider = new MultipartFormDataStreamProvider(uploadPath);
 
-            if (IdExists(chLogo.ID.Value, true))
-                throw new Exception("A channel logo with this ID already exists on the server");
+            // Read the MIME multipart asynchronously 
+            await Request.Content.ReadAsMultipartAsync(streamProvider);
 
-            string fileName = chLogo.ID.Value + ".png";
-            string filePath = Path.Combine(this._logoDir, fileName);
+            var fileName = streamProvider.FileData.Select(entry => entry.LocalFileName).First();
+            var newFileName = fileName.Substring(0,fileName.LastIndexOf("\\") + 1) + bmId + ".png";
 
-
-            using (Bitmap tmpBm = Toolset.ConvertToBitmap(chLogo.Image))
-            using (Bitmap bmLogo = ValidateBitmap(tmpBm) ? tmpBm : Toolset.ResizeBitmap(tmpBm, 100, 80, null, null))
+            try
             {
-                //temp bitmap is no longer needed, so dispose early to free resources
-                //tmpBm.Dispose();
-
-                bool logoExists = GetBitmapExists(chLogo.Image, true);
-
-                if (logoExists)
+                using (var bm = Toolset.ResizeBitmap(fileName, 100, 80, null, null, true))
                 {
-                    var dupLogo = FindChannelLogo(chLogo.Image, true).FirstOrDefault();
 
-                    if (dupLogo != null)
+                    if (!ValidateBitmap(bmId) && File.Exists(newFileName))
                     {
-                        throw new Exception("Duplicate logo image found at " + dupLogo.LogoFile.FullName + ". Update or delete existing image.");
+                        throw new Exception("Image reformat failed.");
                     }
-                    else
+
+                    if (GetBitmapExists(bm, false))
                     {
-                        //if the bitmap says it exists but is unable to locate it, then save it and let duplication cleanup handle it
-                        logoExists = false;
+                        throw new Exception("Image already exists in active repository.");
                     }
-                }
-                
-                //Not using else statement in case logoexists value changed in logic above
-                if (!logoExists)
-                {
-                    try
-                    {
-                        bmLogo.Save(filePath, ImageFormat.Png);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new IOException("Failed to save channel logo image. " + ex.Message, ex);
-                    }
+                    
+                    bm.Save(newFileName);
+
+                    if (!File.Exists(newFileName))
+                        throw new Exception("Image file failed to save.");
                 }
             }
+            catch (Exception ex)
+            {
+                if (File.Exists(newFileName))
+                    File.Delete(newFileName);
 
-            if (!File.Exists(filePath))
-                throw new Exception("Failed to create new channel logo. Logo file was not saved.");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message, ex));
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
+            }
 
-            return GetByBitmapId(chLogo.ID.Value);
+            // Create response
+            return new ChannelLogoInfo()
+            {
+                FileName = newFileName.Substring(newFileName.LastIndexOf("\\") + 1),
+                BitmapId = bmId,
+                IsAssigned = IsAssigned(bmId),
+            };
         }
         #endregion POST
 
@@ -297,6 +288,64 @@ namespace FrontierVOps.ChannelMapWS.Controllers
         private bool ValidateBitmap(Bitmap bm)
         {
             return (bm.Width.Equals(100) && bm.Height.Equals(80)) && bm.RawFormat.Equals(ImageFormat.Png);
+        }
+
+        private bool ValidateBitmap(int id)
+        {
+            string fileName = string.Join(".", id, "png");
+            string filePath = Path.Combine(HttpContext.Current.Server.MapPath("~/LogoRepository/Staging"), fileName);
+            
+            return File.Exists(filePath) && ValidateBitmap(new Bitmap(filePath));
+        }
+
+        private void archiveFile(FileInfo file, bool deleteOld)
+        {
+            string archivePath = Path.Combine(this._activeLogoDir, "Archive");
+            string archiveFile = Path.Combine(archivePath, file.Name);
+
+            if (File.Exists(archiveFile) && !deleteOld)
+            {
+                File.Copy(archiveFile, archiveFile + ".old", true);
+                File.SetAttributes(archiveFile + ".old", FileAttributes.Temporary);
+            }
+
+            file.CopyTo(archivePath, true);
+
+            if (deleteOld)
+                file.Delete();
+        }
+
+        private void restoreArchive(int id)
+        {
+            string archivePath = Path.Combine(this._activeLogoDir, "Archive");
+            string archiveFile = Path.Combine(archivePath, id + ".png");
+            string oldFile = archiveFile + ".old";
+
+            if (File.Exists(archiveFile))
+            {
+                File.Copy(archiveFile, Path.Combine(this._activeLogoDir, id + ".png"), true);
+            }
+
+            if (File.Exists(oldFile))
+            {
+                File.Copy(oldFile, archiveFile, true);
+                deleteOld(oldFile);
+            }
+        }
+
+        private void deleteOld(string oldFilePath)
+        {
+            string archiveFile = Path.Combine(this._activeLogoDir, "Archive", oldFilePath.Substring(oldFilePath.LastIndexOf("\\") + 1));
+
+            if (File.Exists(oldFilePath))
+            {
+                File.Delete(oldFilePath);
+            }
+
+            if (File.Exists(archiveFile))
+            {
+                File.Delete(archiveFile);
+            }
         }
         #endregion PrivateMethods
     }

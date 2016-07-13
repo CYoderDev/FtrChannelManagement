@@ -123,7 +123,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Views\ChannelTest\" />
+    <Folder Include="LogoRepository\Active\" />
+    <Folder Include="LogoRepository\Archived\" />
+    <Folder Include="LogoRepository\Staging\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -161,12 +163,13 @@
     <Compile Include="Controllers\ChannelController.cs" />
     <Compile Include="Controllers\ChannelLogoController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Filters\MimeMultipart.cs" />
+    <Compile Include="Formatters\ImageFormatter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Channel.cs" />
-    <Compile Include="Models\ChannelLogo.cs" />
-    <Compile Include="Models\Logo.cs" />
+    <Compile Include="Models\ChannelLogoInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -174,7 +177,12 @@
     <Content Include="App_Data\FIOSApp_DC_Test_log.ldf">
       <DependentUpon>FIOSApp_DC_Test.mdf</DependentUpon>
     </Content>
+    <Content Include="App_Data\FUI.mdf" />
+    <Content Include="App_Data\FUI_log.ldf">
+      <DependentUpon>FUI.mdf</DependentUpon>
+    </Content>
     <Content Include="Areas\HelpPage\HelpPage.css" />
+    <Content Include="Images\fios-new-section1.png" />
     <Content Include="Areas\HelpPage\TestClient.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -317,6 +325,7 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Scripts\jquery-1.11.0.min.map" />
+    <Content Include="Views\Home\FileUploadView.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\FrontierVOps.Data\FrontierVOps.Data.Objects\FrontierVOps.Data.Objects.csproj">
@@ -330,6 +339,10 @@
     <ProjectReference Include="..\..\FrontierVOps.Data\FrontierVOps.Security\FrontierVOps.Security.csproj">
       <Project>{b4f4072e-3ef1-418c-a271-98cf32f04e90}</Project>
       <Name>FrontierVOps.Security</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FrontierVOps.Common.Web\FrontierVOps.Common.Web.csproj">
+      <Project>{e3f1fddc-72a4-46df-b83c-19871be6c1a9}</Project>
+      <Name>FrontierVOps.Common.Web</Name>
     </ProjectReference>
     <ProjectReference Include="..\FrontierVOps.Common\FrontierVOps.Common.csproj">
       <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>

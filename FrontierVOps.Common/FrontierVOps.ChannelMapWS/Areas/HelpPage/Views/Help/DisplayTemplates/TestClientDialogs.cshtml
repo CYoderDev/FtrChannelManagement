@@ -66,7 +66,7 @@
   </div>
 </div>
 
-<script>
+<script> 
   testClientModel = {
     HttpMethod: '@Model.ApiDescription.HttpMethod',
     UriPathTemplate: @Html.Raw(Json.Encode(Model.ApiDescription.RelativePath)),
@@ -80,7 +80,7 @@
             }
     ],
     Samples: {
-      @Html.Raw(@String.Join(",", Model.SampleRequests.Select(s => String.Format("\"{0}\": \"{1}\"", s.Key, HttpUtility.UrlEncode(s.Value.ToString()))).ToArray()))
+      @Html.Raw(@String.Join(",", Model.SampleRequests.Where(s => s.Value != null).Select(s => String.Format("\"{0}\": \"{1}\"", s.Key, HttpUtility.UrlEncode(s.Value.ToString()))).ToArray()))
     },
     BaseAddress: '@applicationPath'
   };

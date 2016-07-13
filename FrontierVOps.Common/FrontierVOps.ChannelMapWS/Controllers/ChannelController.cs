@@ -101,7 +101,7 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                 chan.ChannelNumber = record.GetInt32(1);
                 chan.CallSign = record.GetString(2);
                 chan.StationName = record.GetString(3);
-                chan.Logo.ID = record.GetInt32(4);
+                chan.Logo = new ChannelLogoController().GetByBitmapId(record.GetInt32(4));
                 chan.Version = record.GetString(5);
                 chan.VHO = record.GetString(6);
                 chan.LastUpdate = record.IsDBNull(7) ? (DateTime?)null : record.GetDateTime(7);
@@ -109,9 +109,6 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                 chan.RegionName = record.IsDBNull(9) ? null : record.GetString(9);
                 chan.StationDescription = record.IsDBNull(10) ? null : record.GetString(10);
                 chan.UniqueString = record.IsDBNull(11) ? null : record.GetString(11);
-
-                if (chan.Logo.ID != null && chan.Logo.ID.HasValue)
-                    chan.Logo.LogoFile = chan.Logo.TryGetLogoFile(chan.Logo.ID.Value);
 
                 yield return chan;
             }

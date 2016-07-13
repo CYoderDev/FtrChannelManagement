@@ -418,6 +418,7 @@ namespace FrontierVOps.ChannelMapWS.Areas.HelpPage
                     { typeof(Object), index => new object() },
                     { typeof(SByte), index => (SByte)64 },
                     { typeof(Single), index => (Single)(index + 0.1) },
+                    { typeof(System.Drawing.Bitmap), index => new System.Drawing.Bitmap("..\\Images\fios-new-section1.jpg")},
                     { 
                         typeof(String), index =>
                         {

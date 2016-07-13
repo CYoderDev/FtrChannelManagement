@@ -14,5 +14,12 @@ namespace FrontierVOps.ChannelMapWS.Controllers
 
             return View();
         }
+
+        public ActionResult FileUploadView()
+        {
+            ViewBag.Title = "FiOS File Upload API";
+
+            return View("FileUploadView");
+        }
     }
 }

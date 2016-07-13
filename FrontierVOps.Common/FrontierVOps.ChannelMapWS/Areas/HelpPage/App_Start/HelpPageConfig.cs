@@ -51,7 +51,6 @@ namespace FrontierVOps.ChannelMapWS.Areas.HelpPage
 #if Handle_PageResultOfT
             config.GetHelpPageSampleGenerator().SampleObjectFactories.Add(GeneratePageResult);
 #endif
-
             // Extend the following to use a preset object directly as the sample for all actions that support a media
             // type, regardless of the body parameter or return type. The lines below avoid display of binary content.
             // The BsonMediaTypeFormatter (if available) is not used to serialize the TextSample object.
@@ -59,6 +58,18 @@ namespace FrontierVOps.ChannelMapWS.Areas.HelpPage
                 new TextSample("Binary JSON content. See http://bsonspec.org for details."),
                 new MediaTypeHeaderValue("application/bson"));
 
+            var clCtrl = new FrontierVOps.ChannelMapWS.Controllers.ChannelLogoController();
+            for (int i = 1; i < 10000; i++)
+            {
+                if (clCtrl.IdExists(i))
+                {
+                    config.SetSampleForMediaType(new ImageSample("/api/logo/channel/image/getbitmap/" + i.ToString()),
+                        new MediaTypeHeaderValue("image/png"));
+                    break;
+                }
+            }
+
+            config.SetSampleRequest(new ImageSample("../Images/fios-new-section1.png"), new MediaTypeHeaderValue("image/png"), "ChannelLogo", "PUT");
             //// Uncomment the following to use "[0]=foo&[1]=bar" directly as the sample for all actions that support form URL encoded format
             //// and have IEnumerable<string> as the body parameter or return type.
             //config.SetSampleForType("[0]=foo&[1]=bar", new MediaTypeHeaderValue("application/x-www-form-urlencoded"), typeof(IEnumerable<string>));

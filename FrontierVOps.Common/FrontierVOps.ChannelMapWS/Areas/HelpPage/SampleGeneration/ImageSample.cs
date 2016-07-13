@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 
 namespace FrontierVOps.ChannelMapWS.Areas.HelpPage
 {
@@ -17,6 +18,7 @@ namespace FrontierVOps.ChannelMapWS.Areas.HelpPage
             {
                 throw new ArgumentNullException("src");
             }
+            src = "/api/logo/channel/image/getbitmap/3";
             Src = src;
         }
 
