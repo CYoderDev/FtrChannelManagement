@@ -141,13 +141,24 @@ namespace FrontierVOps.FiOS.NGVODPoster
             return vodAssets;
         }
 
-        private string GetSourceImagePath(string PID, string PAID)
+        private string GetSourceImagePath(string PID, string PAID, string destPath)
         {
             validateParams();
 
-            string fileQuery = string.Format("*{0}_{1}*", PID, PAID);
+            string file = string.Empty;
 
-            var file = Directory.EnumerateFiles(this.SourcePath, fileQuery, SearchOption.TopDirectoryOnly).FirstOrDefault();
+            string commonName = Path.Combine(destPath, string.Format("IMG_{0}_{1}_{1}_POS.jpg"));
+
+            if (File.Exists(commonName))
+            {
+                file = commonName;
+            }
+            else
+            {
+                string fileQuery = string.Format("*{0}_{1}*", PID, PAID);
+
+                file = Directory.EnumerateFiles(this.SourcePath, fileQuery, SearchOption.TopDirectoryOnly).FirstOrDefault();
+            }
 
             return file;
         }
@@ -170,6 +181,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
             resetProgress();
             progTotal = VAssets.Count();
 
+            var destPath = this.DestPath;
+
             Console.ForegroundColor = ConsoleColor.Cyan;
             ((IProgress<int>)progress).Report(5);
             Parallel.ForEach<VODAsset>(VAssets, po, (va) =>
@@ -177,7 +190,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     try
                     {
                         Interlocked.Increment(ref progThreads);
-                        va.PosterSource = GetSourceImagePath(va.PID, va.PAID);
+                        va.PosterSource = GetSourceImagePath(va.PID, va.PAID, destPath);
                         va.PosterDest = GetDestImagePath(va.AssetId);
                         Interlocked.Increment(ref progSuccess);
                     }
