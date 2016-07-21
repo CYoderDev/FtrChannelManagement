@@ -32,62 +32,36 @@ namespace FrontierVOps.ChannelMapWS.Controllers
             this._logoRepository = HttpContext.Current.Server.MapPath("~/LogoRepository");
 
             this._activeLogoDir = Path.Combine(_logoRepository, "Active");
-            this._archiveLogoDir = Path.Combine(_logoRepository, "Archive");
+            this._archiveLogoDir = Path.Combine(_logoRepository, "Archived");
             this._stagingDir = Path.Combine(_logoRepository, "Staging");
         }
 
         #region GET
         [HttpGet]
         [Route("bitmapId/{bitmapId:int:min(1):max(9999)}")]
-        public ChannelLogoInfo GetByBitmapId(int bitmapId, bool active = true)
+        public async Task<IHttpActionResult> GetByBitmapId(int bitmapId, bool active = true)
         {
-            ChannelLogoInfo logo = null;
-
-            string srchDir = active ? this._activeLogoDir : this._archiveLogoDir;
-            string filePath = Path.Combine(srchDir, string.Format("{0}.png", bitmapId));
-
-            if (File.Exists(filePath))
-            {
-                logo = new ChannelLogoInfo();
-
-                logo.FileName = filePath;
-                logo.BitmapId = bitmapId;
-                logo.IsAssigned = IsAssigned(bitmapId);
-            }
-
-            return logo;
+            return Ok(await getLogoInfoAsync(bitmapId, active));
         }
 
         [HttpGet]
         [Route("Image/Exists")]
-        public bool GetBitmapExists([FromBody]Bitmap bitmap, bool searchArchive = false)
+        public async Task<IHttpActionResult> GetBitmapExists(bool searchArchive = false)
         {
             string srchDir = this._activeLogoDir;
 
             if (searchArchive)
                 srchDir = this._archiveLogoDir;
 
-            foreach (var file in Directory.EnumerateFiles(srchDir, "*.png", SearchOption.TopDirectoryOnly))
-            {
-                int logoId;
-                FileInfo fInfo = new FileInfo(file);
+            var stream = await Request.Content.ReadAsStreamAsync();
 
-                if (int.TryParse(fInfo.Name.Replace(".png", "").Trim(), out logoId))
-                {
-                    if (logoId > 0 && logoId < 10000)
-                    {
-                        if (logoId == 3)
-                            Console.Write(logoId);
-                        using (var serverBM = new Bitmap(file))
-                        {
-                            if (Toolset.CompareBitmaps(bitmap, serverBM))
-                                return true;
-                        }
-                    }
-                }
+            using (var bm = new Bitmap(stream))
+            {
+                if (await imageExists(srchDir, bm))
+                    return Ok(true);
             }
 
-            return false;
+            return Ok(false);
         }
 
         [HttpGet]
@@ -121,7 +95,7 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                                 var chLogo = new ChannelLogoInfo();
                                 chLogo.FileName = fInfo.Name;
                                 chLogo.BitmapId = id;
-                                chLogo.IsAssigned = IsAssigned(id);
+                                chLogo.IsAssigned = await isAssignedAsync(id);
 
                                 chLogos.Add(chLogo);
                             }
@@ -139,7 +113,7 @@ namespace FrontierVOps.ChannelMapWS.Controllers
 
         [HttpGet]
         [Route("Image/GetBitmap/{bitmapId:int:range(0,10000)}")]
-        public IHttpActionResult GetImage(int bitmapId, bool archive = false)
+        public Task<IHttpActionResult> GetImage(int bitmapId, bool archive = false)
         {
             var fileName = string.Format("{0}.png", bitmapId);
             var path = archive ? Path.Combine(this._archiveLogoDir, fileName) : Path.Combine(this._activeLogoDir, fileName);
@@ -149,76 +123,124 @@ namespace FrontierVOps.ChannelMapWS.Controllers
             if (!path.StartsWith(this._logoRepository))
                 throw new HttpException(403, "Forbidden");
 
-            //var result = new HttpResponseMessage(HttpStatusCode.OK);
-
-            //var stream = new FileStream(path, FileMode.Open);
-            
-            //result.Content = new StreamContent(stream);
-            //result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
-            return new FileResult(path, "image/png");
+            return Task.FromResult<IHttpActionResult>(new FileResult(path, "image/png"));
         }
 
         [HttpGet]
         [Route("IsAssigned/{bitmapId:int:range(0,10000)}")]
-        public bool IsAssigned(int bitmapId, string version = "1.9")
+        public async Task<IHttpActionResult> IsAssigned(int bitmapId, string version = "1.9")
         {
-            string command = "SELECT TOP 1 * FROM vChannelMap WHERE strFIOSVersionAliasId = '" + version + "' AND intBitmapId = " + bitmapId;
-
-            return DBFactory.SQL_ExecuteReader(WebApiConfig.ConnectionString, command, System.Data.CommandType.Text).Count() > 0;
+            var result = await isAssignedAsync(bitmapId, version);
+            return Ok(result);
         }
 
         [HttpGet]
         [Route("Exists/{bitmapId:int:range(0,10000)}")]
-        public bool IdExists(int bitmapId, bool searchArchive = false)
+        public async Task<IHttpActionResult> IdExists(int bitmapId, bool searchArchive = false)
         {
             string srchDir = this._activeLogoDir;
 
             if (searchArchive)
                 srchDir = this._archiveLogoDir;
 
-            foreach(var file in Directory.EnumerateFiles(srchDir, "*.png", SearchOption.TopDirectoryOnly))
-            {
-                var fileInfo = new FileInfo(file);
-                int fileId;
-
-                if (int.TryParse(fileInfo.Name.Replace(".png","").Trim(), out fileId))
-                {
-                    if (fileId < 0 || fileId > 10000)
-                        continue;
-
-                    if (fileId == bitmapId)
-                        return true;
-                }
-            }
-            return false;
+            return Ok(await idExists(bitmapId, srchDir));
         }
 
         [HttpGet]
         [Route("NextAvailableId")]
-        public IHttpActionResult GetNextAvailableId(bool archive = false)
+        public async Task<IHttpActionResult> GetNextAvailableId(bool archive = false)
         {
-            string srchDir = this._activeLogoDir;
-            HttpResponseMessage responseMsg = new HttpResponseMessage(HttpStatusCode.OK);
+            var result = await getNextAvailableId(archive);
 
-            if (archive)
-                srchDir = this._archiveLogoDir;
-
-            for (int i = 1; i < 10000; i++ )
+            if (result > 0)
+                return Ok(result);
+            else
             {
-                string fileName = i + ".png";
-                string filePath = Path.Combine(srchDir, fileName);
-
-                if (!(File.Exists(filePath)))
-                    return Ok(i);
+                HttpError err = new HttpError("No available id's left.");
+                return Content(HttpStatusCode.NotFound, err);
             }
-            
-            HttpError err = new HttpError("No available id's left.");
-            return Content(HttpStatusCode.NotFound, err);
         }
         #endregion GET
 
         #region PUT      
-        
+        [HttpPut]
+        [Authorize(Roles = "VHE\\FUI-IMG, CORP\\FTW Data Center")]
+        [Route("Image/Update/Archive/{serviceId:int}")]
+        public async Task<IHttpActionResult> Archive(int serviceId)
+        {
+            try
+            {
+                var channel = new Channel();
+
+                using (var chCtrl = new ChannelController())
+                {
+                    chCtrl.Request = new HttpRequestMessage();
+                    chCtrl.Request.SetConfiguration(new HttpConfiguration());
+                    channel = (await (await (await chCtrl.GetByServiceId(serviceId)).ExecuteAsync(CancellationToken.None)).Content.ReadAsAsync<IEnumerable<Channel>>()).FirstOrDefault();
+
+                    if (channel == null)
+                        return Content(HttpStatusCode.NotFound, string.Format("Could not find channel with service id {0}.", channel.ServiceID));
+
+                    if (!File.Exists(channel.Logo.FileName))
+                        return Content(HttpStatusCode.NotFound, string.Format("Unable to find logo id {0} in the active repository.", channel.Logo.BitmapId));
+
+
+                    var newName = channel.CallSign.Replace(" ", "").Trim().ToUpper() + ".png";
+                    var activeFile = channel.Logo.FileName;
+                    var activeStageFile = Path.Combine(this._stagingDir, Path.GetFileName(activeFile));
+                    var archiveFile = Path.Combine(this._archiveLogoDir, newName);
+                    var archiveStageFile = Path.Combine(this._stagingDir, newName);
+
+                    //Set channel logo to default logo
+                    channel.Logo = await getLogoInfoAsync(10000);
+
+                    if ((await (await chCtrl.UpdateChannel(channel.ServiceID, channel)).ExecuteAsync(CancellationToken.None)).StatusCode == HttpStatusCode.OK)
+                    {
+                        try
+                        {
+                            //backup active bitmap file to staging
+                            File.Copy(activeFile, activeStageFile, true);
+
+                            //if there is an existing archive file, back it up to staging and delete it
+                            if (File.Exists(archiveFile))
+                            {
+                                File.Copy(archiveFile, archiveStageFile, true);
+                                File.Delete(archiveFile);
+                            }
+
+                            //Move active bitmap file to the new location and rename it
+                            File.Move(activeFile, archiveFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            //Restore backup files from staging
+                            if (File.Exists(archiveStageFile))
+                                File.Copy(archiveStageFile, archiveFile, true);
+
+                            if (File.Exists(activeStageFile))
+                                File.Copy(activeStageFile, activeFile);
+
+                            //return error
+                            return InternalServerError(ex);
+                        }
+                        finally
+                        {
+                            //cleanup staging directory
+                            if (File.Exists(archiveStageFile))
+                                File.Delete(archiveStageFile);
+
+                            if (File.Exists(activeStageFile))
+                                File.Delete(activeStageFile);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+            return Ok();
+        }
         #endregion PUT
 
         #region POST
@@ -226,11 +248,16 @@ namespace FrontierVOps.ChannelMapWS.Controllers
         [HttpPost]
         [Authorize(Roles = "VHE\\FUI-IMG, CORP\\FTW Data Center")]
         [Route("Image/Upload")]
-        public async Task<ChannelLogoInfo> Upload()
+        public async Task<IHttpActionResult> Upload()
         {
             var uploadPath = HttpContext.Current.Server.MapPath("~/LogoRepository/Active");
-            int bmId;
-            GetNextAvailableId().ExecuteAsync(CancellationToken.None).Result.TryGetContentValue(out bmId);
+            int bmId = await getNextAvailableId();
+
+            if (bmId < 0)
+            {
+                HttpError err = new HttpError("No available id's left.");
+                return Content(HttpStatusCode.InternalServerError, err);
+            }
 
             var streamProvider = new MultipartFormDataStreamProvider(uploadPath);
 
@@ -244,13 +271,12 @@ namespace FrontierVOps.ChannelMapWS.Controllers
             {
                 using (var bm = Toolset.ResizeBitmap(fileName, 100, 80, null, null, true))
                 {
-
                     if (!ValidateBitmap(bmId) && File.Exists(newFileName))
                     {
                         throw new Exception("Image reformat failed.");
                     }
 
-                    if (GetBitmapExists(bm, false))
+                    if (await imageExists(this._activeLogoDir, bm))
                     {
                         throw new Exception("Image already exists in active repository.");
                     }
@@ -258,7 +284,7 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                     bm.Save(newFileName);
 
                     if (!File.Exists(newFileName))
-                        throw new Exception("Image file failed to save.");
+                        return Content(HttpStatusCode.InternalServerError, "Image failed to upload");
                 }
             }
             catch (Exception ex)
@@ -266,7 +292,7 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                 if (File.Exists(newFileName))
                     File.Delete(newFileName);
 
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message, ex));
+                return InternalServerError(ex);
             }
             finally
             {
@@ -275,16 +301,183 @@ namespace FrontierVOps.ChannelMapWS.Controllers
             }
 
             // Create response
-            return new ChannelLogoInfo()
+            return Ok(new ChannelLogoInfo()
             {
                 FileName = newFileName.Substring(newFileName.LastIndexOf("\\") + 1),
                 BitmapId = bmId,
-                IsAssigned = IsAssigned(bmId),
-            };
+                IsAssigned = await isAssignedAsync(bmId),
+            });
         }
         #endregion POST
 
+        #region DELETE
+        [HttpDelete]
+        [Authorize(Roles = "VHE\\FUI-IMG, CORP\\FTW Data Center")]
+        [Route("Image/Delete/Active/{id:int:range(0,10000)}")]
+        public IHttpActionResult Delete(int id)
+        {
+            try
+            {
+                if (id == 10000)
+                    return Content(HttpStatusCode.Forbidden, "Cannot delete default image.");
+
+                var fileName = Path.Combine(this._activeLogoDir, id + ".png");
+
+                if (!File.Exists(fileName))
+                    return Content(HttpStatusCode.NotFound, string.Format("Could not find {0}", fileName));       
+            
+                var path = Path.GetFullPath(fileName);
+                var stagePath = Path.Combine(this._stagingDir, Path.GetFileName(path));
+
+                //Backup to staging
+                File.Copy(path, stagePath, true);
+
+                //Delete
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception ex)
+                {
+                    //Restore stage file and throw ex to outer try/catch
+                    File.Copy(stagePath, path, true);
+                    throw ex;
+                }
+
+                if (!File.Exists(path))
+                {
+                    //Delete stage file and return ok
+                    File.Delete(stagePath);
+                    return Ok();
+                }
+                else
+                    return Content(HttpStatusCode.InternalServerError, "File failed to delete due to an unknown error. No changes were made.");
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        [HttpDelete]
+        [Authorize(Roles = "VHE\\FUI-IMG, CORP\\FTW Data Center")]
+        [Route("Image/Delete/Archive/{fileName}")]
+        public IHttpActionResult Delete(string fileName)
+        {
+            try
+            {
+                if (fileName.StartsWith("10000"))
+                    return Content(HttpStatusCode.Forbidden, "Cannot delete default image.");
+
+                if (!fileName.EndsWith(".png"))
+                    fileName += ".png";
+                
+                fileName = Path.Combine(this._archiveLogoDir, fileName);
+
+                if (!File.Exists(fileName))
+                    return Content(HttpStatusCode.NotFound, string.Format("Could not find {0}", fileName));
+
+                var path = Path.GetFullPath(fileName);
+                var stagePath = Path.Combine(this._stagingDir, Path.GetFileName(path));
+
+                //Backup to staging
+                File.Copy(path, stagePath, true);
+
+                //Delete
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception ex)
+                {
+                    //Restore stage file and throw ex to outer try/catch
+                    File.Copy(stagePath, path, true);
+                    throw ex;
+                }
+
+                if (!File.Exists(path))
+                {
+                    //Delete stage file and return ok
+                    File.Delete(stagePath);
+                    return Ok();
+                }
+                else
+                    return Content(HttpStatusCode.InternalServerError, "File failed to delete due to an unknown error. No changes were made.");
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+        #endregion DELETE
+
         #region PrivateMethods
+
+        #region Async
+        private async Task<bool> isAssignedAsync(int id, string version = "1.9")
+        {
+            string command = "SELECT TOP 1 * FROM vChannelMap WHERE strFIOSVersionAliasId = '" + version + "' AND intBitmapId = " + id;
+
+            bool result = false;
+            await DBFactory.SQL_ExecuteReaderAsync(WebApiConfig.ConnectionString, command, System.Data.CommandType.Text, null, dr =>
+            {
+                while (dr.Read())
+                {
+                    result = true;
+                    break;
+                }
+            });
+            return result;
+        }
+        #endregion Async
+
+        #region Tasks
+        private Task<bool> imageExists(string directory, Bitmap bitmap)
+        {
+            foreach (var file in Directory.EnumerateFiles(directory, "*.png", SearchOption.TopDirectoryOnly))
+            {
+                int logoId;
+                FileInfo fInfo = new FileInfo(file);
+
+                if (int.TryParse(fInfo.Name.Replace(".png", "").Trim(), out logoId))
+                {
+                    if (logoId > 0 && logoId < 10000)
+                    {
+                        if (logoId == 3)
+                            Console.Write(logoId);
+                        using (var serverBM = new Bitmap(file))
+                        {
+                            if (Toolset.CompareBitmaps(bitmap, serverBM))
+                                return Task.FromResult<bool>(true);
+                        }
+                    }
+                }
+            }
+            return Task.FromResult<bool>(false);
+        }
+
+        private Task<int> getNextAvailableId(bool archive = false)
+        {
+            string srchDir = this._activeLogoDir;
+            HttpResponseMessage responseMsg = new HttpResponseMessage(HttpStatusCode.OK);
+
+            if (archive)
+                srchDir = this._archiveLogoDir;
+
+            for (int i = 1; i < 10000; i++)
+            {
+                string fileName = i + ".png";
+                string filePath = Path.Combine(srchDir, fileName);
+
+                if (!(File.Exists(filePath)))
+                    return Task.FromResult<int>(i);
+            }
+
+            return Task.FromResult<int>(0);
+        }
+        #endregion Tasks
+
+        #region Synchronous
         private bool ValidateBitmap(Bitmap bm)
         {
             return (bm.Width.Equals(100) && bm.Height.Equals(80)) && bm.RawFormat.Equals(ImageFormat.Png);
@@ -294,7 +487,7 @@ namespace FrontierVOps.ChannelMapWS.Controllers
         {
             string fileName = string.Join(".", id, "png");
             string filePath = Path.Combine(HttpContext.Current.Server.MapPath("~/LogoRepository/Staging"), fileName);
-            
+
             return File.Exists(filePath) && ValidateBitmap(new Bitmap(filePath));
         }
 
@@ -347,6 +540,101 @@ namespace FrontierVOps.ChannelMapWS.Controllers
                 File.Delete(archiveFile);
             }
         }
+
+        private bool isAssigned(int id, string version = "1.9")
+        {
+            string command = "SELECT TOP 1 * FROM vChannelMap WHERE strFIOSVersionAliasId = '" + version + "' AND intBitmapId = " + id;
+
+            return DBFactory.SQL_ExecuteReader(WebApiConfig.ConnectionString, command, System.Data.CommandType.Text, null).Any();
+        }
+        #endregion Synchronous
+
         #endregion PrivateMethods
+
+        #region InternalMethods
+
+        #region Async
+        internal async Task<ChannelLogoInfo> getLogoInfoAsync(int bitmapId, bool active = true)
+        {
+            ChannelLogoInfo logo = null;
+
+            string srchDir = active ? this._activeLogoDir : this._archiveLogoDir;
+            string filePath = Path.Combine(srchDir, string.Format("{0}.png", bitmapId));
+
+            logo = new ChannelLogoInfo();
+
+            if (File.Exists(filePath))
+            {
+                logo.FileName = filePath;
+            }
+            logo.BitmapId = bitmapId;
+            logo.IsAssigned = await isAssignedAsync(bitmapId);
+
+            return logo;
+        }
+        #endregion Async
+
+        #region Tasks
+        internal Task<bool> idExists(int id, string dir = null)
+        {
+            if (string.IsNullOrEmpty(dir))
+                dir = this._activeLogoDir;
+
+            foreach (var file in Directory.EnumerateFiles(dir, "*.png", SearchOption.TopDirectoryOnly))
+            {
+                var fileInfo = new FileInfo(file);
+                int fileId;
+
+                if (int.TryParse(fileInfo.Name.Replace(".png", "").Trim(), out fileId))
+                {
+                    if (fileId < 0 || fileId > 10000)
+                        continue;
+
+                    if (fileId == id)
+                        return Task.FromResult<bool>(true);
+                }
+            }
+            return Task.FromResult<bool>(false);
+        }
+
+        internal Task<IEnumerable<int>> getMissingBitmapIds()
+        {
+            List<int> missingIds = new List<int>();
+            for (int i = 1; i < 10000; i++)
+            {
+                string fileName = i + ".png";
+                string filePath = Path.Combine(this._activeLogoDir, fileName);
+
+                if (!(File.Exists(filePath)))
+                    missingIds.Add(i);
+            }
+
+            return Task.FromResult<IEnumerable<int>>(missingIds);
+        }
+
+        #endregion Tasks
+
+        #region Synchronous
+        internal ChannelLogoInfo getLogoInfo(int bitmapId, bool active = true)
+        {
+            ChannelLogoInfo logo = null;
+
+            string srchDir = active ? this._activeLogoDir : this._archiveLogoDir;
+            string filePath = Path.Combine(srchDir, string.Format("{0}.png", bitmapId));
+
+            logo = new ChannelLogoInfo();
+            if (File.Exists(filePath))
+            {
+                logo.FileName = filePath;
+            }
+
+            logo.BitmapId = bitmapId;
+            logo.IsAssigned = isAssigned(bitmapId);
+
+            return logo;
+        }
+        #endregion Synchronous
+
+        #endregion InternalMethods
     }
 }

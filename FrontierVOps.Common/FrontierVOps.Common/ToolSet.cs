@@ -127,16 +127,17 @@ namespace FrontierVOps.Common
         #region Bitmaps 
         public static bool CompareBitmaps(Bitmap firstImage, Bitmap secondImage)
         {
+            return (Toolset.CompareBitmaps(Toolset.ConvertToBytes(firstImage), Toolset.ConvertToBytes(secondImage)));
             using (var ms = new MemoryStream())
             {
                 firstImage.Save(ms, ImageFormat.Png);
                 //string firstBitmap = Convert.ToBase64String(ms.ToArray());
-                string firstBitmap = Encoding.UTF8.GetString(ms.ToArray());
+                string firstBitmap = Encoding.ASCII.GetString(ms.ToArray());
                 ms.Position = 0;
 
                 secondImage.Save(ms, ImageFormat.Png);
                 //string secondBitmap = Convert.ToBase64String(ms.ToArray());
-                string secondBitmap = Encoding.UTF8.GetString(ms.ToArray());
+                string secondBitmap = Encoding.ASCII.GetString(ms.ToArray());
 
                 return firstBitmap.Equals(secondBitmap);
             }
@@ -177,8 +178,25 @@ namespace FrontierVOps.Common
             return bmp;
         }
 
+        public static Bitmap ResizeBitmap(string FilePath, int ? NewWidthPx, int? NewHeightPx, float? DPIWidth, float? DPIHeight, bool FixedSize = false)
+        {
+            if (File.Exists(FilePath))
+            {
+                return ResizeBitmap(new Bitmap(FilePath), NewWidthPx, NewHeightPx, DPIWidth, DPIHeight, FixedSize);
+            }
+            else
+                throw new FileNotFoundException("Could not find " + FilePath);
+        }
+
         public static Bitmap ResizeBitmap(Bitmap OriginalBM, int? NewWidthPx, int? NewHeightPx, float? DPIWidth, float? DPIHeight, bool FixedSize = false)
         {
+            if ((NewHeightPx.HasValue && OriginalBM.Height == NewHeightPx.Value)
+                && (NewWidthPx.HasValue && OriginalBM.Width == NewWidthPx.Value)
+                && !(DPIHeight.HasValue && DPIWidth.HasValue))
+            {
+                return OriginalBM;
+            }
+
             int oldWidth = OriginalBM.Width;
             int oldHeight = OriginalBM.Height;
 
@@ -247,6 +265,8 @@ namespace FrontierVOps.Common
                 newBitmap.SetResolution((float)DPIWidth.Value, newBitmap.VerticalResolution);
             else if (DPIHeight.HasValue)
                 newBitmap.SetResolution(newBitmap.HorizontalResolution, (float)DPIHeight.Value);
+
+            OriginalBM.Dispose();
 
             return newBitmap;
         }

@@ -22,6 +22,7 @@ namespace FrontierVOps.ChannelMapWS.Models
         public string RegionName { get; set; }
         public string StationDescription { get; set; }
         public string UniqueString { get; set; }
+        public bool IsVirtual { get; set; }
 
         public Channel()
         {

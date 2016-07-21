@@ -100,6 +100,60 @@ namespace FrontierVOps.Data
                 }
             }
         }
+
+        public static async Task<IEnumerable<IDataRecord>> SQL_ExecuteReaderAsync(string ConnectionString, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters)
+        {
+            Parameters = Parameters ?? new Tuple<string, object>[0];
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandType = CmdType;
+                command.CommandText = CommandString;
+
+                for (int i = 0; i < Parameters.Length; i++)
+                {
+                    command.Parameters.AddWithValue(Parameters[i].Item1, Parameters[i].Item2);
+                }
+
+                await connection.OpenAsync();
+
+                List<IDataRecord> allRecords = new List<IDataRecord>();
+
+                using (IDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (reader.Read())
+                    {
+                        allRecords.Add(reader);
+                    }
+                    return allRecords;
+                }
+            }
+        }
+
+        public static async Task SQL_ExecuteReaderAsync(string ConnectionString, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters, Action<IDataReader> fn)
+        {
+            Parameters = Parameters ?? new Tuple<string, object>[0];
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandType = CmdType;
+                command.CommandText = CommandString;
+
+                for (int i = 0; i < Parameters.Length; i++)
+                {
+                    command.Parameters.AddWithValue(Parameters[i].Item1, Parameters[i].Item2);
+                }
+
+                await connection.OpenAsync();
+
+                using (IDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    fn(reader);
+                }
+            }
+        }
         #endregion //ExecuteReader
 
         #region ExecuteNonQuery
@@ -203,6 +257,43 @@ namespace FrontierVOps.Data
             }
         }
 
+        public static async Task<int> SQL_ExecuteNonQueryAsync(string ConnectionString, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters)
+        {
+            Parameters = Parameters ?? new Tuple<string, object>[0];
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                await connection.OpenAsync();
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                using (SqlCommand command = connection.CreateCommand())
+                {
+                    try
+                    {
+                        command.CommandType = CmdType;
+                        command.CommandText = CommandString;
+                        command.Transaction = transaction;
+
+                        if (CmdType != CommandType.Text)
+                        {
+                            for (int i = 0; i < Parameters.Length; i++)
+                            {
+                                command.Parameters.AddWithValue(Parameters[i].Item1, Parameters[i].Item2);
+                            }
+                        }
+
+                        int retVal = await command.ExecuteNonQueryAsync();
+
+                        transaction.Commit();
+                        return retVal;
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw ex;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Executes multiple T-SQL non-query commands

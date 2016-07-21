@@ -61,7 +61,7 @@ namespace FrontierVOps.ChannelMapWS.Areas.HelpPage
             var clCtrl = new FrontierVOps.ChannelMapWS.Controllers.ChannelLogoController();
             for (int i = 1; i < 10000; i++)
             {
-                if (clCtrl.IdExists(i))
+                if (clCtrl.idExists(i).Result)
                 {
                     config.SetSampleForMediaType(new ImageSample("/api/logo/channel/image/getbitmap/" + i.ToString()),
                         new MediaTypeHeaderValue("image/png"));
