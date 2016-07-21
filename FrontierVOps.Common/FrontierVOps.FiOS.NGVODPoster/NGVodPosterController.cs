@@ -184,7 +184,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             var destPath = this.DestPath;
 
             Console.ForegroundColor = ConsoleColor.Cyan;
-            ((IProgress<int>)progress).Report(5);
+            ((IProgress<int>)progress).Report(1);
             Parallel.ForEach<VODAsset>(VAssets, po, (va) =>
                 {
                     try
@@ -310,7 +310,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     }
                     finally
                     {
-                        ((IProgress<int>)progress).Report(5);
+                        ((IProgress<int>)progress).Report(1);
                         if (!string.IsNullOrEmpty(tmpFile) && File.Exists(tmpFile))
                             File.Delete(tmpFile);
                         Interlocked.Decrement(ref progThreads);
