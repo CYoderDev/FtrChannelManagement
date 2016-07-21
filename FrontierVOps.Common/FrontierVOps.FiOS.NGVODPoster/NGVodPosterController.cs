@@ -147,7 +147,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             string file = string.Empty;
 
-            string commonName = Path.Combine(destPath, string.Format("IMG_{0}_{1}_{1}_POS.jpg"));
+            string commonName = Path.Combine(destPath, string.Format("IMG_{0}_{1}_{1}_POS.jpg", PID, PAID, PAID));
 
             if (File.Exists(commonName))
             {
