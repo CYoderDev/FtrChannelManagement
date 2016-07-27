@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
@@ -271,5 +273,45 @@ namespace FrontierVOps.Common
             return newBitmap;
         }
         #endregion Bitmaps
+
+        #region Email
+        /// <summary>
+        /// Sends an email
+        /// </summary>
+        /// <param name="smtpServer">SMTP email server name or ip</param>
+        /// <param name="credentials">SMTP credentials [optional]</param>
+        /// <param name="port">SMTP port to send on [optional]</param>
+        /// <param name="useSSL">Use SSL?</param>
+        /// <param name="sendSubject">Email Subject</param>
+        /// <param name="sendBody">Email Body/Message (html)</param>
+        /// <param name="sendFrom">Email address that is sending the email</param>
+        /// <param name="sendTo">Email addresses to send to (comma delimited)</param>
+        /// <param name="attachments">Full path to file attachments</param>
+        public static void SendEmail(string smtpServer, NetworkCredential credentials, int? port, bool useSSL, string sendSubject, string sendBody, string sendFrom, string sendTo, string[] attachments)
+        {
+            MailMessage mail = new MailMessage();
+            SmtpClient smtp = new SmtpClient(smtpServer);
+            mail.From = new MailAddress(sendFrom);
+            mail.To.Add(sendTo);
+            mail.Subject = sendSubject;
+            mail.IsBodyHtml = true;
+            mail.Body = sendBody;
+
+            for (int i = 0; i < attachments.Length; i++)
+            {
+                Attachment attachment = new Attachment(attachments[i]);
+                mail.Attachments.Add(attachment);
+            }
+
+            if (useSSL && credentials == null)
+                throw new ArgumentException("Must provide credentials if using SSL.", "credentials");
+
+            smtp.Port = port.HasValue ? port.Value : 25;
+            smtp.Credentials = credentials;
+            smtp.EnableSsl = useSSL;
+
+            smtp.Send(mail);
+        }
+        #endregion
     }
 }
