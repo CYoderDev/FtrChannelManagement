@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.FiOS.NGVODPoster", "..\FrontierVOps.Common\FrontierVOps.FiOS.NGVODPoster\FrontierVOps.FiOS.NGVODPoster.csproj", "{15E6FBD0-0BB1-42FF-A538-B74B33D07870}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.FiOS.NGVODPoster", "FrontierVOps.FiOS.NGVODPoster\FrontierVOps.FiOS.NGVODPoster.csproj", "{15E6FBD0-0BB1-42FF-A538-B74B33D07870}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.Common", "..\FrontierVOps.Common\FrontierVOps.Common\FrontierVOps.Common.csproj", "{DD1DBDF9-AF22-47A7-B393-E92FB7ECF518}"
 EndProject
