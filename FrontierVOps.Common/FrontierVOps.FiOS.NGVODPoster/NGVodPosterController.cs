@@ -283,6 +283,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             string sproc = "sp_FUI_GetAllVODFolderAssetInfo";
             List<VODAsset> vodAssets = new List<VODAsset>();
+            List<VODFolder> vodFolders = new List<VODFolder>();
             await DBFactory.SQL_ExecuteReaderAsync(ConnectionString, sproc, System.Data.CommandType.StoredProcedure, null, dr =>
                 {
                     while (dr.Read())
@@ -293,16 +294,18 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         try
                         {
                             var vAsset = new VODAsset();
+                            var vFolder = new VODFolder();
 
-                            vAsset.FolderId = int.Parse(dr.GetString(0));
-                            vAsset.ParentFolderId = int.Parse(dr.GetString(1));
-                            vAsset.FolderPath = dr.GetString(2);
-                            vAsset.FolderTitle = dr.GetString(3);
+                            vFolder.ID = int.Parse(dr.GetString(0));
+                            vFolder.ParentId = int.Parse(dr.GetString(1));
+                            vFolder.Path = dr.GetString(2);
+                            vFolder.Title = dr.GetString(3);
                             vAsset.AssetId = int.Parse(dr.GetString(4));
                             vAsset.Title = dr.GetString(5);
                             vAsset.PID = dr.GetString(6);
                             vAsset.PAID = dr.GetString(7);
-
+                            vAsset.Folders.Add(vFolder);
+                            
                             vodAssets.Add(vAsset);
 
                             //Add to all asset queue (thread-safe)
@@ -316,6 +319,18 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         }
                     }
                 });
+
+            //Group all assets and merge the vod folders
+            vodAssets = vodAssets
+                .GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title })
+                .Select(x => new VODAsset()
+                {
+                    AssetId = x.Key.AssetId,
+                    Title = x.Key.Title,
+                    PID = x.Key.PID,
+                    PAID = x.Key.PAID,
+                    Folders = x.Where(y => y.AssetId.Equals(x.Key.AssetId)).SelectMany(y => y.Folders).Distinct().ToList(),
+                }).Distinct().ToList();
 
             Console.WriteLine("\nINFO: Get VOD Assets Complete --> Count: {0}", vodAssets.Count);
             return vodAssets;
@@ -460,7 +475,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     {
                         try
                         {
-                            po.CancellationToken.ThrowIfCancellationRequested();                         
+                            po.CancellationToken.ThrowIfCancellationRequested();
 
                             //Increment progress threads
                             Interlocked.Increment(ref progThreads);
@@ -513,8 +528,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                     Interlocked.Increment(ref progDelete);
                                 }
 
-                                throw new ArgumentNullException(string.Format("Poster source missing. \n\tTitle:  {0}\n\tAssetID: {1}\n\tPID: {2}\n\tPAID: {3}\n\tFolderPath: {4}\n\tFolderId: {5}",
-                                    va.Title, va.AssetId, va.PID, va.PAID, va.FolderPath, va.FolderId));
+                                throw new ArgumentNullException(string.Format("Poster source missing. \n\tTitle:  {0}\n\tAssetID: {1}\n\tPID: {2}\n\tPAID: {3}\n\tFolderPaths: {4}\n\tFolderIds: {5}",
+                                    va.Title, va.AssetId, va.PID, va.PAID, string.Join(",", va.Folders.Select(x => x.Path)), string.Join(",", va.Folders.Select(x => x.ID))));
                             }
                             //Add poster source to dictionary if it is not null and doesn't already exist
                             else if (!dictSrcPath.ContainsKey(va.AssetId))
@@ -604,7 +619,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 if (string.IsNullOrEmpty(VAsset.PosterDest))
                 {
                     throw new ArgumentNullException(string.Format("Poster destination null. \n\tTitle:  {0}\n\tAssetID: {1}\n\tPID: {2}\n\tPAID: {3}\n\tFolderPath: {4}\n\tFolderId: {5}",
-                        VAsset.Title, VAsset.AssetId, VAsset.PID, VAsset.PAID, VAsset.FolderPath, VAsset.FolderId));
+                        VAsset.Title, VAsset.AssetId, VAsset.PID, VAsset.PAID, string.Join(",", VAsset.Folders.Select(x => x.Path)), string.Join(",", VAsset.Folders.Select(x => x.ID))));
                 }
 
                 //Verify file extension is .jpg
@@ -657,8 +672,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(string.Format("(ProcessImages) An error occured while processing image for {0}.\n\tAssetId: {1}\n\tTitle: {2}\n\tFolder{3} -- {4}", 
-                        VAsset.PosterSource, VAsset.AssetId, VAsset.Title, VAsset.FolderPath, ex.Message), ex);
+                    throw new Exception(string.Format("(ProcessImages) An error occured while processing image for {0}.\n\tAssetId: {1}\n\tTitle: {2}\n\tFolder: {3} \n\t{4}", 
+                        VAsset.PosterSource, VAsset.AssetId, VAsset.Title, string.Join(",", VAsset.Folders.Select(x => x.Path)), ex.Message), ex);
                 }
 
                 //Verify file was saved and it exists
