@@ -1,0 +1,30 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Test</title>
+</head>
+<body>
+    <form enctype="multipart/form-data" method="post" action="http://localhost:61547/api/logo/Channel/Image/Upload" id="ajaxUploadForm" novalidate="novalidate">
+
+        <fieldset>
+            <legend>Upload Form</legend>
+            <ol>
+                <li>
+                    <label>upload </label>
+                    <input type="file" id="fileInput" name="fileInput">
+                </li>
+                <li>
+                    <input type="submit" value="Upload" id="ajaxUploadButton" class="btn">
+                </li>
+            </ol>
+        </fieldset>
+    </form>
+</body>
+</html>
