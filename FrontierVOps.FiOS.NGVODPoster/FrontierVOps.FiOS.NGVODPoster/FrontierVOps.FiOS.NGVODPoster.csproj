@@ -65,7 +65,7 @@
       <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>
       <Name>FrontierVOps.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\FrontierVOps.Common\FrontierVOps.Config\FrontierVOps.Config.csproj">
+    <ProjectReference Include="..\..\FrontierVOps.Config\FrontierVOps.Config\FrontierVOps.Config.csproj">
       <Project>{fb122ed6-5112-4cf0-b287-cb187c451c8b}</Project>
       <Name>FrontierVOps.Config</Name>
     </ProjectReference>
@@ -77,7 +77,7 @@
       <Project>{2791d577-7fe8-40e6-b10c-3493543542a1}</Project>
       <Name>FrontierVOps.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\FrontierVOps.Data\FrontierVOps.Security\FrontierVOps.Security.csproj">
+    <ProjectReference Include="..\..\FrontierVOps.Security\FrontierVOps.Security.csproj">
       <Project>{b4f4072e-3ef1-418c-a271-98cf32f04e90}</Project>
       <Name>FrontierVOps.Security</Name>
     </ProjectReference>
