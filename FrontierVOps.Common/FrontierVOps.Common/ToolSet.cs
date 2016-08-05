@@ -130,19 +130,6 @@ namespace FrontierVOps.Common
         public static bool CompareBitmaps(Bitmap firstImage, Bitmap secondImage)
         {
             return (Toolset.CompareBitmaps(Toolset.ConvertToBytes(firstImage), Toolset.ConvertToBytes(secondImage)));
-            using (var ms = new MemoryStream())
-            {
-                firstImage.Save(ms, ImageFormat.Png);
-                //string firstBitmap = Convert.ToBase64String(ms.ToArray());
-                string firstBitmap = Encoding.ASCII.GetString(ms.ToArray());
-                ms.Position = 0;
-
-                secondImage.Save(ms, ImageFormat.Png);
-                //string secondBitmap = Convert.ToBase64String(ms.ToArray());
-                string secondBitmap = Encoding.ASCII.GetString(ms.ToArray());
-
-                return firstBitmap.Equals(secondBitmap);
-            }
         }
 
         public static bool CompareBitmaps(byte[] firstImage, byte[] secondImage)
@@ -158,6 +145,15 @@ namespace FrontierVOps.Common
                 string secondBitmap = Convert.ToBase64String(ms.ToArray());
 
                 return firstImage.Equals(secondBitmap);
+            }
+        }
+
+        public static bool CompareBitmaps(string firstPath, string secondPath)
+        {
+            using (var bm1 = new Bitmap(firstPath))
+            using (var bm2 = new Bitmap(secondPath))
+            {
+                return CompareBitmaps(bm1, bm2);
             }
         }
 
@@ -287,15 +283,19 @@ namespace FrontierVOps.Common
         /// <param name="sendFrom">Email address that is sending the email</param>
         /// <param name="sendTo">Email addresses to send to (comma delimited)</param>
         /// <param name="attachments">Full path to file attachments</param>
-        public static void SendEmail(string smtpServer, NetworkCredential credentials, int? port, bool useSSL, string sendSubject, string sendBody, string sendFrom, string sendTo, string[] attachments)
+        public static void SendEmail(string smtpServer, NetworkCredential credentials, int? port, bool useSSL, string sendSubject, string sendBody, string sendFrom, string[] sendTo, string[] attachments)
         {
             MailMessage mail = new MailMessage();
             SmtpClient smtp = new SmtpClient(smtpServer);
             mail.From = new MailAddress(sendFrom);
-            mail.To.Add(sendTo);
             mail.Subject = sendSubject;
             mail.IsBodyHtml = true;
             mail.Body = sendBody;
+
+            for (int i = 0; i < sendTo.Length; i++ )
+            {
+                mail.To.Add(sendTo[i]);
+            }
 
             for (int i = 0; i < attachments.Length; i++)
             {
