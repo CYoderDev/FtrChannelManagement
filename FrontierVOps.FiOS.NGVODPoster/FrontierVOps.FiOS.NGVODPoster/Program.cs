@@ -145,6 +145,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     }
                 }
 
+                //Split the max threads by number of vho's being processed to prevent overloading the CPU
+                config.MaxThreads = config.MaxThreads / config.Vhos.Count;
+
                 //Create the controller
                 var ctrl = new NGVodPosterController(token);
 
