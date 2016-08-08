@@ -37,6 +37,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// Get all VOD assets from all VHO's.
         /// </summary>
         internal ConcurrentQueue<VODAsset> AllVAssets { get; private set; }
+
         #endregion Internal Properties
 
         #region Private Properties
@@ -91,11 +92,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// </summary>
         private bool stopProgress = true;
         #endregion Progress Properties
-
-        /// <summary>
-        /// Name of the index file that stores asset ID to poster source file mapping for quicker matching
-        /// </summary>
-        private string indexFile;
         
         #endregion Private Properties
 
@@ -108,7 +104,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
         {
             //Set local property default values
             this.token = token;
-            indexFile = Path.Combine(Directory.GetCurrentDirectory(), "index.txt");
             this.AllVAssets = new ConcurrentQueue<VODAsset>();
             this.progTimer = new Stopwatch();
             this.IsCanceled = false;
@@ -126,7 +121,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     decimal progPerc = (decimal)total / (decimal)progTotal;
 
                     //if cancellation is requested, clear the console line and write that the task was canceled
-                    if (token.IsCancellationRequested)
+                    if (this.token.IsCancellationRequested)
                     {
                         this.stopProgress = true;
                         ClearCurrentConsoleLine();
@@ -167,8 +162,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Thread safe exceptions queue
             var exceptions = new ConcurrentQueue<Exception>();
 
-            if (token.IsCancellationRequested)
-                token.ThrowIfCancellationRequested();
+            if (this.token.IsCancellationRequested)
+                this.token.ThrowIfCancellationRequested();
 
             //Get the VHO values from the configuration
             NGVodVHO ngVho = new NGVodVHO();
@@ -195,7 +190,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 timer.Start();
 
                 //Start run task to ensure it ran to completion before attempting cleanup
-                var mainTsk = Task.Factory.StartNew(() => Run(ngVho.ActiveAssets, false, config, ngVho.PosterDir, ngVho.Name, token), token);
+                var mainTsk = Task.Factory.StartNew(() => Run(ngVho.ActiveAssets, false, config, ngVho.PosterDir, ngVho.Name, this.token));
 
                 try
                 {
@@ -217,7 +212,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 {
                     if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue)
                     {
-                        await Task.Factory.StartNew(() => cleanupDestination(ngVho.ActiveAssets.Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads), token);
+                        await Task.Factory.StartNew(() => cleanupDestination(ngVho.ActiveAssets.Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads));
                     }
                 }
                 catch (AggregateException aex)
@@ -267,7 +262,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <returns></returns>
         public async Task CleanupSource(IEnumerable<VODAsset> AllVODAssets, NGVodPosterConfig config)
         {
-            await Task.Factory.StartNew(() => cleanupSource(AllVODAssets.Where(x => !string.IsNullOrEmpty(x.PosterSource)).Select(x => x.PosterSource), config.SourceDir), token);
+            await Task.Factory.StartNew(() => cleanupSource(AllVODAssets.Where(x => !string.IsNullOrEmpty(x.PosterSource)).Select(x => x.PosterSource), config.SourceDir));
         }
 
         /// <summary>
@@ -567,7 +562,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             {
                 this.stopProgress = true;
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Trace.WriteLine("\n\nOperation Canceled, closing open threads and finishing...\n\n");
+                Console.WriteLine("\n\nOperation Canceled, closing open threads and finishing...\n\n");
                 this.IsCanceled = true;
             }
 
@@ -578,7 +573,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Trace.WriteLine("INFO: Writing Indexes");
-                createIndex(dictSrcPath);
+                createIndex(dictSrcPath, indexFile);
             }
             catch (Exception ex)
             {
@@ -844,7 +839,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// Writes the asset id to source file map to the index file
         /// </summary>
         /// <param name="srcDict"></param>
-        private void createIndex(IDictionary<int, string> srcDict)
+        private void createIndex(IDictionary<int, string> srcDict, string indexFile)
         {
             if (!File.Exists(indexFile))
                 return;
@@ -893,7 +888,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 this.MaxImages = null;
                 this.progress = null;
                 this.progTimer = null;
-                this.indexFile = null;
             }
         }
 

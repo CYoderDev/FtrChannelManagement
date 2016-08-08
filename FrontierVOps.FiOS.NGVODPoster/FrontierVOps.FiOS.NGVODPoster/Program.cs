@@ -177,7 +177,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     try
                     {
                         //Wait for all tasks to complete
-                        Task.WaitAll(tskList.ToArray(), token);
+                        Task.WaitAll(tskList.ToArray());
                     }
                     catch (AggregateException aex)
                     {
