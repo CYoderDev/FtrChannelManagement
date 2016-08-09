@@ -632,6 +632,26 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     FileInfo destFInfo = new FileInfo(VAsset.PosterDest);
                     FileInfo srcFInfo = new FileInfo(VAsset.PosterSource);
 
+                    //Resize source image file if it is above 50MB
+                    try
+                    {
+                        if (((srcFInfo.Length / 1024F) / 1024F) > 50)
+                        {
+                            string tmpName = Path.Combine(Path.GetFullPath(srcFInfo.FullName), Path.GetFileNameWithoutExtension(srcFInfo.FullName) + "_tmp.jpg");
+                            using (var srcBM = Toolset.ResizeBitmap(srcFInfo.FullName, 200, null, null, null, false))
+                            {
+                                srcBM.Save(tmpName, ImageFormat.Jpeg);
+                            }
+
+                            File.Copy(tmpName, srcFInfo.FullName, true);
+                            File.Delete(tmpName);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Enqueue(new Exception(string.Format("Failed to resize source image above 50mb - {0}", ex.Message)));
+                    }
+
                     //Skip if file is newer, and increment progress skipped
                     if (destFInfo.LastWriteTime.CompareTo(srcFInfo.LastWriteTime) >= 0 
                         && destFInfo.CreationTime.CompareTo(srcFInfo.CreationTime) >= 0)

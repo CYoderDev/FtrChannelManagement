@@ -149,73 +149,75 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 config.MaxThreads = config.MaxThreads / config.Vhos.Count;
 
                 //Create the controller
-                var ctrl = new NGVodPosterController(token);
-
-                //Inline cancel key press handler
-                Console.CancelKeyPress += (sender, e) =>
+                using (var ctrl = new NGVodPosterController(token))
                 {
-                    if (e.SpecialKey == ConsoleSpecialKey.ControlC)
+                    //Inline cancel key press handler
+                    Console.CancelKeyPress += (sender, e) =>
                     {
-                        e.Cancel = true;
-
-                        if (!tokenSource.IsCancellationRequested)
+                        if (e.SpecialKey == ConsoleSpecialKey.ControlC)
                         {
-                            tokenSource.Cancel();
-                            Console.ResetColor();
-                        }
-                    }
-                };
+                            e.Cancel = true;
 
-                try
-                {
-                    //Create a separate task for each VHO listed in the config file, and run asyncronously
-                    var tskList = new List<Task>();
-                    foreach (var vho in config.Vhos)
-                    {
-                        tskList.Add(ctrl.BeginProcess(vho.Key, maxImages, config, token));
-                    }
+                            if (!tokenSource.IsCancellationRequested)
+                            {
+                                tokenSource.Cancel();
+                                Console.ResetColor();
+                            }
+                        }
+                    };
 
                     try
                     {
-                        //Wait for all tasks to complete
-                        Task.WaitAll(tskList.ToArray());
-                    }
-                    catch (AggregateException aex)
-                    {
-                        Trace.WriteLine("\n\n****ERRORS****\n");
-                        foreach (var ex in aex.Flatten().InnerExceptions)
+                        //Create a separate task for each VHO listed in the config file, and run asyncronously
+                        var tskList = new List<Task>();
+                        foreach (var vho in config.Vhos)
                         {
-                            if (ex is TaskCanceledException || ex is OperationCanceledException || ex is ArgumentNullException)
-                                continue;
-                            else
-                                Trace.TraceError(ex.Message + "\n");
+                            tskList.Add(ctrl.BeginProcess(vho.Key, maxImages, config, token));
                         }
-                        //Creating missing poster logs
-                        WriteToMissPosterLog(aex.Flatten(), config.EmailTo, ConfigurationManager.AppSettings["ErrorLogDir"]);
-                    }
-                    catch (OperationCanceledException)
-                    {
+
+                        try
+                        {
+                            //Wait for all tasks to complete
+                            Task.WaitAll(tskList.ToArray());
+                        }
+                        catch (AggregateException aex)
+                        {
+                            Trace.WriteLine("\n\n****ERRORS****\n");
+                            foreach (var ex in aex.Flatten().InnerExceptions)
+                            {
+                                if (ex is TaskCanceledException || ex is OperationCanceledException || ex is ArgumentNullException)
+                                    continue;
+                                else
+                                    Trace.TraceError(ex.Message + "\n");
+                            }
+                            //Creating missing poster logs
+                            WriteToMissPosterLog(aex.Flatten(), config.EmailTo, ConfigurationManager.AppSettings["ErrorLogDir"]);
+                        }
+                        catch (OperationCanceledException)
+                        {
+
+                        }
+
+                        //If all tasks ran to completion, then begin cleaning up the source folder
+                        if (tskList.All(x => x.Status == TaskStatus.RanToCompletion))
+                        {
+                            var cleanupSrcTsk = ctrl.CleanupSource(ctrl.AllVAssets, config);
+                            cleanupSrcTsk.Wait();
+                        }
 
                     }
-
-                    //If all tasks ran to completion, then begin cleaning up the source folder
-                    if (tskList.All(x => x.Status == TaskStatus.RanToCompletion))
+                    catch (Exception ex)
                     {
-                        var cleanupSrcTsk = ctrl.CleanupSource(ctrl.AllVAssets, config);
-                        cleanupSrcTsk.Wait();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Trace.WriteLine("ERROR: Application Error -- {0}", ex.Message);
+                        Console.ResetColor();
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Trace.WriteLine("ERROR: Application Error -- {0}", ex.Message);
-                    Console.ResetColor();
-                }
-                finally
-                {
-                    tokenSource.Dispose();
-                }
-            }
+                    finally
+                    {
+                        tokenSource.Dispose();
+                    }
+                } //end using ctrl
+            }//end using twtl
         }
 
         /// <summary>
