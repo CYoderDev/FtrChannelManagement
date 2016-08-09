@@ -194,6 +194,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 try
                 {
+                    //Write a menu to the console describing the progress chart
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.WriteLine("\nP: Progress | Thds: # of threads open | OK: Successful posters processed | ");
+                    Console.WriteLine("F: Failed | Sk: Skipped | T: # of minutes elapsed | R: Remaining assets\n");
+
                     //Wait to finish
                     await mainTsk;
 
@@ -278,7 +283,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             string sproc = "sp_FUI_GetAllVODFolderAssetInfo";
             List<VODAsset> vodAssets = new List<VODAsset>();
-            List<VODFolder> vodFolders = new List<VODFolder>();
             await DBFactory.SQL_ExecuteReaderAsync(ConnectionString, sproc, System.Data.CommandType.StoredProcedure, null, dr =>
                 {
                     while (dr.Read())
@@ -342,7 +346,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="PAID"></param>
         /// <param name="srcPath"></param>
         /// <returns></returns>
-        private string GetSourceImagePath(string PID, string PAID, string srcPath)
+        private Task<string> GetSourceImagePath(string PID, string PAID, string srcPath)
         {
             string file = string.Empty;
 
@@ -362,7 +366,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     .FirstOrDefault();
             }
 
-            return file;
+            return Task.FromResult<string>(file);
         }
 
         /// <summary>
@@ -389,7 +393,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
             }
             
-            return Task.FromResult<string>(GetSourceImagePath(PID, PAID, srcPath));
+            return GetSourceImagePath(PID, PAID, srcPath);
         }
 
         /// <summary>
@@ -415,8 +419,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="cancelToken">Cancellation token</param>
         private void Run(IEnumerable<VODAsset> VAssets, bool onlyNew, NGVodPosterConfig config, string posterDest, string vhoName, CancellationToken cancelToken)
         {
-            Trace.WriteLine("INFO: Processing VOD Asset Posters...");
-            Console.WriteLine("Processing VOD Asset Posters...");
+            Trace.WriteLine(string.Format("INFO({0}): Processing VOD Asset Posters...", vhoName.ToUpper()));
+            Console.WriteLine("Processing VOD Asset Posters...{0}", vhoName.ToUpper());
 
             var exceptions = new ConcurrentQueue<Exception>();
             string indexFile = Path.Combine(Directory.GetCurrentDirectory(), vhoName + "_index.txt");
@@ -424,8 +428,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Create dictionary for indexing asset id to source image file
             IDictionary<int, string> dictSrcPath = new Dictionary<int, string>();
 
-            Trace.WriteLine("INFO: Reading Indexes...");
-            Console.WriteLine("Reading Indexes...This could take a few minutes");
+            Trace.WriteLine(string.Format("INFO({0}): Reading Indexes...", vhoName.ToUpper()));
+            Console.WriteLine("Reading Indexes for {0}...This could take a few minutes", vhoName.ToUpper());
 
             //Read index file and populate dictionary with asset id to source path image file mapping
             using (var fs = File.Open(indexFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
@@ -439,24 +443,17 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     if (int.TryParse(objs[0], out id))
                     {
                         if ((File.Exists(objs[1]) || File.Exists(Path.Combine(config.SourceDir, objs[1])))
-                            && !dictSrcPath.ContainsKey(id))
+                            && !dictSrcPath.ContainsKey(id) && VAssets.Any(x => x.AssetId.Equals(id)))
                         {
                             dictSrcPath.Add(id, objs[1]);
                         }
                         else if (dictSrcPath.ContainsKey(id))
                         {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                            Trace.WriteLine(string.Format("WARNING: Duplicate asset id in index. Id: {0}", id));
-                            Console.ResetColor();
+                            Trace.WriteLine(string.Format("WARNING({0}): Duplicate asset id in index. Id: {1}", vhoName.ToUpper(), id));
                         }
                     }
                 }
             }
-
-            //Write a menu to the console describing the progress chart
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("\nP: Progress | Thds: # of threads open | OK: Successful posters processed | ");
-            Console.WriteLine("F: Failed | Sk: Skipped | T: # of minutes elapsed | R: Remaining assets\n");
 
             //Add to the total progress
             progTotal += VAssets.Count();       

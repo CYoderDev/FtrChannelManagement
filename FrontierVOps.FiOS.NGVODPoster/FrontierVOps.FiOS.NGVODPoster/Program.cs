@@ -161,6 +161,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         if (!tokenSource.IsCancellationRequested)
                         {
                             tokenSource.Cancel();
+                            Console.ResetColor();
                         }
                     }
                 };
