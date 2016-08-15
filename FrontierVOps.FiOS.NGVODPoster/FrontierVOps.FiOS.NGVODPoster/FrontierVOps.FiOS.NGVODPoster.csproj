@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="NGVodPosterConfig.cs" />
     <Compile Include="NGVodPosterController.cs" />
+    <Compile Include="NgVodPosterProgress.cs" />
     <Compile Include="NGVodVHO.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

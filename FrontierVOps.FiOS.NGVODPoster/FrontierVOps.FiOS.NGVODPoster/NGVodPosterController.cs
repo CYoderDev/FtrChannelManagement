@@ -38,6 +38,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// </summary>
         internal ConcurrentQueue<VODAsset> AllVAssets { get; private set; }
 
+        internal NgVodPosterProgress ngProgress { get; private set; }
         #endregion Internal Properties
 
         #region Private Properties
@@ -46,52 +47,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// </summary>
         private CancellationToken token;
 
-        #region Progress Properties
         /// <summary>
-        /// Report progress to Trace/Console
+        /// Used to calculate the amount of time surpassed during processing
         /// </summary>
-        private Progress<int> progress;
-
-        /// <summary>
-        /// Total number of assets to calculate the progress
-        /// </summary>
-        private int progTotal = 0;
-
-        /// <summary>
-        /// Total number of images successfully processed
-        /// </summary>
-        private int progSuccess = 0;
-
-        /// <summary>
-        /// Total number of images that failed, or could not locate a source file
-        /// </summary>
-        private int progFailed = 0;
-
-        /// <summary>
-        /// Total number of images that were skipped because they already existed, and did not need updated
-        /// </summary>
-        private int progSkipped = 0;
-
-        /// <summary>
-        /// Total number of threads opened during an asyncronous operation
-        /// </summary>
-        private int progThreads = 0;
-
-        /// <summary>
-        /// Total number of destination posters removed due to not having a matching poster in the source directory (prevents incorrect poster if asset id changes)
-        /// </summary>
-        private int progDelete = 0;
-
-        /// <summary>
-        /// For timing the total time taken to run the image processing
-        /// </summary>
-        private Stopwatch progTimer;
-
-        /// <summary>
-        /// Determines whether or not to write any additional progress to trace/console output
-        /// </summary>
-        private bool stopProgress = true;
-        #endregion Progress Properties
+        private System.Timers.Timer timer;
         
         #endregion Private Properties
 
@@ -100,53 +59,21 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// posters on a destination server.
         /// </summary>
         /// <param name="token"></param>
-        internal NGVodPosterController(CancellationToken token)
+        internal NGVodPosterController(CancellationToken token, IProgress<NgVodPosterProgress> progress)
         {
             //Set local property default values
             this.token = token;
             this.AllVAssets = new ConcurrentQueue<VODAsset>();
-            this.progTimer = new Stopwatch();
-            this.IsCanceled = false;
-            this.IsComplete = false;
+            this.ngProgress = new NgVodPosterProgress();
 
-            //Inline action for when the progress changes during image processing
-            progress = new Progress<int>();
-            progress.ProgressChanged += (sender, val) =>
-                {
-                    if (stopProgress)
-                        return;
-                    
-                    //Total all processed images and calculate the percentage
-                    int total = progSuccess + progFailed + progSkipped;
-                    decimal progPerc = (decimal)total / (decimal)progTotal;
-
-                    //if cancellation is requested, clear the console line and write that the task was canceled
-                    if (this.token.IsCancellationRequested)
-                    {
-                        this.stopProgress = true;
-                        ClearCurrentConsoleLine();
-                        Console.Write(string.Format("--------Task Canceled--------", progThreads));
-                    }
-                    //If the progress is 100% and threads are 0, then the task is considered complete
-                    else if (Math.Ceiling((progPerc * 100)) == 100 && progThreads == 0)
-                    {
-                        ClearCurrentConsoleLine();
-                        Console.Write("-----Task Complete----");
-                        Console.WriteLine(Environment.NewLine);
-                        stopProgress = true;
-                    }
-                    //If the progress is divisible by the provided value, then report progress
-                    else if (Math.Ceiling((progPerc * 100)) % val == 0)
-                    {
-                        //Write progress to the same console line
-                        Console.Write(string.Format("\rP: {0:P1} | Thds: {1} | OK: {2} | F: {3} | Sk: {4} | T: {5} | R: {6}   " , 
-                            progPerc, progThreads, progSuccess, progFailed, progSkipped, (int)progTimer.Elapsed.TotalMinutes + (progTimer.Elapsed.Seconds > 30 ? 1 : 0), progTotal - total));
-                        Trace.WriteLine(string.Format("P: {0:P1} | R: {1} | D: {2}", progPerc, progTotal - total, progDelete));
-                    }
-                };
-
-            //Begin the progress timer for reporting progress back
-            this.progTimer.Start();
+            this.timer = new System.Timers.Timer();
+            //set timer values and start it
+            this.timer.Interval = 15000;
+            this.timer.AutoReset = true;
+            this.timer.Elapsed += async (sender, e) => await HandleTimer(this.ngProgress, progress);
+            this.timer.Enabled = true;
+            this.timer.Start();
+            this.ngProgress.Time.Start();
         }
 
         /// <summary>
@@ -157,7 +84,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="config">NGVodPoster configuration</param>
         /// <param name="token">Cancellation Token</param>
         /// <returns></returns>
-        internal async Task BeginProcess(string vho, int? maxImages, NGVodPosterConfig config, CancellationToken token)
+        internal async Task BeginProcess(string vho, int? maxImages, NGVodPosterConfig config, IProgress<NgVodPosterProgress> progress, CancellationToken token)
         {
             //Thread safe exceptions queue
             var exceptions = new ConcurrentQueue<Exception>();
@@ -165,9 +92,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
             if (this.token.IsCancellationRequested)
                 this.token.ThrowIfCancellationRequested();
 
+            Console.WriteLine("\n\n----Beginning {0}----\n", vho);
+            Trace.WriteLine(vho);
+
             //Get the VHO values from the configuration
             NGVodVHO ngVho = new NGVodVHO();
-            
+
             if (!config.Vhos.TryGetValue(vho, out ngVho))
             {
                 throw new Exception("Unable to get VHO from config");
@@ -177,59 +107,44 @@ namespace FrontierVOps.FiOS.NGVODPoster
             string connectionStr = ngVho.IMGDb.CreateConnectionString();
 
             //Get VOD assets for the VHO
-            ngVho.ActiveAssets = await GetVODAssets(connectionStr, maxImages);
-            
-            //Create a timer to report progress back async at a certain interval to avoid multiple syncronous callbacks
-            using (System.Timers.Timer timer = new System.Timers.Timer())
+            ngVho.ActiveAssets = await GetVODAssets(connectionStr, maxImages, vho, config.SourceDir);
+
+            token.ThrowIfCancellationRequested();
+
+            //Start run task to ensure it ran to completion before attempting cleanup
+            var mainTsk = Task.Factory.StartNew(() => Run(ngVho.ActiveAssets, false, config, ngVho.PosterDir, ngVho.Name, progress, this.token));
+
+            try
             {
-                //set timer values and start it
-                timer.Interval = 15000;
-                timer.AutoReset = true;
-                timer.Elapsed += async (sender, e) => await HandleTimer();
-                timer.Enabled = true;
-                timer.Start();
+                //Wait to finish
+                await mainTsk;
 
-                //Start run task to ensure it ran to completion before attempting cleanup
-                var mainTsk = Task.Factory.StartNew(() => Run(ngVho.ActiveAssets, false, config, ngVho.PosterDir, ngVho.Name, this.token));
+                Complete();
+            }
+            catch (AggregateException aex)
+            {
+                foreach (var ex in aex.InnerExceptions)
+                    exceptions.Enqueue(aex.Flatten());
+            }
 
-                try
+            //Clean up poster directory based on the vho's active assets
+            try
+            {
+                if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue)
                 {
-                    //Write a menu to the console describing the progress chart
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine("\nP: Progress | Thds: # of threads open | OK: Successful posters processed | ");
-                    Console.WriteLine("F: Failed | Sk: Skipped | T: # of minutes elapsed | R: Remaining assets\n");
-
-                    //Wait to finish
-                    await mainTsk;
-
-                    //stop progress timer
-                    timer.Stop();
-                    
-                }
-                catch (AggregateException aex)
-                {
-                    foreach (var ex in aex.InnerExceptions)
-                        exceptions.Enqueue(aex.Flatten());
-                }
-
-                //Clean up poster directory based on the vho's active assets
-                try
-                {
-                    if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue)
-                    {
-                        await Task.Factory.StartNew(() => cleanupDestination(ngVho.ActiveAssets.Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads));
-                    }
-                }
-                catch (AggregateException aex)
-                {
-                    foreach (var ex in aex.InnerExceptions)
-                        exceptions.Enqueue(aex.Flatten());
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Enqueue(ex);
+                    await Task.Factory.StartNew(() => cleanupDestination(ngVho.ActiveAssets.Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads));
                 }
             }
+            catch (AggregateException aex)
+            {
+                foreach (var ex in aex.InnerExceptions)
+                    exceptions.Enqueue(aex.Flatten());
+            }
+            catch (Exception ex)
+            {
+                exceptions.Enqueue(ex);
+            }
+            
 
             if (exceptions.Count > 0)
                 throw new AggregateException(exceptions).Flatten();
@@ -240,23 +155,22 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// </summary>
         internal void Complete()
         {
-            this.stopProgress = true;
-            this.progTimer.Stop();
-            if (this.IsComplete)
+            this.ngProgress.Time.Stop();
+            if (this.ngProgress.IsComplete)
                 Trace.WriteLine("\n\nImage Resize and Copy Complete!");
-            else if (this.IsCanceled)
+            else if (this.ngProgress.IsCanceled)
                 Trace.WriteLine("\n\nImage Resize and Copy Canceled!");
 
-            if (this.IsComplete || this.IsCanceled)
+            if (this.ngProgress.IsComplete || this.ngProgress.IsCanceled)
             {
-                Trace.WriteLine(string.Format("Runtime: {0} hours, {1} minutes, {2} seconds", progTimer.Elapsed.Hours, progTimer.Elapsed.Minutes, progTimer.Elapsed.Seconds));
+                Trace.WriteLine(string.Format("Runtime: {0} hours, {1} minutes, {2} seconds", this.ngProgress.Time.Elapsed.Hours, this.ngProgress.Time.Elapsed.Minutes, this.ngProgress.Time.Elapsed.Seconds));
                 Trace.WriteLine("\nResult:");
-                Trace.WriteLine(string.Format("Successful: {0} ({1:P2})", progSuccess, ((decimal)progSuccess / (decimal)progTotal)));
-                Trace.WriteLine(string.Format("Failed: {0} ({1:P2})", progFailed, ((decimal)progFailed / (decimal)progTotal)));
-                Trace.WriteLine(string.Format("Skipped: {0} ({1:P2})", progSkipped, ((decimal)progSkipped / (decimal)progTotal)));
-                Trace.WriteLine(string.Format("Total: {0}", progTotal));
+                Trace.WriteLine(string.Format("Successful: {0} ({1:P2})", this.ngProgress.Success, ((decimal)this.ngProgress.Success / (decimal)this.ngProgress.Total)));
+                Trace.WriteLine(string.Format("Failed: {0} ({1:P2})", this.ngProgress.Failed, ((decimal)this.ngProgress.Failed / (decimal)this.ngProgress.Total)));
+                Trace.WriteLine(string.Format("Skipped: {0} ({1:P2})", this.ngProgress.Skipped, ((decimal)this.ngProgress.Skipped / (decimal)this.ngProgress.Total)));
+                Trace.WriteLine(string.Format("Total: {0}", this.ngProgress.Total));
             }
-            this.IsComplete = !this.IsCanceled;
+            this.IsComplete = !this.ngProgress.IsCanceled;
         }
 
         /// <summary>
@@ -266,8 +180,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="config"></param>
         /// <returns></returns>
         public async Task CleanupSource(IEnumerable<VODAsset> AllVODAssets, NGVodPosterConfig config)
-        {
-            await Task.Factory.StartNew(() => cleanupSource(AllVODAssets.Where(x => !string.IsNullOrEmpty(x.PosterSource)).Select(x => x.PosterSource), config.SourceDir));
+        {        
+            this.token.ThrowIfCancellationRequested();
+
+            await Task.Factory.StartNew(() => cleanupSource(AllVODAssets.Where(x => !(string.IsNullOrEmpty(x.PosterSource))).Select(x => x.PosterSource), config.SourceDir));
         }
 
         /// <summary>
@@ -276,10 +192,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="ConnectionString">SQL connection string</param>
         /// <param name="maxAssets">Max number of assests to get</param>
         /// <returns></returns>
-        private async Task<IEnumerable<VODAsset>> GetVODAssets(string ConnectionString, int? maxAssets)
+        internal async Task<IEnumerable<VODAsset>> GetVODAssets(string ConnectionString, int? maxAssets, string vhoName, string srcPath)
         {
-            Trace.WriteLine("INFO: Getting VOD Asset Info from Database");
-            Console.WriteLine("Getting VOD Asset Info");
+            Trace.WriteLine(string.Format("INFO({0}): Getting VOD Asset Info from Database", vhoName));
+            Console.WriteLine("({0}) Getting VOD Asset Info", vhoName);
 
             string sproc = "sp_FUI_GetAllVODFolderAssetInfo";
             List<VODAsset> vodAssets = new List<VODAsset>();
@@ -306,15 +222,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             vAsset.Folders.Add(vFolder);
                             
                             vodAssets.Add(vAsset);
-
-                            //Add to all asset queue (thread-safe)
-                            this.AllVAssets.Enqueue(vAsset);
                         }
                         catch (Exception ex)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Trace.WriteLine("ERROR: (GetVODAssets - SQL Data Read) --> {0}", ex.Message);
-                            Console.ResetColor();
+                            Trace.TraceError("ERROR({0}): (GetVODAssets - SQL Data Read) --> {1}", vhoName, ex.Message);
                         }
                     }
                 });
@@ -331,8 +242,14 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     Folders = x.Where(y => y.AssetId.Equals(x.Key.AssetId)).SelectMany(y => y.Folders).Distinct().ToList(),
                 }).Distinct().ToList();
 
+            var srcFiles = new List<string>(Directory.EnumerateFiles(srcPath).Select(x => Path.GetFileName(x)));
+
+            vodAssets.ForEach(x => 
+                {
+                    this.AllVAssets.Enqueue(x);
+                });
 #if DEBUG
-            vodAssets.ForEach(x => Trace.WriteLine(string.Format("\nAssetId: {0}\nPID: {1}\nPaid: {2}\nTitle: {3}\nFolders: {4}", x.AssetId, x.PID, x.PAID, x.Title, string.Join(",", x.Folders.Select(y => y.Path)))));
+            //vodAssets.ForEach(x => Trace.WriteLine(string.Format("\nAssetId: {0}\nPID: {1}\nPaid: {2}\nTitle: {3}\nFolders: {4}", x.AssetId, x.PID, x.PAID, x.Title, string.Join(",", x.Folders.Select(y => y.Path)))));
 #endif
 
             Console.WriteLine("\nINFO: Get VOD Assets Complete --> Count: {0}", vodAssets.Count);
@@ -417,7 +334,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="posterDest">The UNC path to the poster destination directory</param>
         /// <param name="vhoName">Name of the VHO that is being processed</param>
         /// <param name="cancelToken">Cancellation token</param>
-        private void Run(IEnumerable<VODAsset> VAssets, bool onlyNew, NGVodPosterConfig config, string posterDest, string vhoName, CancellationToken cancelToken)
+        private void Run(IEnumerable<VODAsset> VAssets, bool onlyNew, NGVodPosterConfig config, string posterDest, string vhoName, IProgress<NgVodPosterProgress> iProgress, CancellationToken cancelToken)
         {
             Trace.WriteLine(string.Format("INFO({0}): Processing VOD Asset Posters...", vhoName.ToUpper()));
             Console.WriteLine("Processing VOD Asset Posters...{0}", vhoName.ToUpper());
@@ -453,11 +370,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         }
                     }
                 }
-            }
-
-            //Add to the total progress
-            progTotal += VAssets.Count();       
-            this.stopProgress = false;
+            } 
 
             Console.ForegroundColor = ConsoleColor.Cyan;
 
@@ -465,16 +378,21 @@ namespace FrontierVOps.FiOS.NGVODPoster
             ParallelOptions po = new ParallelOptions();
             po.CancellationToken = cancelToken;
             po.MaxDegreeOfParallelism = config.MaxThreads;
+
+            Interlocked.Add(ref this.ngProgress.Total, VAssets.Count());
+            //this.ngProgress.Total += VAssets.Count();
+            this.ngProgress.StopProgress = false;
+
             try
-            {
-                Parallel.ForEach<VODAsset>(VAssets.OrderBy(x => x.AssetId).Reverse(), po, (va) =>
+            {          
+                Parallel.ForEach<VODAsset>(VAssets.OrderByDescending(x => x.PosterSource == null).ThenByDescending(x => x.AssetId), po, (va) =>
                     {
                         try
                         {
                             po.CancellationToken.ThrowIfCancellationRequested();
 
                             //Increment progress threads
-                            Interlocked.Increment(ref progThreads);
+                            //Interlocked.Increment(ref progThreads);
 
                             //If only new assets, then skip the asset if the destination file already exists
                             if (onlyNew)
@@ -483,7 +401,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                                 if (File.Exists(va.PosterDest))
                                 {
-                                    Interlocked.Increment(ref progSkipped);
+                                    //Interlocked.Increment(ref this.ProcessProgress.Skipped);
+                                    Interlocked.Increment(ref this.ngProgress.Skipped);
                                     return;
                                 }
                                 else
@@ -505,7 +424,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 catch (Exception ex)
                                 {
                                     //Increment progress failed value if error was thrown
-                                    Interlocked.Increment(ref progFailed);
+                                    Interlocked.Increment(ref this.ngProgress.Failed);
                                     throw ex;
                                 }
 
@@ -521,7 +440,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 if (File.Exists(va.PosterDest))
                                 {
                                     File.Delete(va.PosterDest);
-                                    Interlocked.Increment(ref progDelete);
+                                    Interlocked.Increment(ref this.ngProgress.Deleted);
                                 }
 
                                 throw new ArgumentNullException(string.Format("Poster source missing. \n\tTitle:  {0}\n\tAssetID: {1}\n\tPID: {2}\n\tPAID: {3}\n\tFolderPaths: {4}\n\tFolderIds: {5}",
@@ -530,45 +449,66 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             //Add poster source to dictionary if it is not null and doesn't already exist
                             else if (!dictSrcPath.ContainsKey(va.AssetId))
                                 dictSrcPath.Add(va.AssetId, va.PosterSource);
-                            
-                            //Resize and save the image to the destination
-                            ProcessImage(va, config.ImgHeight, config.ImgWidth, vhoName, po.CancellationToken);
+
+                            try
+                            {
+                                //Resize and save the image to the destination
+                                var res = ProcessImage(va, config.ImgHeight, config.ImgWidth, vhoName, po.CancellationToken);
+                                    
+                                switch (res)
+                                {
+                                    case 0:
+                                        Interlocked.Increment(ref this.ngProgress.Success);
+                                        break;
+                                    case 1:
+                                        Interlocked.Increment(ref this.ngProgress.Skipped);
+                                        break;
+                                    default:
+                                        Interlocked.Increment(ref this.ngProgress.Failed);
+                                        break;
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                Interlocked.Increment(ref this.ngProgress.Skipped);
+                            }
+                            catch (Exception ex)
+                            {
+                                Interlocked.Increment(ref this.ngProgress.Failed);
+                                throw ex;
+                            }
 
                             po.CancellationToken.ThrowIfCancellationRequested();
                         }
                         catch (OperationCanceledException ex)
-                        {
+                        {                            
                             throw ex;
                         }
                         catch (ArgumentNullException ex)
                         {
                             exceptions.Enqueue(ex);
-                            Interlocked.Increment(ref progFailed);
+                            Interlocked.Increment(ref this.ngProgress.Failed);
                         }
                         catch (Exception ex)
                         {
                             exceptions.Enqueue(ex);
                         }
-                        finally
-                        {
-                            Interlocked.Decrement(ref progThreads);
-                        }
                     });
             }
             catch (OperationCanceledException)
             {
-                this.stopProgress = true;
+                this.ngProgress.StopProgress = true;
+                this.ngProgress.IsCanceled = true;
+                iProgress.Report(this.ngProgress);
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("\n\nOperation Canceled, closing open threads and finishing...\n\n");
-                this.IsCanceled = true;
             }
 
-            this.stopProgress = true;
-            this.IsComplete = !this.IsCanceled;
+            this.ngProgress.StopProgress = true;
+            this.ngProgress.IsComplete = !this.ngProgress.IsCanceled;
 
             try
             {
-                Console.ForegroundColor = ConsoleColor.White;
                 Trace.WriteLine("INFO: Writing Indexes");
                 createIndex(dictSrcPath, indexFile);
             }
@@ -577,8 +517,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 exceptions.Enqueue(new Exception("Failed to write to index file. " + ex.Message, ex));
             }
                         
-            Complete();
-
             if (exceptions.Count > 0)
                 throw new AggregateException(exceptions).Flatten();
         }
@@ -590,7 +528,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="Height">Final height of the image</param>
         /// <param name="Width">Final width of the image</param>
         /// <param name="token">Cancellation token</param>
-        private void ProcessImage(VODAsset VAsset, int Height, int Width, string vhoName, CancellationToken token)
+        private int ProcessImage(VODAsset VAsset, int Height, int Width, string vhoName, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -626,38 +564,17 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 if (!File.Exists(VAsset.PosterSource))
                     throw new FileNotFoundException(string.Format("(ProcessImages) Source poster file not found. AssetID: {0}", VAsset.AssetId), VAsset.PosterSource);
 
+                FileInfo destFInfo = new FileInfo(VAsset.PosterDest);
+                FileInfo srcFInfo = new FileInfo(VAsset.PosterSource);
+
                 //if destination file already exists, check if it needs updated using timestamp
-                if (File.Exists(VAsset.PosterDest))
+                if (destFInfo.Exists)
                 {
-                    FileInfo destFInfo = new FileInfo(VAsset.PosterDest);
-                    FileInfo srcFInfo = new FileInfo(VAsset.PosterSource);
-
-                    //Resize source image file if it is above 50MB
-                    try
-                    {
-                        if (((srcFInfo.Length / 1024F) / 1024F) > 50)
-                        {
-                            string tmpName = Path.Combine(Path.GetFullPath(srcFInfo.FullName), Path.GetFileNameWithoutExtension(srcFInfo.FullName) + "_tmp.jpg");
-                            using (var srcBM = Toolset.ResizeBitmap(srcFInfo.FullName, 200, null, null, null, false))
-                            {
-                                srcBM.Save(tmpName, ImageFormat.Jpeg);
-                            }
-
-                            File.Copy(tmpName, srcFInfo.FullName, true);
-                            File.Delete(tmpName);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        exceptions.Enqueue(new Exception(string.Format("Failed to resize source image above 50mb - {0}", ex.Message)));
-                    }
-
                     //Skip if file is newer, and increment progress skipped
                     if (destFInfo.LastWriteTime.CompareTo(srcFInfo.LastWriteTime) >= 0 
                         && destFInfo.CreationTime.CompareTo(srcFInfo.CreationTime) >= 0)
                     {
-                        Interlocked.Increment(ref progSkipped);
-                        return;
+                        return 1;
                     }
 
                     tmpFile = Path.Combine(tmpPath, Path.GetFileName(VAsset.PosterDest));
@@ -671,6 +588,26 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     File.SetAttributes(tmpFile, FileAttributes.Temporary);
                 }
 
+                //Resize source image file if it is above 50MB
+                try
+                {
+                    if (((srcFInfo.Length / 1024F) / 1024F) > 50)
+                    {
+                        string tmpName = Path.Combine(Path.GetFullPath(srcFInfo.FullName), Path.GetFileNameWithoutExtension(srcFInfo.FullName) + "_tmp.jpg");
+                        using (var srcBM = Toolset.ResizeBitmap(srcFInfo.FullName, 200, null, null, null, false))
+                        {
+                            srcBM.Save(tmpName, ImageFormat.Jpeg);
+                        }
+
+                        File.Copy(tmpName, srcFInfo.FullName, true);
+                        File.Delete(tmpName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Enqueue(new Exception(string.Format("Failed to resize source image above 50mb - {0}", ex.Message)));
+                }
+
                 try
                 {
                     //Resize poster, save, and increment progress success if no errors
@@ -679,7 +616,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     {
                         token.ThrowIfCancellationRequested();
                         destBM.Save(VAsset.PosterDest, ImageFormat.Jpeg);
-                        Interlocked.Increment(ref progSuccess);
                     }
                 }
                 catch (OperationCanceledException ex)
@@ -695,15 +631,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 //Verify file was saved and it exists
                 if (!File.Exists(VAsset.PosterDest))
                     throw new Exception("(ProcessImages) File failed to savee in destination folder.");
+
+                return 0;
             }
             catch (Exception ex)
             {
-                //Increment skipped if cancellation was requested, failed if otherwise
-                if (token.IsCancellationRequested)
-                    Interlocked.Increment(ref progSkipped);
-                else
-                    Interlocked.Increment(ref progFailed);
-
                 exceptions.Enqueue(ex);
 
                 //Restore backup file from temp directory
@@ -719,6 +651,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             if (exceptions.Count > 0)
                 throw new AggregateException(exceptions);
+            else
+                return 0;
         }
         #endregion Process Methods
 
@@ -733,31 +667,48 @@ namespace FrontierVOps.FiOS.NGVODPoster
         {
             //Get all unused assets.
             var unusedSrcFiles = Directory.EnumerateFiles(srcPath).Except(usedSourceFiles);
+
+            Trace.WriteLine(string.Format("INFO: Archiving unused posters. Count => {0}", unusedSrcFiles.Count()));
+#if DEBUG
+            Trace.WriteLine("Source Path: " + srcPath);
+            Trace.WriteLine("Unused Source Files: ");
+            Trace.WriteLine(string.Join(System.Environment.NewLine, unusedSrcFiles.Select(x => Path.GetFileName(x))));
+#endif
+
             var exceptions = new ConcurrentQueue<Exception>();
             var archiveDir = Path.Combine(srcPath, "Archive");
 
             //create an archive directory to store the newly cleaned up files
             if (!Directory.Exists(archiveDir))
-                Directory.CreateDirectory(archiveDir);
+                Directory.CreateDirectory(archiveDir);          
             
-            Trace.WriteLine(string.Format("INFO: Archiving unused posters. Count => {0}", unusedSrcFiles));
             Parallel.ForEach(unusedSrcFiles, (delFile) =>
                 {
+                    this.token.ThrowIfCancellationRequested();
+
                     //if the file exists, copy to the archive and delete it
                     if (File.Exists(delFile))
                     {
                         var archFileName = Path.Combine(archiveDir, Path.GetFileName(delFile));
                         try
                         {
+#if DEBUG
+                            Trace.WriteLine(string.Format("Copying {0} to {1} and deleting {0}", Path.GetFileName(delFile), Path.GetFileName(archFileName)));
+#else
                             File.Copy(delFile, archFileName, true);
                             File.Delete(delFile);
+#endif
                         }
                         catch (Exception ex)
                         {
                             exceptions.Enqueue(ex);
                             if (File.Exists(archFileName) && !File.Exists(delFile))
                             {
+#if DEBUG
+                                Trace.WriteLine(string.Format("Copying {0} back to {1} and overwriting", Path.GetFileName(archFileName), Path.GetFileName(delFile)));
+#else
                                 File.Copy(archFileName, delFile, true);
+#endif
                             }
                         }
                     }
@@ -767,6 +718,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
             Trace.WriteLine("INFO: Cleaning old posters from archive directory...");
             Parallel.ForEach(Directory.EnumerateFiles(archiveDir), (archiveFile) =>
                 {
+                    this.token.ThrowIfCancellationRequested();
+
                     if (File.Exists(archiveFile))
                     {
                         FileInfo fInfo = new FileInfo(archiveFile);
@@ -775,7 +728,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         {
                             try
                             {
+#if DEBUG
+                                Trace.WriteLine(string.Format("Deleting {0}", fInfo.FullName));
+#else
                                 fInfo.Delete();
+#endif
                             }
                             catch (Exception ex)
                             {
@@ -858,7 +815,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="srcDict"></param>
         private void createIndex(IDictionary<int, string> srcDict, string indexFile)
         {
-            if (!File.Exists(indexFile))
+            if (!File.Exists(indexFile) || this.MaxImages.HasValue)
                 return;
             
             List<string> contents = new List<string>();
@@ -870,23 +827,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
         }
 
         /// <summary>
-        /// Clears a single console line
-        /// </summary>
-        private void ClearCurrentConsoleLine()
-        {
-            int currentLineCursor = Console.CursorTop;
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write(new string(' ', Console.WindowWidth)); 
-            Console.SetCursorPosition(0, currentLineCursor);
-        }
-
-        /// <summary>
         /// Timer handle to report progress
         /// </summary>
         /// <returns></returns>
-        private Task HandleTimer()
+        private Task HandleTimer(NgVodPosterProgress progress, IProgress<NgVodPosterProgress> iProgress)
         {
-            ((IProgress<int>)progress).Report(1);
+            //((IProgress<int>)progress).Report(1);
+            iProgress.Report(progress);
             return Task.FromResult(0);
         }
 
@@ -903,9 +850,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
             if (disposing)
             {
                 this.MaxImages = null;
-                this.progress = null;
-                this.progTimer = null;
+                this.AllVAssets = null;
+                this.timer.Stop();
+                this.timer.Dispose();
+                this.ngProgress.Dispose();
             }
+            Console.ResetColor();
         }
 
         ~NGVodPosterController()

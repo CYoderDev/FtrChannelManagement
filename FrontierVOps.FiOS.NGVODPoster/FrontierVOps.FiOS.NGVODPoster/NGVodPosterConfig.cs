@@ -181,10 +181,17 @@ namespace FrontierVOps.FiOS.NGVODPoster
         #region Public Methods
         public static NGVodPosterConfig GetConfig()
         {
+
             var cfgHelper = new CfgHelper();
 
             //Load xml config
             var config = cfgHelper.GetConfig("NGVODPoster.xml");
+
+            if (config == null)
+            {
+                Trace.TraceError("Failed to gete configuration");
+                throw new Exception("Failed to load configuration xml file.");
+            }
             
             //Get namespace
             var ns = config.Root.GetDefaultNamespace();
@@ -208,6 +215,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
             catch (AggregateException aex)
             {
+                foreach (var ex in aex.InnerExceptions)
+                {
+                    Trace.TraceError("Error setting config properties. {0}", ex.Message);
+                }
                 throw aex.Flatten();
             }
 
@@ -256,6 +267,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             Trace.WriteLine("setVHO called");
             var vhoElements = config.Root.Descendants(ns + "VHO");
             var exceptions = new ConcurrentQueue<Exception>();
+            var vhoDict = new Dictionary<string, NGVodVHO>();
 
             Parallel.ForEach(vhoElements, (el) =>
             {
@@ -271,14 +283,21 @@ namespace FrontierVOps.FiOS.NGVODPoster
 #if DEBUG
                     Trace.WriteLine(string.Format("Name: {0} | WS: {1} | DBName: {2} | DBSource: {3}", vho.Name, vho.WebServerName, vho.IMGDb.DatabaseName, vho.IMGDb.DataSource));
 #endif
-
-                    this._vhos.Add(vho.Name, vho);
+                    vhoDict.Add(vho.Name, vho);
+                }
+                catch (NullReferenceException nre)
+                {
+                    Trace.TraceError("Error in setVHO. {0}", nre.Message);
+                    exceptions.Enqueue(nre);
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError("Error in setVHO. {0}", ex.Message);
                     exceptions.Enqueue(ex);
                 }
             });
+
+            this._vhos = vhoDict;
 
             if (exceptions.Count > 0)
             {
@@ -306,6 +325,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
             catch (Exception ex)
             {
+                Trace.TraceError("Error in setImage while setting height. {0}", ex.Message);
                 exceptions.Enqueue(new Exception("Failed to set image height in config. " + ex.Message));
             }
 
@@ -315,6 +335,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
             catch (Exception ex)
             {
+                Trace.TraceError("Error in setImage while setting width. {0}", ex.Message);
                 exceptions.Enqueue(new Exception("Failed to set image width in config. " + ex.Message));
             }
 
@@ -345,6 +366,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError("Error in setLogDir. Could not find ErrorLogDir element. {0}", ex.Message);
                     this.LogErrorDir = Directory.GetCurrentDirectory();
                     exceptions.Enqueue(new Exception("Failed to set error log directory in config. " + ex.Message));
                 }
@@ -355,6 +377,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError("Error in sestLogDir. Could not find MissingPosterLogDir element. {0}", ex.Message);
                     this.LogMissPosterDir = Directory.GetCurrentDirectory();
                     exceptions.Enqueue(new Exception("Failed to set missing poster log directory in config. " + ex.Message));
                 }
@@ -391,6 +414,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError("Error in setSMTP. Could not find Server element. {0}", ex.Message);
                     exceptions.Enqueue(new Exception("Failed to set SMTP server value in config. " + ex.Message));
                 }
 
@@ -400,6 +424,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError("Error in setSMTP. Could not find Port element. {0}", ex.Message);
                     exceptions.Enqueue(new Exception("Failed to set SMTP port value in config. " + ex.Message));
                 }
 
@@ -409,6 +434,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError("Error in setSMTP. Could not find Email element. {0}", ex.Message);
                     exceptions.Enqueue(new Exception("Failed to set send from email address. " + ex.Message));
                 }
 
@@ -418,6 +444,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError("Error in setSMTP. Could not find SendTo element. {0}", ex.Message);
                     exceptions.Enqueue(new Exception("Failed to set send to email addresses. " + ex.Message));
                 }
 
@@ -445,6 +472,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
             catch (Exception ex)
             {
+                Trace.TraceError("Error in setDirs. Could not find PosterDestDir element. {0}", ex.Message);
                 exceptions.Enqueue(new Exception("Failed to set destination directory in config. " + ex.Message));
             }
 
@@ -454,6 +482,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
             catch (Exception ex)
             {
+                Trace.TraceError("Error in setDirs. Could not find PosterSourceDir element. {0}", ex.Message);
                 exceptions.Enqueue(new Exception("Failed to set source directory in config. " + ex.Message));
             }
 
