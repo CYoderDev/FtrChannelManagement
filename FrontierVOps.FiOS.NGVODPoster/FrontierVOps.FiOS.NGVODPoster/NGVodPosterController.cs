@@ -24,24 +24,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
         internal int? MaxImages { get; set; }
 
         /// <summary>
-        /// Get whether processing is complete.
+        /// Progress of the process operation
         /// </summary>
-        internal bool IsComplete { get; private set; }
-
-        /// <summary>
-        /// Get whether processing has been canceled.
-        /// </summary>
-        internal bool IsCanceled { get; private set; }
-
-        /// <summary>
-        /// Get all VOD assets from all VHO's.
-        /// </summary>
-        internal ConcurrentQueue<VODAsset> AllVAssets { get; private set; }
-
         internal NgVodPosterProgress ngProgress { get; private set; }
         #endregion Internal Properties
 
-        #region Private Properties
+        #region Private Fields
         /// <summary>
         /// Cancel token
         /// </summary>
@@ -52,7 +40,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// </summary>
         private System.Timers.Timer timer;
         
-        #endregion Private Properties
+        #endregion Private Fields
 
         /// <summary>
         /// Methods used to process VOD asset posters on a source server, and save them as resized
@@ -63,7 +51,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
         {
             //Set local property default values
             this.token = token;
-            this.AllVAssets = new ConcurrentQueue<VODAsset>();
             this.ngProgress = new NgVodPosterProgress();
 
             this.timer = new System.Timers.Timer();
@@ -83,20 +70,18 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="maxImages">Maximum numbere of images to process</param>
         /// <param name="config">NGVodPoster configuration</param>
         /// <param name="token">Cancellation Token</param>
-        /// <returns></returns>
-        internal async Task BeginProcess(string vho, int? maxImages, NGVodPosterConfig config, IProgress<NgVodPosterProgress> progress, CancellationToken token)
+        /// <returns>Task result returns with all assets that do not have posters assigned</returns>
+        internal async Task<IEnumerable<VODAsset>> BeginProcess(string vho, int? maxImages, NGVodPosterConfig config, CancellationToken token)
         {
-            //Thread safe exceptions queue
-            var exceptions = new ConcurrentQueue<Exception>();
 
             if (this.token.IsCancellationRequested)
                 this.token.ThrowIfCancellationRequested();
 
             Console.WriteLine("\n\n----Beginning {0}----\n", vho);
-            Trace.WriteLine(vho);
+            Trace.TraceInformation(vho);
 
             //Get the VHO values from the configuration
-            NGVodVHO ngVho = new NGVodVHO();
+            NGVodVHO ngVho = null;
 
             if (!config.Vhos.TryGetValue(vho, out ngVho))
             {
@@ -107,47 +92,57 @@ namespace FrontierVOps.FiOS.NGVODPoster
             string connectionStr = ngVho.IMGDb.CreateConnectionString();
 
             //Get VOD assets for the VHO
-            ngVho.ActiveAssets = await GetVODAssets(connectionStr, maxImages, vho, config.SourceDir);
+            var activeAssets = await GetVODAssets(connectionStr, maxImages, vho, config.SourceDir, ngVho.PosterDir);
 
             token.ThrowIfCancellationRequested();
 
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            string indexFile = Path.Combine(Directory.GetCurrentDirectory(), vho + "_index.txt");
+
             //Start run task to ensure it ran to completion before attempting cleanup
-            var mainTsk = Task.Factory.StartNew(() => Run(ngVho.ActiveAssets, false, config, ngVho.PosterDir, ngVho.Name, progress, this.token));
+            var mainTsk = Task.Factory.StartNew(() => ProcessAsset(ref activeAssets, config.SourceDir, config.ImgHeight, config.ImgWidth, config.MaxThreads, ngVho.PosterDir, ngVho.Name, indexFile, this.token));
 
             try
             {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                this.ngProgress.StopProgress = false;
                 //Wait to finish
                 await mainTsk;
-
-                Complete();
             }
             catch (AggregateException aex)
             {
                 foreach (var ex in aex.InnerExceptions)
-                    exceptions.Enqueue(aex.Flatten());
+                    Trace.TraceError("Error during processing method. {0}", ex.Message);
             }
 
-            //Clean up poster directory based on the vho's active assets
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            //Clean up poster directory based on the vho's active assets if the process had no errors, no max values were specified,
+            //and cancellation was not requested,
             try
             {
-                if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue)
+                if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue && !token.IsCancellationRequested)
                 {
-                    await Task.Factory.StartNew(() => cleanupDestination(ngVho.ActiveAssets.Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads));
+                    await Task.Factory.StartNew(() => cleanupDestination(activeAssets.Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads));
                 }
             }
             catch (AggregateException aex)
             {
                 foreach (var ex in aex.InnerExceptions)
-                    exceptions.Enqueue(aex.Flatten());
+                    Trace.TraceError("Error while cleaning up destination directory. {0}", ex.Message);
             }
             catch (Exception ex)
             {
-                exceptions.Enqueue(ex);
+                Trace.TraceError("Error while cleaning up destination directory. {0}", ex.Message);
             }
-            
 
-            if (exceptions.Count > 0)
-                throw new AggregateException(exceptions).Flatten();
+            //Return missing posters
+            return activeAssets;
         }
         
         /// <summary>
@@ -157,45 +152,167 @@ namespace FrontierVOps.FiOS.NGVODPoster
         {
             this.ngProgress.Time.Stop();
             if (this.ngProgress.IsComplete)
-                Trace.WriteLine("\n\nImage Resize and Copy Complete!");
+                Trace.TraceInformation("\n\nImage Resize and Copy Complete!");
             else if (this.ngProgress.IsCanceled)
-                Trace.WriteLine("\n\nImage Resize and Copy Canceled!");
+                Trace.TraceInformation("\n\nImage Resize and Copy Canceled!");
 
             if (this.ngProgress.IsComplete || this.ngProgress.IsCanceled)
             {
-                Trace.WriteLine(string.Format("Runtime: {0} hours, {1} minutes, {2} seconds", this.ngProgress.Time.Elapsed.Hours, this.ngProgress.Time.Elapsed.Minutes, this.ngProgress.Time.Elapsed.Seconds));
-                Trace.WriteLine("\nResult:");
-                Trace.WriteLine(string.Format("Successful: {0} ({1:P2})", this.ngProgress.Success, ((decimal)this.ngProgress.Success / (decimal)this.ngProgress.Total)));
-                Trace.WriteLine(string.Format("Failed: {0} ({1:P2})", this.ngProgress.Failed, ((decimal)this.ngProgress.Failed / (decimal)this.ngProgress.Total)));
-                Trace.WriteLine(string.Format("Skipped: {0} ({1:P2})", this.ngProgress.Skipped, ((decimal)this.ngProgress.Skipped / (decimal)this.ngProgress.Total)));
-                Trace.WriteLine(string.Format("Total: {0}", this.ngProgress.Total));
+                Trace.TraceInformation(string.Format("Runtime: {0} hours, {1} minutes, {2} seconds", this.ngProgress.Time.Elapsed.Hours, this.ngProgress.Time.Elapsed.Minutes, this.ngProgress.Time.Elapsed.Seconds));
+                Trace.TraceInformation("\nResult:");
+                Trace.TraceInformation(string.Format("Successful: {0} ({1:P2})", this.ngProgress.Success, ((decimal)this.ngProgress.Success / (decimal)this.ngProgress.Total)));
+                Trace.TraceInformation(string.Format("Failed: {0} ({1:P2})", this.ngProgress.Failed, ((decimal)this.ngProgress.Failed / (decimal)this.ngProgress.Total)));
+                Trace.TraceInformation(string.Format("Skipped: {0} ({1:P2})", this.ngProgress.Skipped, ((decimal)this.ngProgress.Skipped / (decimal)this.ngProgress.Total)));
+                Trace.TraceInformation(string.Format("Total: {0}", this.ngProgress.Total));
             }
-            this.IsComplete = !this.ngProgress.IsCanceled;
+            this.ngProgress.IsComplete = !this.ngProgress.IsCanceled;
         }
 
+        #region Get Data Methods
         /// <summary>
-        /// Cleans up the poster source directory based on all active assets from all 3 vho's
+        /// Gets all VOD assets from all vho's in the config
         /// </summary>
-        /// <param name="AllVODAssets"></param>
-        /// <param name="config"></param>
+        /// <param name="config">Configuration parameters</param>
         /// <returns></returns>
-        public async Task CleanupSource(IEnumerable<VODAsset> AllVODAssets, NGVodPosterConfig config)
-        {        
-            this.token.ThrowIfCancellationRequested();
+        internal IEnumerable<VODAsset> GetAllVodAssets(ref NGVodPosterConfig config, string indexFileDir)
+        {
 
-            await Task.Factory.StartNew(() => cleanupSource(AllVODAssets.Where(x => !(string.IsNullOrEmpty(x.PosterSource))).Select(x => x.PosterSource), config.SourceDir));
+#if DEBUG
+            int f = 0;
+            int s = 0;
+#endif
+
+            List<VODAsset> vassets = new List<VODAsset>();
+            foreach(var vho in config.Vhos)
+            {
+                string conStr = vho.Value.IMGDb.CreateConnectionString();
+                string sproc = "sp_FUI_GetAllVODFolderAssetInfo";
+
+                
+                foreach (var dr in DBFactory.SQL_ExecuteReader(conStr, sproc, System.Data.CommandType.StoredProcedure))
+                {
+                    var vAsset = new VODAsset();
+                    var vFolder = new VODFolder();
+
+                    vFolder.ID = int.Parse(dr.GetString(0));
+                    vFolder.ParentId = int.Parse(dr.GetString(1));
+                    vFolder.Path = dr.GetString(2);
+                    vFolder.Title = dr.GetString(3);
+                    vAsset.AssetId = int.Parse(dr.GetString(4));
+                    vAsset.Title = dr.GetString(5);
+                    vAsset.PID = dr.GetString(6);
+                    vAsset.PAID = dr.GetString(7);
+                    vAsset.Folders.Add(vFolder);
+                    
+                    vAsset.PosterDest = GetDestImagePath(vAsset.AssetId, vho.Value.PosterDir);
+                    vassets.Add(vAsset);
+                }
+            }
+
+            vassets = vassets.GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title, x.PosterDest })
+                                        .Select(x => new VODAsset()
+                                        {
+                                            AssetId = x.Key.AssetId,
+                                            Title = x.Key.Title,
+                                            PID = x.Key.PID,
+                                            PAID = x.Key.PAID,
+                                            Folders = x.Where(y => y.AssetId.Equals(x.Key.AssetId)).SelectMany(y => y.Folders).Distinct().ToList(),
+                                            PosterDest = x.Key.PosterDest,
+                                        }).Distinct().ToList();
+
+            var fromDict = GetAllVodAssets(indexFileDir, config.SourceDir);
+            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = System.Environment.ProcessorCount, CancellationToken = this.token };
+            Parallel.ForEach(vassets, po, (va) =>
+                {
+                    po.CancellationToken.ThrowIfCancellationRequested();
+                    va.PosterSource = fromDict.Where(x => x.Key.Item1.Equals(va.AssetId) && x.Value.Contains(va.PID) && x.Value.Contains(va.PAID)).Select(x => x.Value).FirstOrDefault();
+
+#if DEBUG
+                    if (string.IsNullOrEmpty(va.PosterSource))
+                        f++;
+                    else
+                        s++;
+
+                    //Trace.TraceInformation(vAsset.ToString());
+                    Console.Write("\rFound: {0} - Not Found: {1} - Total Di: {2} - Total Assets: {3}      ", s, f, fromDict.Count, vassets.Count);
+#endif
+                });
+
+            return vassets;
         }
 
         /// <summary>
-        /// Get VOD assets from the database asyncronously
+        /// Get all VOD Assets from index file
+        /// </summary>
+        /// <param name="indexFilePath">Directory where the index file is located</param>
+        /// <param name="srcPath">Directory where the source poster files are located</param>
+        /// <param name="vhoName">Name of the VHO being processed</param>
+        /// <returns></returns>
+        internal IDictionary<Tuple<int, string>, string> GetAllVodAssets(string indexFilePath, string srcPath, string vhoName = "*")
+        {
+
+            var ret = new Dictionary<Tuple<int, string>, string>();
+
+            var indexFiles = Directory.EnumerateFiles(indexFilePath, vhoName.ToUpper() + "_index.txt", SearchOption.TopDirectoryOnly);
+
+            foreach (var file in indexFiles)
+            {
+                string vho = file.Substring(0, file.IndexOf("_")).Trim();
+
+                using (var fs = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                using (var sr = new StreamReader(fs))
+                {
+                    string line = string.Empty;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        var objs = line.Split('|');
+                        int id;
+                        if (int.TryParse(objs[0], out id))
+                        {
+                            var tpl = new Tuple<int, string>(id, vho);
+                            if (objs[1].Contains(srcPath))
+                                ret.Add(tpl, objs[1]);
+                            else
+                                ret.Add(tpl, Path.Combine(srcPath, objs[1]));
+
+                        }
+                    }
+                }
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Try to get the source file for a VOD asset from the index file
+        /// </summary>
+        /// <param name="vasset">Vod Asset to try to locate a source file</param>
+        /// <param name="indexFileDir">Directory where the index file is located</param>
+        /// <param name="srcDir">Directory where the source files are located</param>
+        /// <param name="srcFile">Source file for the VOD asset</param>
+        /// <returns>Whether it was able to locate the source file</returns>
+        internal bool TryGetSrcFile(VODAsset vasset, string indexFileDir, string srcDir, out string srcFile)
+        {
+            srcFile = GetAllVodAssets(indexFileDir, srcDir).Where(x => x.Key.Item1.Equals(vasset.AssetId) && x.Value.Contains(vasset.PID) && x.Value.Contains(vasset.PAID)).Select(x => x.Value).FirstOrDefault();
+
+            if (File.Exists(srcFile))
+                return true;
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Get VOD assets from the database asyncronously for a VHO
         /// </summary>
         /// <param name="ConnectionString">SQL connection string</param>
         /// <param name="maxAssets">Max number of assests to get</param>
-        /// <returns></returns>
-        internal async Task<IEnumerable<VODAsset>> GetVODAssets(string ConnectionString, int? maxAssets, string vhoName, string srcPath)
+        /// <param name="vhoName">Name of the vho being processed</param>
+        /// <param name="srcDir">Poster source directory</param>
+        /// <param name="destDir">Poster destination directory</param>
+        /// <returns>All VOD Assets for a particular VHO</returns>
+        internal async Task<IEnumerable<VODAsset>> GetVODAssets(string ConnectionString, int? maxAssets, string vhoName, string srcDir, string destDir)
         {
-            Trace.WriteLine(string.Format("INFO({0}): Getting VOD Asset Info from Database", vhoName));
-            Console.WriteLine("({0}) Getting VOD Asset Info", vhoName);
+            Trace.TraceInformation("INFO({0}): Getting VOD Asset Info from Database", vhoName);
 
             string sproc = "sp_FUI_GetAllVODFolderAssetInfo";
             List<VODAsset> vodAssets = new List<VODAsset>();
@@ -220,6 +337,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             vAsset.PID = dr.GetString(6);
                             vAsset.PAID = dr.GetString(7);
                             vAsset.Folders.Add(vFolder);
+                            vAsset.PosterDest = GetDestImagePath(vAsset.AssetId, destDir);
                             
                             vodAssets.Add(vAsset);
                         }
@@ -242,17 +360,19 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     Folders = x.Where(y => y.AssetId.Equals(x.Key.AssetId)).SelectMany(y => y.Folders).Distinct().ToList(),
                 }).Distinct().ToList();
 
-            var srcFiles = new List<string>(Directory.EnumerateFiles(srcPath).Select(x => Path.GetFileName(x)));
+            //Get all VOD Assets from the index file into a dictionary
+            IDictionary<Tuple<int, string>, string> fromDict = GetAllVodAssets(Directory.GetCurrentDirectory(), srcDir, vhoName);
 
-            vodAssets.ForEach(x => 
+            //Get the VOD poster source file from the index if it exists
+            Parallel.ForEach(vodAssets, (va) =>
                 {
-                    this.AllVAssets.Enqueue(x);
+                    va.PosterSource = fromDict.Where(x => x.Key.Item1.Equals(va.AssetId) && x.Value.Contains(va.PID) && x.Value.Contains(va.PAID)).Select(x => x.Value).FirstOrDefault();
                 });
 #if DEBUG
             //vodAssets.ForEach(x => Trace.WriteLine(string.Format("\nAssetId: {0}\nPID: {1}\nPaid: {2}\nTitle: {3}\nFolders: {4}", x.AssetId, x.PID, x.PAID, x.Title, string.Join(",", x.Folders.Select(y => y.Path)))));
 #endif
 
-            Console.WriteLine("\nINFO: Get VOD Assets Complete --> Count: {0}", vodAssets.Count);
+            Trace.TraceInformation("\nGet VOD Assets Complete --> Count: {0}", vodAssets.Count);
             return vodAssets;
         }
 
@@ -263,7 +383,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="PAID"></param>
         /// <param name="srcPath"></param>
         /// <returns></returns>
-        private Task<string> GetSourceImagePath(string PID, string PAID, string srcPath)
+        private string GetSourceImagePath(string PID, string PAID, string srcPath)
         {
             string file = string.Empty;
 
@@ -283,34 +403,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     .FirstOrDefault();
             }
 
-            return Task.FromResult<string>(file);
-        }
-
-        /// <summary>
-        /// Try to get the source image file from the source directory by reading the index dictionary. If not found, then try
-        /// enumerating the source directory for the file.
-        /// </summary>
-        /// <param name="srcDict">Dictionary containing asset ID to source file map</param>
-        /// <param name="AssetId">Asset ID currently being processed</param>
-        /// <param name="PID">PID value of the asset being processed</param>
-        /// <param name="PAID">PAID value of the asset being processed</param>
-        /// <param name="srcPath">Source directory where the raw image files are being stored</param>
-        /// <returns></returns>
-        private Task<string> GetSourceImagePath(IDictionary<int, string> srcDict,int AssetId, string PID, string PAID, string srcPath)
-        {   
-            string retVal = string.Empty;
-
-            if (srcDict.TryGetValue(AssetId, out retVal))
-            {
-                if (File.Exists(retVal) && retVal.Contains(PID) && retVal.Contains(PAID))
-                    return Task.FromResult<string>(retVal);
-                else if (!retVal.Contains(PID) || !retVal.Contains(PAID))
-                {
-                    srcDict.Remove(AssetId);
-                }
-            }
-            
-            return GetSourceImagePath(PID, PAID, srcPath);
+            return file;
         }
 
         /// <summary>
@@ -323,137 +416,79 @@ namespace FrontierVOps.FiOS.NGVODPoster
         {
             return Path.Combine(DestPath, AssetId.ToString() + ".jpg");
         }
+        #endregion Get Data Methods
 
         #region Processing Methods
         /// <summary>
         /// Begins matching asset id's to source image files, and if found it will resize and save the file to the destination
         /// </summary>
         /// <param name="VAssets">List of the VHO's VOD assets</param>
-        /// <param name="onlyNew">Process only new assets</param>
         /// <param name="config">The NGVodPosterConfig configuration</param>
         /// <param name="posterDest">The UNC path to the poster destination directory</param>
         /// <param name="vhoName">Name of the VHO that is being processed</param>
+        /// <param name="dictSrcPath">Dictionary of asset id to source file mapping</param>
+        /// <param name="indexFile">Index file path</param>
         /// <param name="cancelToken">Cancellation token</param>
-        private void Run(IEnumerable<VODAsset> VAssets, bool onlyNew, NGVodPosterConfig config, string posterDest, string vhoName, IProgress<NgVodPosterProgress> iProgress, CancellationToken cancelToken)
+        private void ProcessAsset(ref IEnumerable<VODAsset> VAssets, string srcDir, int imgHeight, int imgWidth, int maxThreads, 
+            string posterDest, string vhoName, string indexFile, CancellationToken cancelToken)
         {
-            Trace.WriteLine(string.Format("INFO({0}): Processing VOD Asset Posters...", vhoName.ToUpper()));
-            Console.WriteLine("Processing VOD Asset Posters...{0}", vhoName.ToUpper());
+            Trace.TraceInformation("INFO({0}): Processing VOD Asset Posters...", vhoName.ToUpper());
 
             var exceptions = new ConcurrentQueue<Exception>();
-            string indexFile = Path.Combine(Directory.GetCurrentDirectory(), vhoName + "_index.txt");
-
-            //Create dictionary for indexing asset id to source image file
-            IDictionary<int, string> dictSrcPath = new Dictionary<int, string>();
-
-            Trace.WriteLine(string.Format("INFO({0}): Reading Indexes...", vhoName.ToUpper()));
-            Console.WriteLine("Reading Indexes for {0}...This could take a few minutes", vhoName.ToUpper());
-
-            //Read index file and populate dictionary with asset id to source path image file mapping
-            using (var fs = File.Open(indexFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            using (var sr = new StreamReader(fs))
-            {
-                string line = string.Empty;
-                while ((line = sr.ReadLine()) != null)
-                {
-                    var objs = line.Split('|');
-                    int id;
-                    if (int.TryParse(objs[0], out id))
-                    {
-                        if ((File.Exists(objs[1]) || File.Exists(Path.Combine(config.SourceDir, objs[1])))
-                            && !dictSrcPath.ContainsKey(id) && VAssets.Any(x => x.AssetId.Equals(id)))
-                        {
-                            dictSrcPath.Add(id, objs[1]);
-                        }
-                        else if (dictSrcPath.ContainsKey(id))
-                        {
-                            Trace.WriteLine(string.Format("WARNING({0}): Duplicate asset id in index. Id: {1}", vhoName.ToUpper(), id));
-                        }
-                    }
-                }
-            } 
-
-            Console.ForegroundColor = ConsoleColor.Cyan;
 
             //Begin processing each VOD asset obtained from the database asyncronously
-            ParallelOptions po = new ParallelOptions();
-            po.CancellationToken = cancelToken;
-            po.MaxDegreeOfParallelism = config.MaxThreads;
+            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = maxThreads, CancellationToken = cancelToken };
 
+            //Add to vod asset count to progress total
             Interlocked.Add(ref this.ngProgress.Total, VAssets.Count());
-            //this.ngProgress.Total += VAssets.Count();
-            this.ngProgress.StopProgress = false;
 
             try
             {          
-                Parallel.ForEach<VODAsset>(VAssets.OrderByDescending(x => x.PosterSource == null).ThenByDescending(x => x.AssetId), po, (va) =>
+                Parallel.ForEach<VODAsset>(VAssets.OrderByDescending(x => x.PosterSource != null).ThenByDescending(x => x.AssetId), po, (va) =>
                     {
                         try
                         {
                             po.CancellationToken.ThrowIfCancellationRequested();
 
-                            //Increment progress threads
-                            //Interlocked.Increment(ref progThreads);
-
-                            //If only new assets, then skip the asset if the destination file already exists
-                            if (onlyNew)
+                            //Get poster source if it doesn't already exist, or if it doesn't contain the PID/PAID values of the asset
+                            if (string.IsNullOrEmpty(va.PosterSource) || !File.Exists(va.PosterSource) || !va.PosterSource.Contains(va.PID) || !va.PosterSource.Contains(va.PAID))
                             {
-                                va.PosterDest = GetDestImagePath(va.AssetId, posterDest);
-
-                                if (File.Exists(va.PosterDest))
-                                {
-                                    //Interlocked.Increment(ref this.ProcessProgress.Skipped);
-                                    Interlocked.Increment(ref this.ngProgress.Skipped);
-                                    return;
-                                }
-                                else
-                                    va.PosterSource = GetSourceImagePath(dictSrcPath, va.AssetId, va.PID, va.PAID, config.SourceDir).Result;
-                            }
-                            //Otherwise, match all assets to a source file asyncronously
-                            else
-                            {
-                                var tskList = new List<Task<string>>() 
-                                { 
-                                    GetSourceImagePath(dictSrcPath, va.AssetId, va.PID, va.PAID, config.SourceDir), 
-                                    Task.Factory.StartNew(() => GetDestImagePath(va.AssetId, posterDest)) 
-                                };
-
                                 try
                                 {
-                                    Task.WaitAll(tskList.ToArray());
+                                    va.PosterSource = GetSourceImagePath(va.PID, va.PAID, srcDir);
                                 }
                                 catch (Exception ex)
                                 {
                                     //Increment progress failed value if error was thrown
                                     Interlocked.Increment(ref this.ngProgress.Failed);
-                                    throw ex;
-                                }
+                                    Trace.TraceError("Error getting source image path. {0}", ex.Message);
+                                    throw;
+                                }                               
 
-                                //Set poster source and destination values based on the task result
-                                va.PosterSource = tskList[0].Result;
-                                va.PosterDest = tskList[1].Result;
-                            }
-
-                            if (string.IsNullOrEmpty(va.PosterSource))
-                            {
-                                //If file exists on destination server but does not on the source server, then delete it on the destination.
-                                //This prevents incorrect posters from being displayed if the asset ID is changed by the VOD provider.
-                                if (File.Exists(va.PosterDest))
+                                if (string.IsNullOrEmpty(va.PosterSource))
                                 {
-                                    File.Delete(va.PosterDest);
-                                    Interlocked.Increment(ref this.ngProgress.Deleted);
-                                }
+                                    //If file exists on destination server but does not on the source server, then delete it on the destination.
+                                    //This prevents incorrect posters from being displayed if the asset ID is changed by the VOD provider.
+                                    if (File.Exists(va.PosterDest))
+                                    {
+                                        File.Delete(va.PosterDest);
+                                        Interlocked.Increment(ref this.ngProgress.Deleted);
+                                    }
 
-                                throw new ArgumentNullException(string.Format("Poster source missing. \n\tTitle:  {0}\n\tAssetID: {1}\n\tPID: {2}\n\tPAID: {3}\n\tFolderPaths: {4}\n\tFolderIds: {5}",
-                                    va.Title, va.AssetId, va.PID, va.PAID, string.Join(",", va.Folders.Select(x => x.Path)), string.Join(",", va.Folders.Select(x => x.ID))));
+                                    //NoPosterAssets.Enqueue(va);
+                                    Interlocked.Increment(ref this.ngProgress.Failed);
+                                    return;
+                                }
                             }
-                            //Add poster source to dictionary if it is not null and doesn't already exist
-                            else if (!dictSrcPath.ContainsKey(va.AssetId))
-                                dictSrcPath.Add(va.AssetId, va.PosterSource);
+                            else
+                            {
+                                va.PosterDest = GetDestImagePath(va.AssetId, posterDest);
+                            }
 
                             try
                             {
                                 //Resize and save the image to the destination
-                                var res = ProcessImage(va, config.ImgHeight, config.ImgWidth, vhoName, po.CancellationToken);
+                                var res = ProcessImage(va, imgHeight, imgWidth, vhoName, po.CancellationToken);
                                     
                                 switch (res)
                                 {
@@ -475,19 +510,15 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             catch (Exception ex)
                             {
                                 Interlocked.Increment(ref this.ngProgress.Failed);
-                                throw ex;
+                                Trace.TraceError("Error processing image for {0} in {1}. {2}", va.AssetId, vhoName, ex.Message);
+                                throw;
                             }
 
                             po.CancellationToken.ThrowIfCancellationRequested();
                         }
-                        catch (OperationCanceledException ex)
+                        catch (OperationCanceledException)
                         {                            
-                            throw ex;
-                        }
-                        catch (ArgumentNullException ex)
-                        {
-                            exceptions.Enqueue(ex);
-                            Interlocked.Increment(ref this.ngProgress.Failed);
+                            throw;
                         }
                         catch (Exception ex)
                         {
@@ -499,18 +530,16 @@ namespace FrontierVOps.FiOS.NGVODPoster
             {
                 this.ngProgress.StopProgress = true;
                 this.ngProgress.IsCanceled = true;
-                iProgress.Report(this.ngProgress);
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("\n\nOperation Canceled, closing open threads and finishing...\n\n");
             }
 
             this.ngProgress.StopProgress = true;
             this.ngProgress.IsComplete = !this.ngProgress.IsCanceled;
 
+            //Write indexes
             try
             {
-                Trace.WriteLine("INFO: Writing Indexes");
-                createIndex(dictSrcPath, indexFile);
+                Trace.TraceInformation("INFO({0}): Writing Indexes", vhoName);
+                createIndex(vhoName, srcDir, ref VAssets, indexFile);
             }
             catch (Exception ex)
             {
@@ -544,8 +573,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
             tmpPath = Path.Combine(tmpPath, vhoName);
             if (!Directory.Exists(tmpPath))
                 Directory.CreateDirectory(tmpPath);
-
-            var exceptions = new ConcurrentQueue<Exception>();
          
             try
             {
@@ -605,28 +632,18 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
                 catch (Exception ex)
                 {
-                    exceptions.Enqueue(new Exception(string.Format("Failed to resize source image above 50mb - {0}", ex.Message)));
+                    Trace.TraceError("Failed to resize source image file above 50mb. {0}", ex.Message);
                 }
 
-                try
+
+                //Resize poster, save, and increment progress success if no errors
+                using (var sourceBM = new Bitmap(VAsset.PosterSource))
+                using (var destBM = Toolset.ResizeBitmap(sourceBM, Width, Height, null, null, true))
                 {
-                    //Resize poster, save, and increment progress success if no errors
-                    using (var sourceBM = new Bitmap(VAsset.PosterSource))
-                    using (var destBM = Toolset.ResizeBitmap(sourceBM, Width, Height, null, null, true))
-                    {
-                        token.ThrowIfCancellationRequested();
-                        destBM.Save(VAsset.PosterDest, ImageFormat.Jpeg);
-                    }
+                    token.ThrowIfCancellationRequested();
+                    destBM.Save(VAsset.PosterDest, ImageFormat.Jpeg);
                 }
-                catch (OperationCanceledException ex)
-                {
-                    throw ex;
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(string.Format("(ProcessImages) An error occured while processing image for {0}.\n\tAssetId: {1}\n\tTitle: {2}\n\tFolder: {3} \n\t{4}", 
-                        VAsset.PosterSource, VAsset.AssetId, VAsset.Title, string.Join(",", VAsset.Folders.Select(x => x.Path)), ex.Message), ex);
-                }
+
 
                 //Verify file was saved and it exists
                 if (!File.Exists(VAsset.PosterDest))
@@ -634,13 +651,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 return 0;
             }
-            catch (Exception ex)
+            catch
             {
-                exceptions.Enqueue(ex);
-
                 //Restore backup file from temp directory
                 if (!string.IsNullOrEmpty(tmpFile) && File.Exists(tmpFile))
                     File.Copy(tmpFile, VAsset.PosterDest, true);
+
+                throw;
             }
             finally
             {
@@ -648,15 +665,20 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 if (!string.IsNullOrEmpty(tmpFile) && File.Exists(tmpFile))
                     File.Delete(tmpFile);
             }
-
-            if (exceptions.Count > 0)
-                throw new AggregateException(exceptions);
-            else
-                return 0;
         }
         #endregion Process Methods
 
         #region Cleanup Methods
+        /// <summary>
+        /// Cleans up the poster source directory based on all active assets from all 3 vho's
+        /// </summary>
+        /// <param name="AllVODAssets"></param>
+        /// <param name="config"></param>
+        public void CleanupSource(IEnumerable<VODAsset> AllVODAssets, ref NGVodPosterConfig config)
+        {
+            cleanupSource(AllVODAssets.Where(x => !(string.IsNullOrEmpty(x.PosterSource))).Select(x => x.PosterSource), config.SourceDir);
+        }
+
         /// <summary>
         /// Performs a cleanup of the source directory by removing any posters that are not assigned to any active
         /// assets across all VHO's. Only perform this operation if all processes have performed successfully.
@@ -668,14 +690,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Get all unused assets.
             var unusedSrcFiles = Directory.EnumerateFiles(srcPath).Except(usedSourceFiles);
 
-            Trace.WriteLine(string.Format("INFO: Archiving unused posters. Count => {0}", unusedSrcFiles.Count()));
+            Trace.TraceInformation("INFO: Archiving unused posters. Count => {0}", unusedSrcFiles.Count());
 #if DEBUG
-            Trace.WriteLine("Source Path: " + srcPath);
-            Trace.WriteLine("Unused Source Files: ");
-            Trace.WriteLine(string.Join(System.Environment.NewLine, unusedSrcFiles.Select(x => Path.GetFileName(x))));
+            Trace.TraceInformation("Source Path: " + srcPath);
+            Trace.TraceInformation("Unused Source Files: ");
+            Trace.TraceInformation(string.Join(System.Environment.NewLine, unusedSrcFiles.Select(x => Path.GetFileName(x))));
 #endif
 
-            var exceptions = new ConcurrentQueue<Exception>();
             var archiveDir = Path.Combine(srcPath, "Archive");
 
             //create an archive directory to store the newly cleaned up files
@@ -693,7 +714,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         try
                         {
 #if DEBUG
-                            Trace.WriteLine(string.Format("Copying {0} to {1} and deleting {0}", Path.GetFileName(delFile), Path.GetFileName(archFileName)));
+                            Trace.TraceInformation("Copying {0} to {1} and deleting {0}", Path.GetFileName(delFile), Path.GetFileName(archFileName));
 #else
                             File.Copy(delFile, archFileName, true);
                             File.Delete(delFile);
@@ -701,14 +722,22 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         }
                         catch (Exception ex)
                         {
-                            exceptions.Enqueue(ex);
-                            if (File.Exists(archFileName) && !File.Exists(delFile))
+                            Trace.TraceError("Error while cleaning up source directory file {0}. {1}", delFile, ex.Message);
+
+                            try
                             {
+                                if (File.Exists(archFileName) && !File.Exists(delFile))
+                                {
 #if DEBUG
-                                Trace.WriteLine(string.Format("Copying {0} back to {1} and overwriting", Path.GetFileName(archFileName), Path.GetFileName(delFile)));
+                                    Trace.TraceInformation("Copying {0} back to {1} and overwriting", Path.GetFileName(archFileName), Path.GetFileName(delFile));
 #else
                                 File.Copy(archFileName, delFile, true);
 #endif
+                                }
+                            }
+                            catch (Exception exe)
+                            {
+                                Trace.TraceError("Failed to restore {0} from archive. {1}", archFileName, exe.Message);
                             }
                         }
                     }
@@ -729,21 +758,18 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             try
                             {
 #if DEBUG
-                                Trace.WriteLine(string.Format("Deleting {0}", fInfo.FullName));
+                                Trace.TraceInformation("Deleting {0}", fInfo.FullName);
 #else
                                 fInfo.Delete();
 #endif
                             }
                             catch (Exception ex)
                             {
-                                exceptions.Enqueue(ex);
+                                Trace.TraceError("Failed to delete {0} while cleaning up source directory. {1}", fInfo.FullName, ex.Message);
                             }
                         }
                     }
                 });
-
-            if (exceptions.Count > 0)
-                throw new AggregateException(exceptions).Flatten();
         }
 
         /// <summary>
@@ -755,32 +781,31 @@ namespace FrontierVOps.FiOS.NGVODPoster
         private void cleanupDestination(IEnumerable<int>usedAssetIds, string DestDir, int maxThreads)
         {
             List<string> usedFiles = new List<string>();
-            var exceptions = new ConcurrentQueue<Exception>();
 
-            Trace.WriteLine(string.Format("Cleaning up destination folder. Count => {0}", usedAssetIds.Count()));
+            Trace.TraceInformation("Cleaning up {0}. Active Count => {1}", DestDir, usedAssetIds.Count());
 
-            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = maxThreads };
+            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = System.Environment.ProcessorCount };
 
             //Verify each file exists and add to usedFiles list if it does
             Parallel.ForEach<int>(usedAssetIds, po, (usedId) =>
                 {
                     try
                     {
-                        string fileName = Path.Combine(DestDir, string.Format("{0}.jpg"));
+                        string fileName = Path.Combine(DestDir, string.Format("{0}.jpg", usedId));
 
                         if (File.Exists(fileName))
                             usedFiles.Add(fileName);
                     }
                     catch (Exception ex)
                     {
-                        exceptions.Enqueue(ex);
+                        Trace.TraceError("Error cleaning destination folder while obtaining active poster {0}. {1}", usedId, ex.Message);
                     }
                 });
 
             //Get files to delete
             var delFiles = Directory.EnumerateFiles(DestDir).Except(usedFiles);
 
-            Trace.WriteLine(string.Format("Number of files to remove from destination folder => {0}", delFiles.Count()));
+            Trace.TraceInformation("Number of files to remove from {0} => {1}", DestDir, delFiles.Count());
 
             //Delete the file
             Parallel.ForEach<string>(delFiles, po, (delFile) =>
@@ -794,29 +819,70 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             int id;
                             if (int.TryParse(Path.GetFileNameWithoutExtension(delFile), out id) && !usedAssetIds.Contains(id))
                             {
+#if DEBUG
+                                Trace.TraceInformation("Deleting {0} from {1}", delFile, DestDir);
+#else
                                 File.Delete(delFile);
+#endif
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        exceptions.Enqueue(ex);
+                        Trace.TraceError("Error in cleaning destination folder while removing {0}. {1}", delFile, ex.Message);
                     }
                 });
-
-            if (exceptions.Count > 0)
-                throw new AggregateException(exceptions).Flatten();
         }
         #endregion Cleanup Methods
 
+        #region Indexing
         /// <summary>
         /// Writes the asset id to source file map to the index file
         /// </summary>
-        /// <param name="srcDict"></param>
-        private void createIndex(IDictionary<int, string> srcDict, string indexFile)
+        /// <param name="vho">Name of the vho being processed</param>
+        /// <param name="srcDir">Directory where source files are located</param>
+        /// <param name="activeAssets">All actively used assets</param>
+        /// <param name="indexFile">Full path to the index file</param>
+        private void createIndex(string vho, string srcDir, ref IEnumerable<VODAsset> activeAssets, string indexFile)
         {
             if (!File.Exists(indexFile) || this.MaxImages.HasValue)
                 return;
+
+            IDictionary<int, string> srcDict = readIndex(vho, srcDir);
+
+            foreach (var asset in activeAssets)
+            {
+                if (srcDict.ContainsKey(asset.AssetId))
+                {
+                    string srcFile = srcDict[asset.AssetId].Contains(srcDir) ? srcDict[asset.AssetId] : Path.Combine(srcDir, srcDict[asset.AssetId]);
+                    
+                    //Skip if the poster source value on the asset is incorrect but the dictionary file is correct, or if everything is ok
+                    if ((string.IsNullOrEmpty(asset.PosterSource) && srcFile.Contains(asset.PID) && srcFile.Contains(asset.PAID) && File.Exists(srcFile))
+                        || (!string.IsNullOrEmpty(asset.PosterSource) && asset.PosterSource == srcFile && File.Exists(srcFile)))
+                    {
+                        continue;
+                    }
+                    //Remove Value from dictionary if the asset poster source was not found, the file in the dictionary doesn't exist, or it doesn't contain the PID/PAID value
+                    else if (string.IsNullOrEmpty(asset.PosterSource) || !File.Exists(srcFile) || !srcFile.Contains(asset.PID) || !srcFile.Contains(asset.PAID))
+                    {
+                        srcDict.Remove(asset.AssetId);
+                    }
+                    //Update Value if the asset poster is not the same as the dictionary source file, and it exists and contains the PID/PAID values
+                    else if (!string.IsNullOrEmpty(asset.PosterSource) && asset.PosterSource != srcFile && 
+                        asset.PosterSource.Contains(asset.PID) && asset.PosterSource.Contains(asset.PAID) && File.Exists(asset.PosterSource))
+                    {
+                        srcDict[asset.AssetId] = Path.GetFileName(asset.PosterSource);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(asset.PosterSource))
+                        continue;
+
+                    if (File.Exists(asset.PosterSource) && asset.PosterSource.Contains(asset.PID) && asset.PosterSource.Contains(asset.PAID))
+                        srcDict.Add(asset.AssetId, Path.GetFileName(asset.PosterSource));
+                }
+            }
             
             List<string> contents = new List<string>();
             foreach (var entry in srcDict)
@@ -825,6 +891,53 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
             File.WriteAllLines(indexFile, contents);
         }
+
+        /// <summary>
+        /// Reads the index file
+        /// </summary>
+        /// <param name="vho">Name of the vho being processed</param>
+        /// <param name="srcDir">Directory where the source files are located</param>
+        /// <returns>A dictionary of the asset id (key) and source file path</returns>
+        private IDictionary<int, string> readIndex(string vho, string srcDir)
+        {
+            string indexFile = Path.Combine(Directory.GetCurrentDirectory(), vho + "_index.txt");
+
+            //Create dictionary for indexing asset id to source image file
+            IDictionary<int, string> dictSrcPath = new Dictionary<int, string>();
+
+            Trace.TraceInformation("INFO({0}): Reading Indexes...", vho.ToUpper());
+            Console.WriteLine("\nReading Indexes for {0}...This could take a few minutes", vho.ToUpper());
+
+            //Read index file and populate dictionary with asset id to source path image file mapping
+            using (var fs = File.Open(indexFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var sr = new StreamReader(fs))
+            {
+                string line = string.Empty;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    var objs = line.Split('|');
+                    int id;
+                    if (int.TryParse(objs[0], out id))
+                    {
+                        string srcFile = objs[1];
+                        if (!srcFile.Contains(srcDir))
+                            srcFile = Path.Combine(srcDir, srcFile);
+
+                        if (File.Exists(srcFile)
+                            && !dictSrcPath.ContainsKey(id))
+                        {
+                            dictSrcPath.Add(id, Path.GetFileName(srcFile));
+                        }
+                        else if (dictSrcPath.ContainsKey(id))
+                        {
+                            Trace.TraceError(string.Format("WARNING({0}): Duplicate asset id in index. Id: {1}", vho.ToUpper(), id));
+                        }
+                    }
+                }
+            }
+            return dictSrcPath;
+        }
+        #endregion Indexing
 
         /// <summary>
         /// Timer handle to report progress
@@ -850,7 +963,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             if (disposing)
             {
                 this.MaxImages = null;
-                this.AllVAssets = null;
+                //this.AllVAssets = null;
                 this.timer.Stop();
                 this.timer.Dispose();
                 this.ngProgress.Dispose();

@@ -267,7 +267,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             Trace.WriteLine("setVHO called");
             var vhoElements = config.Root.Descendants(ns + "VHO");
             var exceptions = new ConcurrentQueue<Exception>();
-            var vhoDict = new Dictionary<string, NGVodVHO>();
+            var vhoDict = new ConcurrentDictionary<string, NGVodVHO>();
 
             Parallel.ForEach(vhoElements, (el) =>
             {
@@ -283,7 +283,14 @@ namespace FrontierVOps.FiOS.NGVODPoster
 #if DEBUG
                     Trace.WriteLine(string.Format("Name: {0} | WS: {1} | DBName: {2} | DBSource: {3}", vho.Name, vho.WebServerName, vho.IMGDb.DatabaseName, vho.IMGDb.DataSource));
 #endif
-                    vhoDict.Add(vho.Name, vho);
+                    try
+                    {
+                        vhoDict.TryAdd(vho.Name, vho);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError("Error in setVHO while adding to dictionary. Key: {0}, Value: {1}, Error: {2}", vho.Name, vho, ex.Message);
+                    }
                 }
                 catch (NullReferenceException nre)
                 {

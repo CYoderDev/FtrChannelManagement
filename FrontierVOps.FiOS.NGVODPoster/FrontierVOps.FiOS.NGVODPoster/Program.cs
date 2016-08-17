@@ -40,7 +40,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Create trace listener for output log
             using (TextWriterTraceListener twtl = new TextWriterTraceListener(debugLog))
             {             
-                twtl.TraceOutputOptions = TraceOptions.DateTime;
+                twtl.TraceOutputOptions = TraceOptions.None;
+                twtl.Filter = new EventTypeFilter(SourceLevels.Information);
                 twtl.Name = "TextWriteTraceListener";
              
                 try
@@ -63,7 +64,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("***ERROR GETTING CONFIG PARAMETERS***");
-                    Trace.TraceError("***ERROR GETTING CONFIG PARAMETERS***");
                     foreach (var ex in aex.Flatten().InnerExceptions)
                     {
                         Console.WriteLine("\t{0}", ex.Message);
@@ -75,7 +75,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("***ERROR GETTING CONFIG PARAMETERS***");
-                    Trace.TraceError("***ERROR GETTING CONFIG PARAMETERS***");
                     Console.WriteLine("\t{0}", ex.Message);
                     Trace.TraceError("\t" + ex.Message);
                     Console.ResetColor();
@@ -87,15 +86,18 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 string errorLog = Path.Combine(config.LogErrorDir, "NGVodPoster_Error.log");
 
+                if (File.Exists(errorLog))
+                    File.Delete(errorLog);
+
                 //Configure error log
                 using (var twtlError = new TextWriterTraceListener(errorLog))
                 {
-                    twtlError.TraceOutputOptions = TraceOptions.DateTime;
+                    twtlError.TraceOutputOptions = TraceOptions.Timestamp;
                     twtlError.Filter = new EventTypeFilter(SourceLevels.Error);
                     Trace.Listeners.Add(twtlError);
 
                     //Handle manual override parameters from console
-                    Trace.WriteLine("Override Params: ");
+                    Trace.TraceInformation("Override Params: ");
                     for (int i = 0; i < args.Length; i++)
                     {
                         try
@@ -103,25 +105,25 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             if (args[i].ToUpper().Equals("-D"))
                             {
                                 config.DestinationDir = args[i + 1];
-                                Trace.WriteLine(string.Format("Destination: {0}", config.DestinationDir));
+                                Trace.TraceInformation("Destination: {0}", config.DestinationDir);
                                 i++;
                             }
                             else if (args[i].ToUpper().Equals("-S"))
                             {
                                 config.SourceDir = args[i + 1];
-                                Trace.WriteLine(string.Format("Source: {0}", config.SourceDir));
+                                Trace.TraceInformation("Source: {0}", config.SourceDir);
                                 i++;
                             }
                             else if (args[i].ToUpper().Equals("-N"))
                             {
                                 maxImages = int.Parse(args[i + 1]);
-                                Trace.WriteLine(string.Format("Max Images: {0}", maxImages));
+                                Trace.TraceInformation("Max Images: {0}", maxImages);
                                 i++;
                             }
                             else if (args[i].ToUpper().Equals("-T"))
                             {
                                 config.MaxThreads = int.Parse(args[i + 1]);
-                                Trace.WriteLine(string.Format("Max Threads: {0}", config.MaxThreads));
+                                Trace.TraceInformation("Max Threads: {0}", config.MaxThreads);
                                 i++;
                             }
                             else if (args[i].ToUpper().Equals("-STO"))
@@ -129,12 +131,14 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 try
                                 {
                                     config.AddEmailTo(args[i + 1]);
-                                    Trace.WriteLine(string.Format("Send Missing Poster Log To: {0}", args[i + 1]));
+                                    Trace.TraceInformation("Send Missing Poster Log To: {0}", args[i + 1]);
                                 }
                                 catch (Exception ex)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Red;
                                     Console.WriteLine("ERROR: Invalid Email Address Provided.");
+                                    Trace.TraceError("Invalid Email Address Provided.");
+                                    Console.ResetColor();
                                     throw ex;
                                 }
                                 i++;
@@ -172,68 +176,79 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 if (!tokenSource.IsCancellationRequested)
                                 {
                                     tokenSource.Cancel();
-                                    Console.ResetColor();
+                                    ctrl.ngProgress.IsCanceled = true;
+                                    progress.Report(ctrl.ngProgress);
                                 }
                             }
                         };
 
                         try
                         {
+                            //Write a menu to the console describing the progress chart
+                            Console.ForegroundColor = ConsoleColor.Magenta;
+                            Console.WriteLine("\nP: Progress | OK: Successful posters processed | F: Failed |");
+                            Console.WriteLine("Sk: Skipped | T: # of minutes elapsed | R: Remaining assets\n");
+                            Console.ResetColor();
+
                             //Create a separate task for each VHO listed in the config file, and run asyncronously
-                            var tskList = new List<Task>();                            
+                            var tskList = new List<Task<IEnumerable<VODAsset>>>();                            
 
                             foreach (var vho in config.Vhos)
                             {
-                                tskList.Add(ctrl.BeginProcess(vho.Key, maxImages, config, progress, token));
+                                tskList.Add(ctrl.BeginProcess(vho.Key, maxImages, config, token));
                             }
-                            //List<Exception> exceptions = new List<Exception>();
 
                             //Used to determine if all vho's processed successfully for source directory cleanup
                             bool allSuccessful = true;
 
                             try
                             {
-                                //Write a menu to the console describing the progress chart
-                                Console.ForegroundColor = ConsoleColor.Magenta;
-                                Console.WriteLine("\nP: Progress | Thds: # of threads open | OK: Successful posters processed | ");
-                                Console.WriteLine("F: Failed | Sk: Skipped | T: # of minutes elapsed | R: Remaining assets\n");
-                                Console.ResetColor();
-
                                 Task.WaitAll(tskList.ToArray());
                             }
                             catch (AggregateException aex)
                             {
-                                Trace.WriteLine("\n\n****ERRORS****\n");
                                 foreach (var ex in aex.Flatten().InnerExceptions)
                                 {
-                                    if (ex is TaskCanceledException || ex is OperationCanceledException || ex is ArgumentNullException)
+                                    if (ex is TaskCanceledException || ex is OperationCanceledException)
+                                    {
+                                        allSuccessful = false;
                                         continue;
+                                    }
                                     else
                                         Trace.TraceError(ex.Message + "\n");
                                 }
-
-                                try
-                                {
-                                    //Creating missing poster logs
-                                    WriteToMissPosterLog(aex.Flatten(), config.EmailTo, config.LogMissPosterDir);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Trace.TraceError("Failed to send missing poster log. - {0}", ex.Message);
-                                }
                             }
-                            catch (OperationCanceledException)
+                            catch (Exception)
                             {
                                 allSuccessful = false;
                             }
 
-                            //If all tasks ran to completion, then begin cleaning up the source folder
-                            if (allSuccessful && !maxImages.HasValue)
+                            //Create missing poster log based on result of tasks
+                            try
                             {
-                                var cleanupSrcTsk = ctrl.CleanupSource(ctrl.AllVAssets, config);
-                                cleanupSrcTsk.Wait();
+                                WriteToMissPosterLog(tskList.SelectMany(x => x.Result.Where(y => string.IsNullOrEmpty(y.PosterSource))), config.EmailTo, config.LogMissPosterDir);
+                            }
+                            catch (Exception ex)
+                            {
+                                Trace.TraceError("Failed to send missing poster log. {0}", ex.Message);
                             }
 
+                            ctrl.Complete();
+
+                            //If all tasks ran to completion, then begin cleaning up the source folder
+                            if (allSuccessful && !maxImages.HasValue && !token.IsCancellationRequested)
+                            {
+                                ctrl.CleanupSource(tskList.SelectMany(x => x.Result).Where(y => !string.IsNullOrEmpty(y.PosterSource)), ref config);
+                            }
+                        }
+                        catch (AggregateException aex)
+                        {
+                            foreach (var ex in aex.InnerExceptions)
+                            {
+                                if (ex is TaskCanceledException)
+                                    continue;
+                                Trace.TraceError(ex.Message);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -272,7 +287,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="aex">Aggregate Exception caught by the image process tasks</param>
         /// <param name="sendTo">Email addresses to send the email to</param>
         /// <param name="logDir">The directory where the log should be written</param>
-        static void WriteToMissPosterLog(AggregateException aex, List<string> sendTo, string logDir)
+        static void WriteToMissPosterLog(IEnumerable<VODAsset> vassets, List<string> sendTo, string logDir)
         {
             if (string.IsNullOrEmpty(logDir))
                 return;
@@ -283,17 +298,17 @@ namespace FrontierVOps.FiOS.NGVODPoster
             string posterLog = Path.Combine(logDir, "MissingPosters.log");
 
             //Get only exceptions that mention the source file/folder
-            var exceptions = aex.InnerExceptions.Where(x => x.Message.ToUpper().Contains("SOURCE"));
+            //var exceptions = aex.InnerExceptions.Where(x => x.Message.ToUpper().Contains("SOURCE"));
 
-            if (exceptions.Count() == 0)
-                return;
+            //if (exceptions.Count() == 0)
+            //    return;
 
             //Reset poster log
             if (File.Exists(posterLog))
                 File.Delete(posterLog);
             
             //Write all lines to the log file
-            File.WriteAllLines(posterLog, exceptions.Select(x => x.Message));
+            File.WriteAllLines(posterLog, vassets.Select(x => x.ToString()));
 
             var errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.EndsWith("MissingPosters.log"));
 
@@ -345,7 +360,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 //Write progress to the same console line
                 Console.Write(string.Format("\rP: {0:P1} | OK: {1} | F: {2} | Sk: {3} | T: {4} | R: {5}   ",
                     progPerc, value.Success, value.Failed, value.Skipped, (int)value.Time.Elapsed.TotalMinutes + (value.Time.Elapsed.Seconds > 30 ? 1 : 0), value.Total - total));
-                Trace.WriteLine(string.Format("P: {0:P1} | R: {1} | D: {2}", progPerc, value.Total - total, value.Deleted));
+
+                //Report to trace every 5 minutes
+                if ((int)value.Time.Elapsed.TotalMinutes % 5 == 0)
+                    Trace.TraceInformation("P: {0:P1} | R: {1} | D: {2}", progPerc, value.Total - total, value.Deleted);
             }
         }
 

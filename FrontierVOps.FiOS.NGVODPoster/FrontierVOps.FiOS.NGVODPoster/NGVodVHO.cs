@@ -52,17 +52,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
         private string _posterDir;
 
         /// <summary>
-        /// Active VOD assets in the VHO
-        /// </summary>
-        public IEnumerable<VODAsset> ActiveAssets { get; set; }
-
-        /// <summary>
         /// Individual VHO's where posters need to be stored
         /// </summary>
         public NGVodVHO()
         {
             this.IMGDb = new SqlDb();
-            this.ActiveAssets = new List<VODAsset>();
         }
     }
 }
