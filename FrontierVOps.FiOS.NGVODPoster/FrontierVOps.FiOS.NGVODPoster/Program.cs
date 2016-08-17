@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Mail;
 using System.Security;
@@ -295,22 +296,26 @@ namespace FrontierVOps.FiOS.NGVODPoster
             if (!Directory.Exists(logDir))
                 throw new DirectoryNotFoundException(logDir + " not found");
 
-            string posterLog = Path.Combine(logDir, "MissingPosters.log");
-
-            //Get only exceptions that mention the source file/folder
-            //var exceptions = aex.InnerExceptions.Where(x => x.Message.ToUpper().Contains("SOURCE"));
-
-            //if (exceptions.Count() == 0)
-            //    return;
+            FileInfo posterLog = new FileInfo(Path.Combine(logDir, "MissingPosters.log"));
 
             //Reset poster log
-            if (File.Exists(posterLog))
-                File.Delete(posterLog);
+            if (posterLog.Exists)
+                posterLog.Delete();
             
             //Write all lines to the log file
-            File.WriteAllLines(posterLog, vassets.Select(x => x.ToString()));
+            File.WriteAllLines(posterLog.FullName, vassets.Select(x => x.ToString()));
 
-            var errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.EndsWith("MissingPosters.log"));
+            posterLog = new FileInfo(Path.Combine(logDir, "MissingPosters.log"));
+
+            if (((posterLog.Length / 1024F) / 1024F) > 10)
+            {
+                using (var zip = ZipFile.Open(posterLog.Name + ".zip", ZipArchiveMode.Create))
+                {
+                    zip.CreateEntryFromFile(posterLog.FullName, posterLog.Name);
+                }
+            }
+
+            var errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.Contains("MissingPosters.log"));
 
             if (sendTo.Count > 0)
             {
@@ -328,6 +333,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     throw new Exception("Failed to send error logs to all recipients. " + ex.Message, ex);
                 }
             }
+
+            errorLogs.Where(x => x.EndsWith(".zip")).ToList().ForEach(x => File.Delete(x));
         }
 
         static void ReportProgress(NgVodPosterProgress value)
@@ -343,8 +350,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             if (value.IsCanceled)
             {
                 value.StopProgress = true;
-                ClearCurrentConsoleLine();
-                Console.Write("--------Task Canceled--------");
+                Console.Write("\n--------Task Canceled--------\n");
             }
             //If the progress is 100% and threads are 0, then the task is considered complete
             else if (Math.Ceiling((progPerc * 100)) == 100)

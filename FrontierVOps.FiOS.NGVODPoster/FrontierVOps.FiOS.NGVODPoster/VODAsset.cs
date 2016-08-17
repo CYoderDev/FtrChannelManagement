@@ -25,7 +25,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("Asset ID: {0}{4}Title: {1}{4}PID: {2}{4}PAID: {3}{4}Source File: {5}", this.AssetId, this.Title, this.PID, this.PAID, System.Environment.NewLine, this.PosterSource);
+            sb.AppendFormat("Asset ID: {0}{4}Title: {1}{4}PID: {2}{4}PAID: {3}{4}", this.AssetId, this.Title, this.PID, this.PAID, System.Environment.NewLine);
+            if (!string.IsNullOrEmpty(this.PosterSource))
+                sb.AppendFormat("Source File: {0}{1}", this.PosterSource, System.Environment.NewLine);
             return sb.ToString();
         }
     }
