@@ -350,13 +350,14 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             //Group all assets and merge the vod folders
             vodAssets = vodAssets
-                .GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title })
+                .GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title, x.PosterDest })
                 .Select(x => new VODAsset()
                 {
                     AssetId = x.Key.AssetId,
                     Title = x.Key.Title,
                     PID = x.Key.PID,
                     PAID = x.Key.PAID,
+                    PosterDest = x.Key.PosterDest,
                     Folders = x.Where(y => y.AssetId.Equals(x.Key.AssetId)).SelectMany(y => y.Folders).Distinct().ToList(),
                 }).Distinct().ToList();
 
