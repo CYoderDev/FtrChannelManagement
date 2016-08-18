@@ -71,7 +71,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="config">NGVodPoster configuration</param>
         /// <param name="token">Cancellation Token</param>
         /// <returns>Task result returns with all assets that do not have posters assigned</returns>
-        internal async Task<IEnumerable<VODAsset>> BeginProcess(string vho, int? maxImages, NGVodPosterConfig config, CancellationToken token)
+        internal async Task<IEnumerable<VODAsset>> BeginProcess(string vho, int? maxImages, NGVodPosterConfig config)
         {
 
             if (this.token.IsCancellationRequested)
@@ -94,7 +94,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Get VOD assets for the VHO
             var activeAssets = await GetVODAssets(connectionStr, maxImages, vho, config.SourceDir, ngVho.PosterDir);
 
-            token.ThrowIfCancellationRequested();
+            this.token.ThrowIfCancellationRequested();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -445,7 +445,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             try
             {          
-                Parallel.ForEach<VODAsset>(VAssets.OrderByDescending(x => x.PosterSource != null).ThenByDescending(x => x.AssetId), po, (va) =>
+                Parallel.ForEach<VODAsset>(VAssets.OrderByDescending(x => !string.IsNullOrEmpty(x.PosterSource)).ThenByDescending(x => x.AssetId), po, (va) =>
                     {
                         try
                         {
@@ -463,7 +463,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                     //Increment progress failed value if error was thrown
                                     Interlocked.Increment(ref this.ngProgress.Failed);
                                     Trace.TraceError("Error getting source image path. {0}", ex.Message);
-                                    throw;
+                                    return;
                                 }                               
 
                                 if (string.IsNullOrEmpty(va.PosterSource))
@@ -476,14 +476,18 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                         Interlocked.Increment(ref this.ngProgress.Deleted);
                                     }
 
-                                    //NoPosterAssets.Enqueue(va);
                                     Interlocked.Increment(ref this.ngProgress.Failed);
                                     return;
                                 }
                             }
-                            else
+
+                            //Skip if destination file is newer than the source file
+                            if (File.Exists(va.PosterDest) 
+                                && (File.GetLastWriteTime(va.PosterDest).CompareTo(File.GetLastWriteTime(va.PosterSource)) >= 0
+                                && File.GetCreationTime(va.PosterDest).CompareTo(File.GetCreationTime(va.PosterSource)) >= 0))
                             {
-                                va.PosterDest = GetDestImagePath(va.AssetId, posterDest);
+                                Interlocked.Increment(ref ngProgress.Skipped);
+                                return;
                             }
 
                             try
@@ -580,8 +584,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 //Poster destination file name cannot be null
                 if (string.IsNullOrEmpty(VAsset.PosterDest))
                 {
-                    throw new ArgumentNullException(string.Format("Poster destination null. \n\tTitle:  {0}\n\tAssetID: {1}\n\tPID: {2}\n\tPAID: {3}\n\tFolderPath: {4}\n\tFolderId: {5}",
-                        VAsset.Title, VAsset.AssetId, VAsset.PID, VAsset.PAID, string.Join(",", VAsset.Folders.Select(x => x.Path)), string.Join(",", VAsset.Folders.Select(x => x.ID))));
+                    throw new ArgumentNullException("Destination folder cannot be null. " + VAsset.ToString());
                 }
 
                 //Verify file extension is .jpg
@@ -590,21 +593,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 //Throw error if source file not found, used to populate missing poster log
                 if (!File.Exists(VAsset.PosterSource))
-                    throw new FileNotFoundException(string.Format("(ProcessImages) Source poster file not found. AssetID: {0}", VAsset.AssetId), VAsset.PosterSource);
-
-                FileInfo destFInfo = new FileInfo(VAsset.PosterDest);
-                FileInfo srcFInfo = new FileInfo(VAsset.PosterSource);
+                    throw new FileNotFoundException(string.Format("(ProcessImages) Source poster file not found. AssetID: {0}", VAsset.AssetId), VAsset.PosterSource);                
 
                 //if destination file already exists, check if it needs updated using timestamp
-                if (destFInfo.Exists)
+                if (File.Exists(VAsset.PosterDest))
                 {
-                    //Skip if file is newer, and increment progress skipped
-                    if (destFInfo.LastWriteTime.CompareTo(srcFInfo.LastWriteTime) >= 0 
-                        && destFInfo.CreationTime.CompareTo(srcFInfo.CreationTime) >= 0)
-                    {
-                        return 1;
-                    }
-
                     tmpFile = Path.Combine(tmpPath, Path.GetFileName(VAsset.PosterDest));
 
                     //If a temp file exists in the temp directory for this asset, remove it
@@ -619,6 +612,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 //Resize source image file if it is above 50MB
                 try
                 {
+                    FileInfo srcFInfo = new FileInfo(VAsset.PosterSource);
                     if (((srcFInfo.Length / 1024F) / 1024F) > 50)
                     {
                         string tmpName = Path.Combine(Path.GetFullPath(srcFInfo.FullName), Path.GetFileNameWithoutExtension(srcFInfo.FullName) + "_tmp.jpg");
@@ -648,7 +642,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 //Verify file was saved and it exists
                 if (!File.Exists(VAsset.PosterDest))
-                    throw new Exception("(ProcessImages) File failed to savee in destination folder.");
+                    throw new Exception("(ProcessImages) File failed to save in destination folder.");
 
                 return 0;
             }
@@ -907,7 +901,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
             IDictionary<int, string> dictSrcPath = new Dictionary<int, string>();
 
             Trace.TraceInformation("INFO({0}): Reading Indexes...", vho.ToUpper());
-            Console.WriteLine("\nReading Indexes for {0}...This could take a few minutes", vho.ToUpper());
 
             //Read index file and populate dictionary with asset id to source path image file mapping
             using (var fs = File.Open(indexFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
@@ -946,7 +939,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <returns></returns>
         private Task HandleTimer(NgVodPosterProgress progress, IProgress<NgVodPosterProgress> iProgress)
         {
-            //((IProgress<int>)progress).Report(1);
             iProgress.Report(progress);
             return Task.FromResult(0);
         }

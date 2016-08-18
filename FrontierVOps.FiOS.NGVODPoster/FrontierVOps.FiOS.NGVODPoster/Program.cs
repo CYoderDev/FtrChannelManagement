@@ -190,13 +190,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             Console.WriteLine("\nP: Progress | OK: Successful posters processed | F: Failed |");
                             Console.WriteLine("Sk: Skipped | T: # of minutes elapsed | R: Remaining assets\n");
                             Console.ResetColor();
-
+                            
                             //Create a separate task for each VHO listed in the config file, and run asyncronously
                             var tskList = new List<Task<IEnumerable<VODAsset>>>();                            
 
                             foreach (var vho in config.Vhos)
                             {
-                                tskList.Add(ctrl.BeginProcess(vho.Key, maxImages, config, token));
+                                tskList.Add(ctrl.BeginProcess(vho.Key, maxImages, config));
                             }
 
                             //Used to determine if all vho's processed successfully for source directory cleanup
@@ -297,7 +297,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 throw new DirectoryNotFoundException(logDir + " not found");
 
             FileInfo posterLog = new FileInfo(Path.Combine(logDir, "MissingPosters.log"));
-
+            
             //Reset poster log
             if (posterLog.Exists)
                 posterLog.Delete();
@@ -315,7 +315,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
             }
 
-            var errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.Contains("MissingPosters.log"));
+            var errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.Contains("MissingPosters.log.zip"))
+                ?? Directory.EnumerateFiles(logDir).Where(x => x.EndsWith("MissingPosters.log"));
 
             if (sendTo.Count > 0)
             {
@@ -368,7 +369,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     progPerc, value.Success, value.Failed, value.Skipped, (int)value.Time.Elapsed.TotalMinutes + (value.Time.Elapsed.Seconds > 30 ? 1 : 0), value.Total - total));
 
                 //Report to trace every 5 minutes
-                if ((int)value.Time.Elapsed.TotalMinutes % 5 == 0)
+                if ((int)value.Time.Elapsed.TotalMilliseconds % 300000 == 0)
                     Trace.TraceInformation("P: {0:P1} | R: {1} | D: {2}", progPerc, value.Total - total, value.Deleted);
             }
         }
