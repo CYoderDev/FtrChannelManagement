@@ -18,6 +18,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         public bool StopProgress { get; set; }
         public bool IsCanceled { get; set; }
         public bool IsComplete { get; set; }
+        private bool resetting = false;
 
         public NgVodPosterProgress()
         {
@@ -30,6 +31,22 @@ namespace FrontierVOps.FiOS.NGVODPoster
             this.StopProgress = true;
             this.IsCanceled = false;
             this.IsComplete = false;
+        }
+
+        public void Reset()
+        {
+            if (!resetting)
+            {
+                resetting = true;
+                this.Total = 0;
+                this.Success = 0;
+                this.Failed = 0;
+                this.Skipped = 0;
+                this.Deleted = 0;
+                this.StopProgress = true;
+                this.IsCanceled = false;
+                this.IsComplete = false;
+            }
         }
 
         public void Dispose()

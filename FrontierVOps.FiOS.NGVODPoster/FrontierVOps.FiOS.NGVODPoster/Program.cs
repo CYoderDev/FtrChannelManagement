@@ -315,8 +315,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 }
             }
 
-            var errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.Contains("MissingPosters.log.zip"))
-                ?? Directory.EnumerateFiles(logDir).Where(x => x.EndsWith("MissingPosters.log"));
+            var errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.Contains("MissingPosters.log.zip"));
+            
+            if (errorLogs.Count() <= 0)
+                errorLogs = Directory.EnumerateFiles(logDir).Where(x => x.EndsWith("MissingPosters.log"));
 
             if (sendTo.Count > 0)
             {
@@ -346,6 +348,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Total all processed images and calculate the percentage
             int total = value.Success + value.Failed + value.Skipped + value.Deleted;
             decimal progPerc = (decimal)total / (decimal)value.Total;
+            int minRemaining = ((int)value.Time.Elapsed.TotalMinutes / total) * (value.Total - total);
 
             //if cancellation is requested, clear the console line and write that the task was canceled
             if (value.IsCanceled)
@@ -354,10 +357,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 Console.Write("\n--------Task Canceled--------\n");
             }
             //If the progress is 100% and threads are 0, then the task is considered complete
-            else if (Math.Ceiling((progPerc * 100)) == 100)
+            else if (total == value.Total)
             {
                 ClearCurrentConsoleLine();
                 Console.Write("-----Task Complete----");
+                Console.WriteLine("\n OK: {0} | F:{1} | Sk: {2} | T: {3}", value.Success, value.Failed, value.Skipped, (int)value.Time.Elapsed.TotalMinutes + (value.Time.Elapsed.Seconds > 30 ? 1 : 0));
                 Console.WriteLine(Environment.NewLine);
                 value.StopProgress = true;
             }
@@ -365,12 +369,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
             else if (Math.Ceiling((progPerc * 100)) % 1 == 0)
             {
                 //Write progress to the same console line
-                Console.Write(string.Format("\rP: {0:P1} | OK: {1} | F: {2} | Sk: {3} | T: {4} | R: {5}   ",
-                    progPerc, value.Success, value.Failed, value.Skipped, (int)value.Time.Elapsed.TotalMinutes + (value.Time.Elapsed.Seconds > 30 ? 1 : 0), value.Total - total));
+                Console.Write(string.Format("\rP: {0:P1} | OK: {1} | F: {2} | Sk: {3} | T: {4} | R: {5} | TR: {6}  ",
+                    progPerc, value.Success, value.Failed, value.Skipped, (int)value.Time.Elapsed.TotalMinutes + (value.Time.Elapsed.Seconds > 30 ? 1 : 0), value.Total - total, minRemaining));
 
                 //Report to trace every 5 minutes
-                if ((int)value.Time.Elapsed.TotalMilliseconds % 300000 == 0)
-                    Trace.TraceInformation("P: {0:P1} | R: {1} | D: {2}", progPerc, value.Total - total, value.Deleted);
+                if ((int)value.Time.Elapsed.TotalMinutes % 5 == 0 && value.Time.Elapsed.Seconds <= 15)
+                    Trace.TraceInformation("P: {0:P1} | R: {1} | TR: {2}", progPerc, value.Total - total, minRemaining);
             }
         }
 
