@@ -412,6 +412,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <returns></returns>
         private string GetSourceImagePath(string PID, string PAID, string srcPath)
         {
+            IEnumerable<string> files = null;
             string file = string.Empty;
 
             //First attempt to get it by a commonly used file name
@@ -426,8 +427,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
             {
                 string fileQuery = string.Format("*{0}_{1}*", PID, PAID);
 
-                file = Directory.EnumerateFiles(srcPath, fileQuery, SearchOption.TopDirectoryOnly).AsParallel()
-                    .FirstOrDefault();
+                files = Directory.EnumerateFiles(srcPath, fileQuery, SearchOption.TopDirectoryOnly).AsParallel();
+
+                if (files.Count() > 1 && files.Any(x => Path.GetExtension(x).ToLower().Equals(".jpg")))
+                    file = files.Where(x => Path.GetExtension(x).ToLower().Equals(".jpg")).FirstOrDefault();
+                else 
+                    file = files.FirstOrDefault();
             }
 
             return file;
@@ -736,7 +741,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         private void cleanupSource(IEnumerable<string> usedSourceFiles, string srcPath, ref NGVodPosterConfig config)
         {
             //Get all unused assets.
-            var unusedSrcFiles = Directory.EnumerateFiles(srcPath).Except(usedSourceFiles);
+            var unusedSrcFiles = Directory.EnumerateFiles(srcPath).Except(usedSourceFiles, new SourceFileComparer());
 
             Trace.TraceInformation("INFO: Archiving unused posters. Count => {0}", unusedSrcFiles.Count());
 #if DEBUG
@@ -836,7 +841,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             string pid = strPrts[0].ToUpper() == "IMG" ? strPrts[1] : strPrts[0];
             string paid = strPrts[0].ToUpper() == "IMG" ? strPrts[2] : strPrts[1];
 
-            return allAssets.Any(x => x.PID.ToLower().Equals(pid.ToLower()) && x.PAID.ToLower().Equals(paid.ToLower()));
+            return allAssets.Any(x => x.PID.ToLower().Equals(pid.ToLower()) && x.PAID.ToLower().Equals(paid.ToLower())) && Path.GetExtension(srcFile).ToLower().Equals(".jpg");
         }
 
         /// <summary>

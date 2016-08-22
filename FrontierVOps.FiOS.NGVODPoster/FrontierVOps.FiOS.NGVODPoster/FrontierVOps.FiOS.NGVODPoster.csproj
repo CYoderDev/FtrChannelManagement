@@ -52,6 +52,7 @@
     <Compile Include="NGVodVHO.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SourceFileComparer.cs" />
     <Compile Include="VODAsset.cs" />
     <Compile Include="VODFolder.cs" />
   </ItemGroup>
