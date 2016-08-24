@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FrontierVOps.FiOS.NGVODPoster
@@ -18,6 +19,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         public bool StopProgress { get; set; }
         public bool IsCanceled { get; set; }
         public bool IsComplete { get; set; }
+        public int CompleteCount { get; set; }
         private bool resetting = false;
 
         public NgVodPosterProgress()
@@ -31,6 +33,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             this.StopProgress = true;
             this.IsCanceled = false;
             this.IsComplete = false;
+            this.CompleteCount = 0;
         }
 
         public void Reset()
@@ -46,6 +49,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 this.StopProgress = true;
                 this.IsCanceled = false;
                 this.IsComplete = false;
+                this.Time.Reset();
+                this.Time.Start();
+                resetting = false;
             }
         }
 

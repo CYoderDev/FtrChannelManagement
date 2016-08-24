@@ -227,10 +227,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             //Create missing poster log based on result of tasks
                             try
                             {
+                                Console.WriteLine("\nCreating missing poster attachment and sending...");
                                 WriteToMissPosterLog(tskList.SelectMany(x => x.Result.Where(y => string.IsNullOrEmpty(y.PosterSource))), config.EmailTo, config.LogMissPosterDir);
+                                Console.WriteLine("Complete\n");
                             }
                             catch (Exception ex)
                             {
+                                Console.WriteLine("Failed! {0}\n", ex.Message);
                                 Trace.TraceError("Failed to send missing poster log. {0}", ex.Message);
                             }
 
@@ -239,7 +242,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             //If all tasks ran to completion, then begin cleaning up the source folder
                             if (allSuccessful && !maxImages.HasValue && !token.IsCancellationRequested)
                             {
+                                Console.WriteLine("Cleaning up source directory...");
                                 ctrl.CleanupSource(tskList.SelectMany(x => x.Result).Where(y => !string.IsNullOrEmpty(y.PosterSource)), ref config);
+                                Console.WriteLine("Complete\n");
                             }
                         }
                         catch (AggregateException aex)
@@ -348,7 +353,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Total all processed images and calculate the percentage
             int total = value.Success + value.Failed + value.Skipped + value.Deleted;
             decimal progPerc = (decimal)total / (decimal)value.Total;
-            int minRemaining = ((int)value.Time.Elapsed.TotalMinutes / total) * (value.Total - total);
+            double minRemaining = (value.Time.Elapsed.TotalMinutes / (total - value.Skipped)) * (value.Total - (total - value.Skipped));
 
             //if cancellation is requested, clear the console line and write that the task was canceled
             if (value.IsCanceled)
@@ -369,12 +374,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
             else if (Math.Ceiling((progPerc * 100)) % 1 == 0)
             {
                 //Write progress to the same console line
-                Console.Write(string.Format("\rP: {0:P1} | OK: {1} | F: {2} | Sk: {3} | T: {4} | R: {5} | TR: {6}  ",
+                Console.Write(string.Format("\rP: {0:P1} | OK: {1} | F: {2} | Sk: {3} | T: {4} | R: {5} | TR: {6:N1}  ",
                     progPerc, value.Success, value.Failed, value.Skipped, (int)value.Time.Elapsed.TotalMinutes + (value.Time.Elapsed.Seconds > 30 ? 1 : 0), value.Total - total, minRemaining));
 
                 //Report to trace every 5 minutes
                 if ((int)value.Time.Elapsed.TotalMinutes % 5 == 0 && value.Time.Elapsed.Seconds <= 15)
-                    Trace.TraceInformation("P: {0:P1} | R: {1} | TR: {2}", progPerc, value.Total - total, minRemaining);
+                    Trace.TraceInformation("P: {0:P1} | R: {1} | TR: {2:N1}", progPerc, value.Total - total, minRemaining);
             }
         }
 

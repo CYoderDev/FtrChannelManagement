@@ -94,14 +94,17 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Get VOD assets for the VHO
             var activeAssets = await GetVODAssets(connectionStr, maxImages, vho, config.SourceDir, ngVho.PosterDir, false);
 
-            while (ngProgress.Success != ngProgress.Total || this.token.IsCancellationRequested)
+            ngProgress.CompleteCount++;
+            //Resync the vho processes
+            while (ngProgress.CompleteCount != config.Vhos.Count && !this.token.IsCancellationRequested)
             {
-                Thread.Sleep(new TimeSpan(0, 0, 30));
+                Thread.Sleep(2000);
             }
 
             this.token.ThrowIfCancellationRequested();
-
-            this.ngProgress.Reset();
+            
+            if (ngProgress.Total != 0)
+                this.ngProgress.Reset();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -110,7 +113,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
             string indexFile = Path.Combine(Directory.GetCurrentDirectory(), vho + "_index.txt");
 
             //Start run task to ensure it ran to completion before attempting cleanup
-            var mainTsk = Task.Factory.StartNew(() => ProcessAsset(ref activeAssets, config.SourceDir, config.ImgHeight, config.ImgWidth, config.MaxThreads, ngVho.PosterDir, ngVho.Name, indexFile, this.token));
+            var mainTsk = Task.Factory.StartNew(() => 
+                ProcessAsset(ref activeAssets, config.SourceDir, config.ImgHeight, config.ImgWidth, config.MaxThreads, ngVho.PosterDir, ngVho.Name, indexFile, connectionStr, this.token));
 
             try
             {
@@ -130,25 +134,30 @@ namespace FrontierVOps.FiOS.NGVODPoster
             GC.Collect();
 
             //Clean up poster directory based on the vho's active assets if the process had no errors, no max values were specified,
-            //and cancellation was not requested,
-            try
+            //and cancellation was not requested.
+
+            if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue && !token.IsCancellationRequested)
             {
-                if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue && !token.IsCancellationRequested)
+                try
+                {
+                    NGVodPosterDataController.BulkInsertData(activeAssets.ToArray(), connectionStr);
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError("Failed to insert poster source map into database. {0}", ex.Message);
+                }
+
+                try
                 {
                     await Task.Factory.StartNew(() => cleanupDestination(activeAssets.Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads));
                 }
-            }
-            catch (AggregateException aex)
-            {
-                foreach (var ex in aex.InnerExceptions)
+                catch (Exception ex)
+                {
                     Trace.TraceError("Error while cleaning up destination directory. {0}", ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError("Error while cleaning up destination directory. {0}", ex.Message);
+                }
             }
 
-            //Return missing posters
+            //Return all assets
             return activeAssets;
         }
         
@@ -210,13 +219,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     vAsset.PID = dr.GetString(6);
                     vAsset.PAID = dr.GetString(7);
                     vAsset.Folders.Add(vFolder);
-                    
+                    vAsset.PosterSource = dr.GetString(8);
                     vAsset.PosterDest = GetDestImagePath(vAsset.AssetId, vho.Value.PosterDir);
                     vassets.Add(vAsset);
                 }
             }
 
-            vassets = vassets.GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title, x.PosterDest })
+            vassets = vassets.GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title, x.PosterDest, x.PosterSource })
                                         .Select(x => new VODAsset()
                                         {
                                             AssetId = x.Key.AssetId,
@@ -224,6 +233,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                             PID = x.Key.PID,
                                             PAID = x.Key.PAID,
                                             Folders = x.Where(y => y.AssetId.Equals(x.Key.AssetId)).SelectMany(y => y.Folders).Distinct().ToList(),
+                                            PosterSource = x.Key.PosterSource,
                                             PosterDest = x.Key.PosterDest,
                                         }).Distinct().ToList();
 
@@ -231,7 +241,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 return vassets;
 
             var fromDict = GetAllVodAssets(indexFileDir, config.SourceDir);
-            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = System.Environment.ProcessorCount, CancellationToken = this.token };
+            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = Math.Max(System.Environment.ProcessorCount / 2, 1), CancellationToken = this.token };
             Parallel.ForEach(vassets, po, (va) =>
                 {
                     po.CancellationToken.ThrowIfCancellationRequested();
@@ -347,6 +357,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             vAsset.PID = dr.GetString(6);
                             vAsset.PAID = dr.GetString(7);
                             vAsset.Folders.Add(vFolder);
+                            vAsset.PosterSource = dr.GetString(8);
                             vAsset.PosterDest = GetDestImagePath(vAsset.AssetId, destDir);
                             
                             vodAssets.Add(vAsset);
@@ -360,7 +371,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             //Group all assets and merge the vod folders
             vodAssets = vodAssets
-                .GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title, x.PosterDest })
+                .GroupBy(x => new { x.AssetId, x.PID, x.PAID, x.Title, x.PosterDest, x.PosterSource })
                 .Select(x => new VODAsset()
                 {
                     AssetId = x.Key.AssetId,
@@ -368,6 +379,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     PID = x.Key.PID,
                     PAID = x.Key.PAID,
                     PosterDest = x.Key.PosterDest,
+                    PosterSource = x.Key.PosterSource,
                     Folders = x.Where(y => y.AssetId.Equals(x.Key.AssetId)).SelectMany(y => y.Folders).Distinct().ToList(),
                 }).Distinct().ToList();
 
@@ -380,7 +392,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             Interlocked.Add(ref ngProgress.Total, vodAssets.Count);
             ngProgress.StopProgress = false;
 
-            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = System.Environment.ProcessorCount, CancellationToken = this.token };
+            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = Math.Max(System.Environment.ProcessorCount / 2, 1), CancellationToken = this.token };
             try
             {
                 //Get the VOD poster source file from the index if it exists
@@ -462,7 +474,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <param name="indexFile">Index file path</param>
         /// <param name="cancelToken">Cancellation token</param>
         private void ProcessAsset(ref IEnumerable<VODAsset> VAssets, string srcDir, int imgHeight, int imgWidth, int maxThreads, 
-            string posterDest, string vhoName, string indexFile, CancellationToken cancelToken)
+            string posterDest, string vhoName, string indexFile, string connectionString, CancellationToken cancelToken)
         {
             Trace.TraceInformation("INFO({0}): Processing VOD Asset Posters...", vhoName.ToUpper());
 
@@ -482,6 +494,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         {
                             po.CancellationToken.ThrowIfCancellationRequested();
 
+                            Task insertTsk = null;
                             //Get poster source if it doesn't already exist, or if it doesn't contain the PID/PAID values of the asset
                             if (string.IsNullOrEmpty(va.PosterSource) || !File.Exists(va.PosterSource) || !va.PosterSource.Contains(va.PID) || !va.PosterSource.Contains(va.PAID))
                             {
@@ -509,6 +522,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                                     Interlocked.Increment(ref this.ngProgress.Failed);
                                     return;
+                                }
+                                else
+                                {
+                                    insertTsk = NGVodPosterDataController.InsertAssetAsync(va, connectionString);
                                 }
                             }
 
@@ -574,7 +591,15 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 {
                                     Trace.TraceError("Failed re-processing image for {0} in {1}. {2}", va.AssetId, vhoName, ex3.Message);
                                 }
-                                throw;
+                            }
+
+                            try
+                            {
+                                insertTsk.Wait();
+                            }
+                            catch (Exception ex)
+                            {
+                                Trace.TraceError("Insert task failed for {0}. {1}", va.ToString(), ex.Message);
                             }
 
                             po.CancellationToken.ThrowIfCancellationRequested();
@@ -582,10 +607,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                         catch (OperationCanceledException)
                         {                            
                             throw;
-                        }
-                        catch (Exception ex)
-                        {
-                            exceptions.Enqueue(ex);
                         }
                     });
             }
@@ -606,7 +627,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
             catch (Exception ex)
             {
-                exceptions.Enqueue(new Exception("Failed to write to index file. " + ex.Message, ex));
+                Trace.TraceError("Failed to write to index file. {0}", ex.Message);
             }
                         
             if (exceptions.Count > 0)
@@ -691,7 +712,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 //Resize poster, save, and increment progress success if no errors
                 using (var sourceBM = new Bitmap(VAsset.PosterSource))
-                using (var destBM = Toolset.ResizeBitmap(sourceBM, Width, Height, null, null, true))
+                using (var destBM = new Bitmap(sourceBM, Width, Height))
+                //using (var destBM = Toolset.ResizeBitmap(sourceBM, Width, Height, null, null, true))
                 {
                     token.ThrowIfCancellationRequested();
                     destBM.Save(VAsset.PosterDest, ImageFormat.Jpeg);
@@ -856,7 +878,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             Trace.TraceInformation("Cleaning up {0}. Active Count => {1}", DestDir, usedAssetIds.Count());
 
-            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = System.Environment.ProcessorCount };
+            ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = Math.Max(System.Environment.ProcessorCount / 2, 1) };
 
             //Verify each file exists and add to usedFiles list if it does
             Parallel.ForEach<int>(usedAssetIds, po, (usedId) =>
