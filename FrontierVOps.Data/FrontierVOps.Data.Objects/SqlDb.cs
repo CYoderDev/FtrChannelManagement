@@ -51,13 +51,14 @@ namespace FrontierVOps.Data.Objects
             this.ConnectionTimeout = 30;
         }
 
-        public string CreateConnectionString()
+        public string CreateConnectionString(bool useMARs)
         {
             SqlConnectionStringBuilder strBuilder = new SqlConnectionStringBuilder();
             strBuilder.DataSource = this._dataSource;
             strBuilder.InitialCatalog = this._databaseName;
             strBuilder.ConnectTimeout = this._connectionTimeout;
             strBuilder.IntegratedSecurity = this._integratedSecurity;
+            strBuilder.MultipleActiveResultSets = useMARs;
 
             if (!this._integratedSecurity)
             {
@@ -66,6 +67,11 @@ namespace FrontierVOps.Data.Objects
             }
 
             return strBuilder.ConnectionString;
+        }
+
+        public string CreateConnectionString()
+        {
+            return CreateConnectionString(false);
         }
 
         private void validateArgs()
