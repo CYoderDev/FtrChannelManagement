@@ -15,6 +15,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         public int Failed;
         public int Skipped;
         public int Deleted;
+        public int TotalNoPoster;
         public Stopwatch Time { get; set; }
         public bool StopProgress { get; set; }
         public bool IsCanceled { get; set; }
