@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A15C34D5-112E-4534-82EF-FB5A5C73CF8C}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{80C87125-56F0-46F5-B280-293765C09DC6}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FrontierVOps.Data.Objects</RootNamespace>
-    <AssemblyName>FrontierVOps.Data.Objects</AssemblyName>
+    <RootNamespace>FiOSHealthCheckConsole</RootNamespace>
+    <AssemblyName>FiOSHealthCheckConsole</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -39,18 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SqlDb.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\FrontierVOps.Common\FrontierVOps.Common\FrontierVOps.Common.csproj">
-      <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>
-      <Name>FrontierVOps.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers.csproj">
-      <Project>{f3bee8df-7c63-4ae8-9fa8-344395500fba}</Project>
-      <Name>FrontierVOps.FiOS.Servers</Name>
-    </ProjectReference>
+    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

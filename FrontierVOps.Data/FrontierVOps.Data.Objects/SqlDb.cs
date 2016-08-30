@@ -7,10 +7,11 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using FrontierVOps.Common;
+using FrontierVOps.FiOS.Servers.Objects;
 
 namespace FrontierVOps.Data.Objects
 {
-    public class SqlDb
+    public class SqlDb : FiOSDbServer
     {
         /// <summary>
         /// Get or set the name of the SQL instance
@@ -49,6 +50,7 @@ namespace FrontierVOps.Data.Objects
         {
             this.IntegratedSecurity = true;
             this.ConnectionTimeout = 30;
+            this.HostFunction = ServerFunction.Database;
         }
 
         public string CreateConnectionString(bool useMARs)
