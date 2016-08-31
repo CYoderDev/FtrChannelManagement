@@ -1,0 +1,351 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration xmlns="http://FrontierVOps.FiOS.config/ServerLayout.xsd">
+  <VHE>
+    <Servers>
+      <Production>
+        <AdminConsole>
+          <Server Function="Web-App">CTX</Server>
+        </AdminConsole>
+        <AES>
+          <FrontEnd>
+            <Server>AESFETXCAWWPV01</Server>
+            <Server>AESFETXCAWWPV01</Server>
+          </FrontEnd>
+          <KeyGen>
+            <Server>AESKGTXCAWAPV01</Server>
+            <Server>AESKGTXCAWAPV02</Server>
+          </KeyGen>
+        </AES>
+        <AutoProvisioning>
+          <Server Function="Web-App">APVTXCAWAPV01</Server>
+          <Server Function="Web-App">APVTXCAWAPV02</Server>
+          <Server Function="Web-App">SPVTXCAWAPV01</Server>
+          <Server Function="Web-App">SPVTXCAWAPV02</Server>
+          <Server Function="Database">APVTXCAWDPP01</Server>
+          <Server Function="Database">APVTXCAWDPP02</Server>
+        </AutoProvisioning>
+        <FiOSAdvanced>
+          <AIM>
+            <Server Function="Web-App">AIMTXCAWAPV01</Server>
+            <Server Function="Web-App">AIMTXCAWAPV02</Server>
+            <Server Function="Web-App">AIMTXCAWWPV01</Server>
+            <Server Function="Web-App">AIMTXCAWWPV02</Server>
+            <Server Function="Database">AIMTXCAWDPP01</Server>
+            <Server Function="Database">AIMTXCAWDPP02</Server>
+          </AIM>
+          <Banner>
+            <Server Function="Web-App">ADSTXCAWAPV01</Server>
+            <Server Function="Web-App">ADSTXCAWAPV02</Server>
+            <Server Function="Web-App">ADSTXCAWWPV01</Server>
+            <Server Function="Web-App">ADSTXCAWWPV02</Server>
+            <Server Function="Database">ADSTXCAWDPP01</Server>
+            <Server Function="Database">ADSTXCAWDPP02</Server>
+          </Banner>
+        </FiOSAdvanced>
+        <FOTG>
+          <Server>FOTGTXCAWWPV01</Server>
+          <Server>FOTGTXCAWWPV02</Server>
+          <Server>FOTGTXCAWWPV03</Server>
+          <Server>FOTGTXCAWWPV04</Server>
+        </FOTG>
+        <Hydra>
+          <Server Function="Database">HYDRATXCAWDPP01</Server>
+          <Server Function="Database">HYDRATXCAWDPP02</Server>
+          <Server Function="Database">HYDRATXCAWDPP03</Server>
+          <Server Function="Database">HYDRATXCAWDPP04</Server>
+          <Server Function="Web-App">HYDRATXCAWWPV01</Server>
+          <Server Function="Web-App">HYDRATXCAWWPV02</Server>
+          <Server Function="Web-App">HYDRATXCAWWPV03</Server>
+          <Server Function="Web-App">HYDRATXCAWWPV04</Server>
+        </Hydra>
+        <MSV>
+          <Injection>
+            <Server>MSVINTXCAWAPV01</Server>
+          </Injection>
+          <UltraViolet>
+            <Server>MSVUVTXCAWAPV01</Server>
+            <Server>MSVUVTXCAWAPV02</Server>
+          </UltraViolet>
+          <Server Function="Database">MSVTXCAWDPP01</Server>
+          <Server Function="Database">MSVTXCAWDPP02</Server>
+          <Server Function="Web-App">MSVTXCAWWPV01</Server>
+          <Server Function="Web-App">MSVTXCAWWPV02</Server>
+          <Server Function="Web-App">MSVTXCAWWPV03</Server>
+          <Server Function="Web-App">MSVTXCAWWPV04</Server>
+        </MSV>
+        <NSP>
+          <Server Function="Database">NSPTXCAWDPP01</Server>
+          <Server Function="Database">NSPTXCAWDPP02</Server>
+          <Server Function="Database">NSPTXCAWDPP03</Server>
+          <Server Function="Database">NSPTXCAWDPP04</Server>
+          <Server Function="Web-App">NSPTXCAWAPV01</Server>
+          <Server Function="Web-App">NSPTXCAWAPV02</Server>
+          <Server Function="Web-App">NSPTXCAWAPV03</Server>
+          <Server Function="Web-App">NSPTXCAWAPV04</Server>
+          <Server Function="Web-App">NSPTXCAWAPV05</Server>
+          <Server Function="Web-App">NSPTXCAWAPV06</Server>
+          <Server Function="Web-App">NSPTXCAWAPV07</Server>
+          <Server Function="Web-App">NSPTXCAWAPV08</Server>
+          <Server Function="Web-App">VMSSTXCAWAPV01</Server>
+          <Server Function="Web-App">VMSSTXCAWAPV02</Server>
+          <Server Function="Web-App">NSPUTXCAWADP01</Server>
+          <Server Function="Web-App">NSPUTXCAWADP02</Server>
+        </NSP>
+        <PlayReady>
+          <Server>PLRYTXCAWAPV01</Server>
+          <Server>PLRYTXCAWAPV02</Server>
+        </PlayReady>
+        <RatingsRecom>
+          <Server>ANLYTXCAWAPP05</Server>
+          <Server>ANLYTXCAWAPP06</Server>
+          <Server>TMSTXCAWAPP01</Server>
+          <Server>TMSTXCAWAPP02</Server>
+          <Server>TMSTXCAWAPP03</Server>
+          <Server>TMSTXCAWAPP04</Server>
+        </RatingsRecom>
+        <Search>
+          <Server>SRCHTXCAWWPV01</Server>
+          <Server>SRCHTXCAWWPV02</Server>
+          <Server>SRCHTXCAWWPV03</Server>
+          <Server>SRCHTXCAWWPV04</Server>
+        </Search>
+        <STBLogging>
+          <Server Function="Database">LOGTXCAWDPP01</Server>
+          <Server Function="Database">LOGTXCAWDPP02</Server>
+          <Server Function="Web-App">LOGTXCAWAPV01</Server>
+          <Server Function="Web-App">LOGTXCAWAPV02</Server>
+          <Server Function="Web-App">LOGTXCAWAPV03</Server>
+          <Server Function="Web-App">LOGTXCAWAPV04</Server>
+        </STBLogging>
+        <VODEncryption>
+          <Server>OLESTXCAUIPP01</Server>
+          <Server>OLESTXCAUIPP02</Server>
+          <Server>OLESTXCAUIPP03</Server>
+          <Server>OLESTXCAUIPP04</Server>
+          <Server>OLESTXCAUIPP05</Server>
+          <Server>OLESTXCAUIPP06</Server>
+          <Server>OLESTXCAUIPP07</Server>
+          <Server>OLESTXCAUIPP08</Server>
+          <Server>OLESTXCAUIPP09</Server>
+          <Server>OLESTXCAUIPP10</Server>
+          <Server>OLESTXCAUIPP11</Server>
+          <Server>OLESTXCAUIPP12</Server>
+          <Server>OLESTXCAUIPP13</Server>
+          <Server>OLESTXCAUIPP14</Server>
+          <Server>OLESTXCAUIPP15</Server>
+          <Server>OLESTXCAUIPP16</Server>
+          <Server>OLESTXCAUIPP17</Server>
+          <Server>OLESTXCAUIPP18</Server>
+        </VODEncryption>
+        <MediaMgr>
+          <Server>MMATXCAWWPV01</Server>
+          <Server>MMATXCAWWPV02</Server>
+          <Server>MMATXCAWWPV03</Server>
+          <Server>MMATXCAWWPV04</Server>
+        </MediaMgr>
+      </Production>
+      <Infrastructure>
+        <DomainControllers>
+          <Server>VHEDCTXCAWIPV01</Server>
+          <Server>VHEDCTXCAWIPV02</Server>
+          <Server>IMGDCTXCAWIPV01</Server>
+          <Server>IMGDCTXCAWIPV02</Server>
+        </DomainControllers>
+        <KMS-MDT>
+          <Server>KMSTXCAFIOS01</Server>
+          <Server>MDT</Server>
+        </KMS-MDT>
+        <SCOM>
+          <Gateway>
+            <Server>SCMGWTXCAWDPV01</Server>
+            <Server>SCMGWTXCAWDPV02</Server>
+          </Gateway>
+          <Management>
+            <Server>SCMGMTXCAWDPV01</Server>
+            <Server>SCMGMTXCAWDPV02</Server>
+          </Management>
+          <Database>
+            <Server>SCMDBTXCAWDPV01</Server>
+            <Server>SCMDBTXCAWDPV02</Server>
+          </Database>
+        </SCOM>
+        <SCCM>
+          <Server>SCCMTXCAWIPV01</Server>
+        </SCCM>
+        <SFTP>
+          <Server>SFTPTXCAWAPV01</Server>
+        </SFTP>
+      </Infrastructure>
+    </Servers>
+  </VHE>
+  <VHOs>
+    <VHO Name="VHO1">
+      <Servers>
+        <DomainControllers>
+          <Server>CTXV01PADC01</Server>
+        </DomainControllers>
+        <Gateway>
+          <Server>CTXV01PSCGW01</Server>
+        </Gateway>
+        <IMG>
+          <Server Function="Database">CTXV01PIMGD01</Server>
+          <Server Function="Database">CTXV01PIMGD02</Server>
+          <Server Function="Database">CTXV01PIMGD03</Server>
+          <Server Function="Database">CTXV01PIMGD04</Server>
+          <Server Function="Web-App">CTXV01PIMGW01</Server>
+          <Server Function="Web-App">CTXV01PIMGW02</Server>
+          <Server Function="Web-App">CTXV01PIMGW03</Server>
+          <Server Function="Web-App">CTXV01PIMGW04</Server>
+          <Server Function="Web-App">CTXV01PIMGW05</Server>
+          <Server Function="Web-App">CTXV01PIMGW06</Server>
+          <Server Function="Web-App">CTXV01PIMGW07</Server>
+          <Server Function="Web-App">CTXV01PIMGW08</Server>
+          <Server Function="Web-App">CTXV01PIMGW09</Server>
+          <Server Function="Web-App">CTXV01PIMGW10</Server>
+          <Server Function="Web-App">CTXV01PIMGW11</Server>
+          <Server Function="Web-App">CTXV01PIMGW12</Server>
+        </IMG>
+        <MES>
+          <Server Function="Web-App">CTXV01PMESW01</Server>
+          <Server Function="Web-App">CTXV01PMESW02</Server>
+          <Server Function="Web-App">CTXV01PMESW03</Server>
+          <Server Function="Web-App">CTXV01PMESW04</Server>
+          <Server Function="Web-App">CTXV01PMESW05</Server>
+          <Server Function="Web-App">CTXV01PMESW06</Server>
+          <Server Function="Web-App">CTXV01PMESW07</Server>
+          <Server Function="Web-App">CTXV01PMESW08</Server>
+        </MES>
+        <MGS>
+          <Server Function="Database">CTXV01PMGSD01</Server>
+          <Server Function="Database">CTXV01PMGSD01</Server>
+          <Server Function="Web-App">CTXV01PMGSA01</Server>
+          <Server Function="Web-App">CTXV01PMGSA02</Server>
+          <Server Function="Web-App">CTXV01PMGSA03</Server>
+          <Server Function="Web-App">CTXV01PMGSA04</Server>
+        </MGS>
+        <Thumbnail>
+          <Server Function="Web-App">CTXV01MMGA01</Server>
+          <Server Function="Web-App">CTXV01MMGA02</Server>
+          <Server Function="Web-App">CTXV01MMGA03</Server>
+          <Server Function="Web-App">CTXV01MMGA04</Server>
+          <Server Function="Web-App">CTXV01MMGA05</Server>
+          <Server Function="Web-App">CTXV01MMGA06</Server>
+        </Thumbnail>
+      </Servers>
+    </VHO>
+    <VHO Name="VHO2">
+      <Servers>
+        <DomainControllers>
+          <Server>TFLV02PADC01</Server>
+        </DomainControllers>
+        <Gateway>
+          <Server>TFLV02PSCGW01</Server>
+        </Gateway>
+        <IMG>
+          <Server Function="Database">TFLV02PIMGD01</Server>
+          <Server Function="Database">TFLV02PIMGD02</Server>
+          <Server Function="Database">TFLV02PIMGD03</Server>
+          <Server Function="Database">TFLV02PIMGD04</Server>
+          <Server Function="Web-App">TFLV02PIMGW01</Server>
+          <Server Function="Web-App">TFLV02PIMGW02</Server>
+          <Server Function="Web-App">TFLV02PIMGW03</Server>
+          <Server Function="Web-App">TFLV02PIMGW04</Server>
+          <Server Function="Web-App">TFLV02PIMGW05</Server>
+          <Server Function="Web-App">TFLV02PIMGW06</Server>
+          <Server Function="Web-App">TFLV02PIMGW07</Server>
+          <Server Function="Web-App">TFLV02PIMGW08</Server>
+          <Server Function="Web-App">TFLV02PIMGW09</Server>
+          <Server Function="Web-App">TFLV02PIMGW10</Server>
+          <Server Function="Web-App">TFLV02PIMGW11</Server>
+          <Server Function="Web-App">TFLV02PIMGW12</Server>
+        </IMG>
+        <MES>
+          <Server Function="Web-App">TFLV02PMESW01</Server>
+          <Server Function="Web-App">TFLV02PMESW02</Server>
+          <Server Function="Web-App">TFLV02PMESW03</Server>
+          <Server Function="Web-App">TFLV02PMESW04</Server>
+          <Server Function="Web-App">TFLV02PMESW05</Server>
+          <Server Function="Web-App">TFLV02PMESW06</Server>
+          <Server Function="Web-App">TFLV02PMESW07</Server>
+          <Server Function="Web-App">TFLV02PMESW08</Server>
+        </MES>
+        <MGS>
+          <Server Function="Database">TFLV02PMGSD01</Server>
+          <Server Function="Database">TFLV02PMGSD02</Server>
+          <Server Function="Web-App">TFLV02PMGSA01</Server>
+          <Server Function="Web-App">TFLV02PMGSA02</Server>
+          <Server Function="Web-App">TFLV02PMGSA03</Server>
+          <Server Function="Web-App">TFLV02PMGSA04</Server>
+        </MGS>
+        <Thumbnail>
+          <Server Function="Web-App">TFLV02MMGA01</Server>
+          <Server Function="Web-App">TFLV02MMGA02</Server>
+          <Server Function="Web-App">TFLV02MMGA03</Server>
+          <Server Function="Web-App">TFLV02MMGA04</Server>
+          <Server Function="Web-App">TFLV02MMGA05</Server>
+          <Server Function="Web-App">TFLV02MMGA06</Server>
+        </Thumbnail>
+      </Servers>
+    </VHO>
+    <VHO Name="VHO3">
+      <Servers>
+        <DomainControllers>
+          <Server>PCAV03PADC01</Server>
+        </DomainControllers>
+        <Gateway>
+          <Server>PCAV03PSCGW01</Server>
+        </Gateway>
+        <IMG>
+          <Server Function="Database">PCAV03PIMGD01</Server>
+          <Server Function="Database">PCAV03PIMGD02</Server>
+          <Server Function="Database">PCAV03PIMGD03</Server>
+          <Server Function="Database">PCAV03PIMGD04</Server>
+          <Server Function="Web-App">PCAV03PIMGW01</Server>
+          <Server Function="Web-App">PCAV03PIMGW02</Server>
+          <Server Function="Web-App">PCAV03PIMGW03</Server>
+          <Server Function="Web-App">PCAV03PIMGW04</Server>
+          <Server Function="Web-App">PCAV03PIMGW05</Server>
+          <Server Function="Web-App">PCAV03PIMGW06</Server>
+          <Server Function="Web-App">PCAV03PIMGW07</Server>
+          <Server Function="Web-App">PCAV03PIMGW08</Server>
+          <Server Function="Web-App">PCAV03PIMGW09</Server>
+          <Server Function="Web-App">PCAV03PIMGW10</Server>
+          <Server Function="Web-App">PCAV03PIMGW11</Server>
+          <Server Function="Web-App">PCAV03PIMGW12</Server>
+          <Server Function="Web-App">PCAV03PIMGW13</Server>
+          <Server Function="Web-App">PCAV03PIMGW14</Server>
+        </IMG>
+        <MES>
+          <Server Function="Web-App">PCAV03PMESW01</Server>
+          <Server Function="Web-App">PCAV03PMESW02</Server>
+          <Server Function="Web-App">PCAV03PMESW03</Server>
+          <Server Function="Web-App">PCAV03PMESW04</Server>
+          <Server Function="Web-App">PCAV03PMESW05</Server>
+          <Server Function="Web-App">PCAV03PMESW06</Server>
+          <Server Function="Web-App">PCAV03PMESW07</Server>
+          <Server Function="Web-App">PCAV03PMESW08</Server>
+        </MES>
+        <MGS>
+          <Server Function="Database">PCAV03PMGSD01</Server>
+          <Server Function="Database">PCAV03PMGSD02</Server>
+          <Server Function="Web-App">PCAV03PMGSA01</Server>
+          <Server Function="Web-App">PCAV03PMGSA02</Server>
+          <Server Function="Web-App">PCAV03PMGSA03</Server>
+          <Server Function="Web-App">PCAV03PMGSA04</Server>
+        </MGS>
+        <Thumbnail>
+          <Server Function="Web-App">PCAV03MMGA01</Server>
+          <Server Function="Web-App">PCAV03MMGA02</Server>
+          <Server Function="Web-App">PCAV03MMGA03</Server>
+          <Server Function="Web-App">PCAV03MMGA04</Server>
+          <Server Function="Web-App">PCAV03MMGA05</Server>
+          <Server Function="Web-App">PCAV03MMGA06</Server>
+          <Server Function="Web-App">PCAV03MMGA07</Server>
+          <Server Function="Web-App">PCAV03MMGA08</Server>
+          <Server Function="Web-App">PCAV03MMGA09</Server>
+          <Server Function="Web-App">PCAV03MMGA10</Server>
+        </Thumbnail>
+      </Servers>
+    </VHO>
+  </VHOs>
+</configuration>
