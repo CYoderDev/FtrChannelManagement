@@ -235,7 +235,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 {
                                     if (ex is TaskCanceledException || ex is OperationCanceledException)
                                     {
-                                        throw ex;
+                                        continue;
                                     }
                                     else
                                         Trace.TraceError(ex.Message + "\n");
@@ -246,7 +246,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             try
                             {
                                 Console.WriteLine("\nCreating missing poster attachment and sending...");
-                                WriteToMissPosterLog(ctrl.GetAllVodAssets(config, token).Where(x => string.IsNullOrEmpty(x.PosterSource)), config.EmailTo, config.LogMissPosterDir);
+                                WriteToMissPosterLog(ctrl.GetAllVodAssets(config).Where(x => string.IsNullOrEmpty(x.PosterSource)), config.EmailTo, config.LogMissPosterDir);
                                 Console.WriteLine("Complete\n");
                             }
                             catch (Exception ex)
@@ -356,11 +356,17 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 try
                 {
                     //Setup email parameters and send email
+                    StringBuilder body = new StringBuilder();
                     string smtp = ConfigurationManager.AppSettings["SmtpServer"];
                     int port = int.Parse(ConfigurationManager.AppSettings["SmtpPort"]);
-                    string body = "Frontier Ops NGVODPoster missing posters found. See attached log.";
+                    body.AppendLine("Frontier Ops NGVODPoster missing posters found. See attached log.");
+                    body.AppendFormat("{0}{0}Total Assets with Missing Posters: {1}{0}{0}", System.Environment.NewLine, vassets.Count());
+                    body.AppendFormat("Provider Id's{0}{0}", System.Environment.NewLine);
+                    body.AppendFormat("PID | # of missing posters");
+                    vassets.GroupBy(x => x.PID ).Select(y => new { y.Key, count = y.Key.Count() }).OrderByDescending(x => x.count)
+                        .ToList().ForEach(x => body.AppendFormat("{0}{1} | {2}", System.Environment.NewLine, x.Key, x.count));
                     string subject = "Missing VOD Posters";
-                    Toolset.SendEmail(smtp, null, null, false, subject, body, "FrontierFiOSOps@ftr.com", sendTo.ToArray(), errorLogs.ToArray());
+                    Toolset.SendEmail(smtp, null, null, false, false, subject, body.ToString(), "FrontierFiOSOps@ftr.com", sendTo.ToArray(), errorLogs.ToArray());
                 }
                 catch (Exception ex)
                 {
@@ -385,6 +391,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             {
                 value.StopProgress = true;
                 Console.Write("\n--------Task Canceled--------\n");
+                Console.WriteLine("Please wait while the application closes all running processes.");
             }
             //If the progress is 100%, then the task is considered complete
             else if (total == value.Total)
@@ -399,6 +406,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
             else if (Math.Ceiling((progPerc * 100)) % 1 == 0)
             {
                 double minRemaining = (value.Time.Elapsed.TotalMinutes / (total - value.Skipped)) * (value.Total - total);
+#if DEBUG
+                Trace.TraceInformation("MinRem: {0} | ElapsedMin: {1} | Total: {2} | Skipped: {3} | Val Total: {4} | ({5} * {6})", minRemaining, value.Time.Elapsed.TotalMinutes, total, value.Skipped, value.Total,
+                    (value.Time.Elapsed.TotalMinutes / (total - value.Skipped)), (value.Total - total));
+#endif
                 string rem = minRemaining > 60 ? minRemaining > 1440 ? (minRemaining / 60 / 24).ToString("N1") + " days" : (minRemaining / 60).ToString("N1") + " hrs" :
                     minRemaining < 1 ? (minRemaining * 60).ToString("N0") + "s" : minRemaining.ToString("N0") + " min";
 

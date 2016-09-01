@@ -128,6 +128,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 try
                 {
+                    //Allow threads to catch up before changing the console color
+                    await Task.Delay(20);
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     this.ngProgress.StopProgress = false;
                     //Wait to finish
@@ -201,18 +203,16 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// </summary>
         /// <param name="config">Configuration parameters</param>
         /// <returns></returns>
-        internal IEnumerable<VODAsset> GetAllVodAssets(NGVodPosterConfig config, CancellationToken cancelToken)
+        internal IEnumerable<VODAsset> GetAllVodAssets(NGVodPosterConfig config)
         {
             foreach(var vho in config.Vhos)
             {
-                cancelToken.ThrowIfCancellationRequested();
                 string conStr = vho.Value.IMGDb.CreateConnectionString();
                 string sproc = "sp_FUI_GetAllVODFolderAssetInfo";
 
                 
                 foreach (var dr in DBFactory.SQL_ExecuteReader(conStr, sproc, System.Data.CommandType.StoredProcedure))
                 {
-                    cancelToken.ThrowIfCancellationRequested();
                     var vAsset = new VODAsset();
 
                     vAsset.AssetId = int.Parse(dr.GetString(0));
@@ -357,7 +357,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
                             {
                                 po.CancellationToken.ThrowIfCancellationRequested();
 
-                                if (!va.PosterSource.Contains(config.SourceDir))
+                                //Make the poster source the full path
+                                if (!string.IsNullOrEmpty(va.PosterSource) && !va.PosterSource.Contains(config.SourceDir))
                                 {
                                     va.PosterSource = Path.Combine(config.SourceDir, va.PosterSource);
                                 }
@@ -366,9 +367,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 //Get poster source if it doesn't already exist, or if it doesn't contain the PID/PAID values of the asset
                                 if (string.IsNullOrEmpty(va.PosterSource) || !File.Exists(va.PosterSource) || !va.PosterSource.ToLower().Contains(va.PID.ToLower()) || !va.PosterSource.ToLower().Contains(va.PAID.ToLower()))
                                 {
-                                    if (!string.IsNullOrEmpty(va.PosterSource))
-                                        Interlocked.Increment(ref ngProgress.TotalNoPoster);
-
                                     try
                                     {
                                         va.PosterSource = GetSourceImagePath(va.PID, va.PAID, config.SourceDir);
@@ -410,7 +408,22 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                     && (File.GetLastWriteTime(va.PosterDest).CompareTo(File.GetLastWriteTime(va.PosterSource)) >= 0
                                     && File.GetCreationTime(va.PosterDest).CompareTo(File.GetCreationTime(va.PosterSource)) >= 0))
                                 {
+#if DEBUG
+                                    if (_onlyNew)
+                                        Trace.TraceInformation("Skipped: {0} - {1} - {2}", va.AssetId, va.PID, va.PAID);
+#endif
                                     Interlocked.Increment(ref ngProgress.Skipped);
+
+                                    //It is possible that the poster successfully processed but it was never inserted into the database, this will handle this scenario
+                                    try
+                                    {
+                                        if (null != insertTsk)
+                                            insertTsk.Wait();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Trace.TraceError("Insert task failed for skipped asset {0} in {1}. {2}", va.AssetId, vhoName, ex.Message);
+                                    }
                                     return;
                                 }
 
