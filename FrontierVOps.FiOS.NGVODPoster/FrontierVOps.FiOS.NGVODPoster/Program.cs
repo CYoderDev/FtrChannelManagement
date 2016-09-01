@@ -22,6 +22,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
         static void Main(string[] args)
         {
             int? maxImages = null;
+            string customAction = null;
+            bool onlyNew = false;
             string debugLog = Path.Combine(Directory.GetCurrentDirectory(), "Debug.log");
             NGVodPosterConfig config = null;   
             CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -144,6 +146,21 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 }
                                 i++;
                             }
+                            else if (args[i].ToUpper().Equals("-ONLYNEW"))
+                            {
+                                onlyNew = true;
+                                Trace.TraceInformation("Process Only Deltas");
+                            }
+                            else if (args[i].ToUpper().Equals("-OD"))
+                            {
+                                customAction = "OD";
+                                Trace.TraceInformation("Custom Action: {0}", customAction);
+                            }
+                            else if (args[i].ToUpper().Equals("-OM"))
+                            {
+                                customAction = "OM";
+                                Trace.TraceInformation("Custom Action: {0}", customAction);
+                            }
                             else if (args[i].Contains("?") || args[i].ToUpper().Equals("-H"))
                             {
                                 DisplayHelp();
@@ -167,6 +184,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     //Create the controller
                     using (var ctrl = new NGVodPosterController(token, progress))
                     {
+                        if (!string.IsNullOrEmpty(customAction))
+                            ctrl.customAction = customAction;
+
+                        if (onlyNew)
+                            ctrl.OnlyNew = true;
+
                         //Inline cancel key press handler
                         Console.CancelKeyPress += (sender, e) =>
                         {
@@ -219,7 +242,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                 }
                             }
 
-                            //Create missing poster log based on result of tasks
+                            //Create missing poster log
                             try
                             {
                                 Console.WriteLine("\nCreating missing poster attachment and sending...");
@@ -375,7 +398,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //If the progress is divisible by the provided value, then report progress
             else if (Math.Ceiling((progPerc * 100)) % 1 == 0)
             {
-                double minRemaining = (value.Time.Elapsed.TotalMinutes / (total - value.Skipped)) * (value.TotalNoPoster - (total - value.Skipped));
+                double minRemaining = (value.Time.Elapsed.TotalMinutes / (total - value.Skipped)) * (value.Total - total);
                 string rem = minRemaining > 60 ? minRemaining > 1440 ? (minRemaining / 60 / 24).ToString("N1") + " days" : (minRemaining / 60).ToString("N1") + " hrs" :
                     minRemaining < 1 ? (minRemaining * 60).ToString("N0") + "s" : minRemaining.ToString("N0") + " min";
 

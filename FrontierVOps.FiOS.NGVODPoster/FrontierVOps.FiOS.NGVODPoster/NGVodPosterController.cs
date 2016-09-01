@@ -27,6 +27,16 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// Progress of the process operation
         /// </summary>
         internal NgVodPosterProgress ngProgress { get; private set; }
+
+        /// <summary>
+        /// Custom actions from the user input
+        /// </summary>
+        internal string customAction { get; set; }
+
+        /// <summary>
+        /// Process only new assets and assets that do not have a poster source
+        /// </summary>
+        internal bool OnlyNew { get { return this._onlyNew; } set { this._onlyNew = value; } }
         #endregion Internal Properties
 
         #region Private Fields
@@ -39,7 +49,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// Used to calculate the amount of time surpassed during processing
         /// </summary>
         private System.Timers.Timer timer;
-        
+
+        /// <summary>
+        /// Process only new assets (manual override)
+        /// </summary>
+        private bool _onlyNew;
         #endregion Private Fields
 
         /// <summary>
@@ -61,6 +75,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             this.timer.Enabled = true;
             this.timer.Start();
             this.ngProgress.Time.Start();
+            this._onlyNew = false;
         }
 
         /// <summary>
@@ -104,28 +119,34 @@ namespace FrontierVOps.FiOS.NGVODPoster
             GC.WaitForPendingFinalizers();
             GC.Collect();
 
-            //Start run task to ensure it ran to completion before attempting cleanup
-            var mainTsk = Task.Factory.StartNew(() => 
-                ProcessAsset(config, ngVho.Name, ngVho.PosterDir, connectionStr, this.token));
+            bool ranToCompletion = false;
+            if (string.IsNullOrEmpty(this.customAction) || this.customAction.ToUpper().EndsWith("M"))
+            {
+                //Start run task to ensure it ran to completion before attempting cleanup
+                var mainTsk = Task.Factory.StartNew(() =>
+                    ProcessAsset(config, ngVho.Name, ngVho.PosterDir, connectionStr, this.token));
 
-            try
-            {
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                this.ngProgress.StopProgress = false;
-                //Wait to finish
-                await mainTsk;
-            }
-            catch (AggregateException aex)
-            {
-                foreach (var ex in aex.InnerExceptions)
-                    Trace.TraceError("Error during processing method. {0}", ex.Message);
-            }
+                try
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    this.ngProgress.StopProgress = false;
+                    //Wait to finish
+                    await mainTsk;
+                }
+                catch (AggregateException aex)
+                {
+                    foreach (var ex in aex.InnerExceptions)
+                        Trace.TraceError("Error during processing method. {0}", ex.Message);
+                }
 
-            if (ngProgress.CompleteCount > config.Vhos.Count && ngProgress.CompleteCount % config.Vhos.Count == 0 && !token.IsCancellationRequested)
-            {
-                await Task.Delay(15000);
-                this.ngProgress.StopProgress = true;
-                this.ngProgress.IsComplete = !this.ngProgress.IsCanceled;
+                ranToCompletion = mainTsk.Status == TaskStatus.RanToCompletion;
+
+                if (ngProgress.CompleteCount > config.Vhos.Count && ngProgress.CompleteCount % config.Vhos.Count == 0 && !token.IsCancellationRequested)
+                {
+                    await Task.Delay(15000);
+                    this.ngProgress.StopProgress = true;
+                    this.ngProgress.IsComplete = !this.ngProgress.IsCanceled;
+                }
             }
 
             GC.Collect();
@@ -137,13 +158,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Clean up poster directory based on the vho's active assets if the process had no errors, no max values were specified,
             //and cancellation was not requested.
 
-            if (mainTsk.Status == TaskStatus.RanToCompletion && !maxImages.HasValue && !token.IsCancellationRequested)
+            if ((ranToCompletion || (!string.IsNullOrEmpty(this.customAction) && this.customAction.ToUpper().EndsWith("D"))) && !maxImages.HasValue && !token.IsCancellationRequested)
             {
                 try
                 {
-                    await Task.Factory.StartNew(() => 
-                        cleanupDestination(GetVODAssets(connectionStr, maxImages, vho, config.SourceDir, ngVho.PosterDir, this.token).Select(x => x.AssetId), ngVho.PosterDir, config.MaxThreads))
-                        .ConfigureAwait(false);
+                    await Task.Factory.StartNew(() =>
+                        cleanupDestination(GetVODAssets(connectionStr, maxImages, vho, config.SourceDir, ngVho.PosterDir, this.token).Select(x => x.PosterDest).ToList(), ngVho.PosterDir, config.MaxThreads));
                 }
                 catch (Exception ex)
                 {
@@ -183,7 +203,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <returns></returns>
         internal IEnumerable<VODAsset> GetAllVodAssets(NGVodPosterConfig config, CancellationToken cancelToken)
         {
-            List<VODAsset> vassets = new List<VODAsset>();
             foreach(var vho in config.Vhos)
             {
                 cancelToken.ThrowIfCancellationRequested();
@@ -200,9 +219,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     vAsset.Title = dr.GetString(1);
                     vAsset.PID = dr.GetString(2);
                     vAsset.PAID = dr.GetString(3);
-                    vAsset.PosterSource = dr.GetString(4);
+                    vAsset.PosterSource = dr.IsDBNull(4) ? string.Empty : dr.GetString(4);
                     vAsset.PosterDest = GetDestImagePath(vAsset.AssetId, vho.Value.PosterDir);
-                    vassets.Add(vAsset);
 
                     yield return vAsset;
                 }
@@ -238,6 +256,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 vAsset.PID = dr.GetString(2);
                 vAsset.PAID = dr.GetString(3);
                 vAsset.PosterSource = dr.IsDBNull(4) ? string.Empty : dr.GetString(4);
+
+                //If only processing new or assets with no posters, don't return assets assets with posters
+                if (this._onlyNew && !string.IsNullOrEmpty(vAsset.PosterSource))
+                    continue;
+
                 vAsset.PosterDest = GetDestImagePath(vAsset.AssetId, destDir);
 
                 index++;
@@ -315,6 +338,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
             Interlocked.Add(ref this.ngProgress.Total, GetVODAssets(connectionString, MaxImages, vhoName, config.SourceDir, destDir, cancelToken).Count());
             Interlocked.Add(ref this.ngProgress.TotalNoPoster, GetVODAssets(connectionString, MaxImages, vhoName, config.SourceDir, destDir, cancelToken)
                 .Where(x => string.IsNullOrEmpty(x.PosterSource)).Count());
+
+#if DEBUG
+            Trace.TraceInformation("Number of missing posters in {0} ==> {1}", vhoName, GetVODAssets(connectionString, MaxImages, vhoName, config.SourceDir, destDir, cancelToken)
+                .Where(x => string.IsNullOrEmpty(x.PosterSource)).Count());
+            Trace.TraceInformation("New missing poster total for all vhos ==> {0}", this.ngProgress.TotalNoPoster);
+#endif
             
             try
             {
@@ -371,11 +400,12 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                     }
                                     else
                                     {
+                                        //Insert new source map into database, or update the existing one
                                         insertTsk = dataController.InsertAssetAsync(va, cancelToken);
                                     }
                                 }
 
-                                //Skip if destination file is newer than the source file
+                                //Skip if destination file is newer than or the same as the source file
                                 if (File.Exists(va.PosterDest)
                                     && (File.GetLastWriteTime(va.PosterDest).CompareTo(File.GetLastWriteTime(va.PosterSource)) >= 0
                                     && File.GetCreationTime(va.PosterDest).CompareTo(File.GetCreationTime(va.PosterSource)) >= 0))
@@ -618,12 +648,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
             //Get all unused assets.
             //var unusedSrcFiles = Directory.EnumerateFiles(srcPath).Except(usedSourceFiles, new SourceFileComparer());
             var unusedSrcFiles = Directory.EnumerateFiles(config.SourceDir)
-                .Except(NGVodPosterDataController.GetAllPosterSourceMaps(config, cancelToken).Select(x => x.Item2), new SourceFileComparer());
+                .Except(NGVodPosterDataController.GetAllPosterSourceMaps(config, cancelToken).Select(x => x.Item2).ToList(), new SourceFileComparer());
 
-            Trace.TraceInformation("INFO: Archiving unused posters. Count => {0}", unusedSrcFiles.Count());
-#if DEBUG
-            var allAssets = GetAllVodAssets(config, cancelToken);
-#endif
+            Trace.TraceInformation("Archiving unused posters. Count => {0}", unusedSrcFiles.Count());
 
             var archiveDir = Path.Combine(config.SourceDir, "Archive");
 
@@ -634,13 +661,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
             Parallel.ForEach(unusedSrcFiles, (delFile) =>
                 {
                     this.token.ThrowIfCancellationRequested();
-
-#if DEBUG
-                    if (checkIfExists(delFile, ref allAssets))
-                    {
-                        Trace.TraceInformation("FILE MATCHES ASSET! {0}", delFile);
-                    }
-#endif
 
                     //if the file exists and the filer is older than the amount of surpassed running days, copy to the archive and delete it
                     if (File.Exists(delFile) && File.GetLastWriteTime(delFile).Date < DateTime.Now.Date.AddDays(-ngProgress.Time.Elapsed.Days))
@@ -679,7 +699,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 });
 
             //Cleanup the archive directory of any files older than 90 days
-            Trace.WriteLine("INFO: Cleaning old posters from archive directory...");
+            Trace.TraceInformation("Cleaning old posters from archive directory...");
             Parallel.ForEach(Directory.EnumerateFiles(archiveDir), (archiveFile) =>
                 {
                     this.token.ThrowIfCancellationRequested();
@@ -721,64 +741,32 @@ namespace FrontierVOps.FiOS.NGVODPoster
         /// <summary>
         /// Clean up the VHO's poster directory by removing any posters that are not active
         /// </summary>
-        /// <param name="usedAssetIds">All used asset id's in the VHO</param>
+        /// <param name="usedDestFiles">All used asset id's in the VHO</param>
         /// <param name="DestDir">VHO destination directory UNC path</param>
         /// <param name="maxThreads">Max number of threads to use during the clean up process</param>
-        private void cleanupDestination(IEnumerable<int>usedAssetIds, string DestDir, int maxThreads)
+        private void cleanupDestination(IEnumerable<string>usedDestFiles, string DestDir, int maxThreads)
         {
-            List<string> usedFiles = new List<string>();
+            //List<string> usedFiles = new List<string>();
 
-            Trace.TraceInformation("Cleaning up {0}. Active Count => {1}", DestDir, usedAssetIds.Count());
+            Trace.TraceInformation("Cleaning up {0}. Active Count => {1}", DestDir, usedDestFiles.Count());
 
             ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = Math.Max(System.Environment.ProcessorCount / 2, 1) };
 
-            //Verify each file exists and add to usedFiles list if it does
-            Parallel.ForEach<int>(usedAssetIds, po, (usedId) =>
-                {
-                    try
-                    {
-                        string fileName = Path.Combine(DestDir, string.Format("{0}.jpg", usedId));
-
-                        if (File.Exists(fileName))
-                            usedFiles.Add(fileName);
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError("Error cleaning destination folder while obtaining active poster {0}. {1}", usedId, ex.Message);
-                    }
-                });
-
 #if DEBUG
             Trace.TraceInformation("Getting files to delete from {0}", DestDir);
+            Trace.TraceInformation("Number of files to remove from {0} => {1}", DestDir, Directory.EnumerateFiles(DestDir).Except(usedDestFiles, new SourceFileComparer()).Count());
 #endif
-            //Get files to delete
-            var delFiles = Directory.EnumerateFiles(DestDir).Except(usedFiles, new SourceFileComparer());
-
-#if DEBUG
-            Trace.TraceInformation("Complete! {0}", DestDir);
-#endif
-
-            Trace.TraceInformation("Number of files to remove from {0} => {1}", DestDir, delFiles.Count());
 
             //Delete the file
-            Parallel.ForEach<string>(delFiles, po, (delFile) =>
+            Parallel.ForEach<string>(Directory.EnumerateFiles(DestDir).Except(usedDestFiles, new SourceFileComparer()), po, (delFile) =>
                 {
                     try
                     {
-                        if (File.Exists(delFile))
-                        {
-                            //Verify that the used list does not contain the asset id from the file name
-                            //before deleting.
-                            int id;
-                            if (int.TryParse(Path.GetFileNameWithoutExtension(delFile), out id) && !usedAssetIds.Contains(id))
-                            {
 #if DEBUG
-                                Trace.TraceInformation("Deleting {0} from {1}", delFile, DestDir);
+                        Trace.TraceInformation("Deleting {0} from {1}", Path.GetFileName(delFile), DestDir);
 #else
-                                File.Delete(delFile);
+                        File.Delete(delFile);
 #endif
-                            }
-                        }
                     }
                     catch (Exception ex)
                     {
