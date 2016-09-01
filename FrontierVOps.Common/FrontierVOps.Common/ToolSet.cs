@@ -283,13 +283,13 @@ namespace FrontierVOps.Common
         /// <param name="sendFrom">Email address that is sending the email</param>
         /// <param name="sendTo">Email addresses to send to (comma delimited)</param>
         /// <param name="attachments">Full path to file attachments</param>
-        public static void SendEmail(string smtpServer, NetworkCredential credentials, int? port, bool useSSL, string sendSubject, string sendBody, string sendFrom, string[] sendTo, string[] attachments)
+        public static void SendEmail(string smtpServer, NetworkCredential credentials, int? port, bool useSSL, bool isHTML, string sendSubject, string sendBody, string sendFrom, string[] sendTo, string[] attachments)
         {
             MailMessage mail = new MailMessage();
             SmtpClient smtp = new SmtpClient(smtpServer);
             mail.From = new MailAddress(sendFrom);
             mail.Subject = sendSubject;
-            mail.IsBodyHtml = true;
+            mail.IsBodyHtml = isHTML;
             mail.Body = sendBody;
 
             for (int i = 0; i < sendTo.Length; i++ )
