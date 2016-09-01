@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\FrontierVOps.FiOS.HealthCheckConsole\packages\IIS.Microsoft.Web.Administration.8.5.9600.17042\lib\Microsoft.Web.Administration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,25 +43,41 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\IISServerMgr.cs" />
     <Compile Include="Controllers\ServerMgr.cs" />
     <Compile Include="Enumerators\FiOSServers.cs" />
     <Compile Include="Objects\DbType.cs" />
     <Compile Include="Objects\FiOSDbServer.cs" />
     <Compile Include="Objects\FiOSServer.cs" />
+    <Compile Include="Objects\FiOSIISServer.cs" />
     <Compile Include="Objects\ServerFunction.cs" />
     <Compile Include="Objects\ServerLocation.cs" />
     <Compile Include="Objects\ServerRole.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Config\ServerLayout.xml" />
+    <Content Include="Config\ServerLayout.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="Config\ServerLayout.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FrontierVOps.Config\FrontierVOps.Config\FrontierVOps.Config.csproj">
+      <Project>{fb122ed6-5112-4cf0-b287-cb187c451c8b}</Project>
+      <Name>FrontierVOps.Config</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>if exist "$(TargetPath).locked" del "$(TargetPath).locked"
+
+if exist "$(TargetPath)" if not exist "$(TargetPath).locked" move "$(TargetPath)" "$(TargetPath).locked"</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

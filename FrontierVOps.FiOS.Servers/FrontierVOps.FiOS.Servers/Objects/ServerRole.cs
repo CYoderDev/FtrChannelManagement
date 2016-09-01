@@ -10,6 +10,7 @@ namespace FrontierVOps.FiOS.Servers.Objects
     {
         AdminConsole,
         AES,
+        AutoProvisioning,
         FiOSAdvanced,
         FiOSOnTheGo,
         Hydra,
@@ -30,5 +31,6 @@ namespace FrontierVOps.FiOS.Servers.Objects
         MES,
         MGS,
         Thumbnail,
+        Unknown,
     }
 }

@@ -8,8 +8,10 @@ namespace FrontierVOps.FiOS.Servers.Objects
 {
     public enum ServerFunction
     {
+        Application,
         Database,
         Web,
-        Infrastructure
+        Infrastructure,
+        Unknown,
     }
 }

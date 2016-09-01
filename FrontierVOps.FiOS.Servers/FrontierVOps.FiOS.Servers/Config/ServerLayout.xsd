@@ -23,12 +23,14 @@
     <xs:sequence>
       <xs:element name="Servers" type="VHERoleCollection" minOccurs="1" maxOccurs="1" />
     </xs:sequence>
+    <xs:attribute name="DomainName" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="VHOCollection">
     <xs:sequence>
       <xs:element name="VHO" type="VHO" minOccurs="1" maxOccurs="unbounded" />
     </xs:sequence>
+    <xs:attribute name="DomainName" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="VHO">
@@ -134,7 +136,8 @@
   
   <xs:simpleType name="ProdFunction">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="Web-App" />
+      <xs:enumeration value="Web" />
+      <xs:enumeration value="App" />
       <xs:enumeration value="Database" />
     </xs:restriction>
   </xs:simpleType>

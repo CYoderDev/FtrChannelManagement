@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FrontierVOps.FiOS.Servers.Objects
+namespace FrontierVOps.FiOS.HealthCheck.Controllers
 {
-    public enum ServerLocation
+    class GenericChecks
     {
-        VHO,
-        VHE,
-        Unknown,
     }
 }

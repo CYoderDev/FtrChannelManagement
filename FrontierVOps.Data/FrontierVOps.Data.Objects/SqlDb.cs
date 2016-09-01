@@ -51,6 +51,7 @@ namespace FrontierVOps.Data.Objects
             this.IntegratedSecurity = true;
             this.ConnectionTimeout = 30;
             this.HostFunction = ServerFunction.Database;
+            this.DatabaseType = FiOS.Servers.Objects.DbType.TSQL;
         }
 
         public string CreateConnectionString(bool useMARs)

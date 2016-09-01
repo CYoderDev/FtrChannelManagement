@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{80C87125-56F0-46F5-B280-293765C09DC6}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{FB122ED6-5112-4CF0-B287-CB187C451C8B}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FiOSHealthCheckConsole</RootNamespace>
-    <AssemblyName>FiOSHealthCheckConsole</AssemblyName>
+    <RootNamespace>FrontierVOps.Config</RootNamespace>
+    <AssemblyName>FrontierVOps.Config</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -41,29 +39,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="FiOS\CfgHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\FrontierVOps.Config\FrontierVOps.Config\FrontierVOps.Config.csproj">
-      <Project>{fb122ed6-5112-4cf0-b287-cb187c451c8b}</Project>
-      <Name>FrontierVOps.Config</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers.csproj">
-      <Project>{f3bee8df-7c63-4ae8-9fa8-344395500fba}</Project>
-      <Name>FrontierVOps.FiOS.Servers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FrontierVOps.FiOS.HealthCheck.Controllers\FrontierVOps.FiOS.HealthCheck.Controllers.csproj">
-      <Project>{cb01e1c6-0016-4695-a43e-d1e539df6fa3}</Project>
-      <Name>FrontierVOps.FiOS.HealthCheck.Controllers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FrontierVOps.FiOS.HealthCheck.DataObjects\FrontierVOps.FiOS.HealthCheck.DataObjects.csproj">
-      <Project>{015a31be-f2e7-420d-a242-9be9d7f28fd3}</Project>
-      <Name>FrontierVOps.FiOS.HealthCheck.DataObjects</Name>
-    </ProjectReference>
+    <Folder Include="Vantage\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
