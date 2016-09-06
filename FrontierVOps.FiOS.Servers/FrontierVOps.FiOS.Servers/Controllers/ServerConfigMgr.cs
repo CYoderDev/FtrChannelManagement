@@ -12,18 +12,18 @@ using FrontierVOps.FiOS.Servers.Objects;
 
 namespace FrontierVOps.FiOS.Servers.Controllers
 {
-    public class ServerMgr
+    public class ServerConfigMgr
     {
         static XDocument _config { get; set; }
         static XNamespace _ns { get; set; }
 
-        static ServerMgr()
+        static ServerConfigMgr()
         {
-            if (ServerMgr._config == null)
+            if (ServerConfigMgr._config == null)
             {
                 CfgHelper cfgHelper = new CfgHelper();
-                ServerMgr._config = cfgHelper.GetConfig("ServerLayout.xml");
-                ServerMgr._ns = _config.Root.GetDefaultNamespace();
+                ServerConfigMgr._config = cfgHelper.GetConfig("ServerLayout.xml");
+                ServerConfigMgr._ns = _config.Root.GetDefaultNamespace();
             }
         }
 
@@ -33,7 +33,6 @@ namespace FrontierVOps.FiOS.Servers.Controllers
 
             foreach(var serverElem in serverElems)
             {
-
                 if (serverElem.HasAttributes)
                 {
                     if (serverElem.FirstAttribute.Value.ToUpper().Equals("DATABASE"))
@@ -53,7 +52,7 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                     else if (serverElem.FirstAttribute.Value.ToUpper().Equals("WEB"))
                     {
                         string vhoName = null;
-                        var webServer = new FiOSIISServer();
+                        var webServer = new FiOSWebServer();
                         webServer.HostFunction = ServerFunction.Web;
                         webServer.HostName = serverElem.Value;
                         webServer.HostFullName = getFullName(webServer.HostName);
@@ -66,19 +65,21 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                         yield return webServer;
                     }
                 }
+                else
+                {
+                    string vho = null;
+                    var server = new FiOSServer();
+                    server.HostName = serverElem.Value;
+                    server.HostFullName = getFullName(server.HostName);
+                    server.HostLocation = getLocation(serverElem, out vho);
+                    server.HostLocationName = vho;
+                    server.HostRole = getRole(serverElem, server.HostLocation);
+                    server.IsOnline = getIsOnline(server.HostFullName);
+                    server.HostFunction = serverElem.HasAttributes && serverElem.FirstAttribute.Value.ToUpper().Equals("APP") ? ServerFunction.Application :
+                        serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("INFRASTRUCTURE")) ? ServerFunction.Infrastructure : ServerFunction.Unknown;
 
-                string vho = null;
-                var server = new FiOSServer();
-                server.HostName = serverElem.Value;
-                server.HostFullName = getFullName(server.HostName);
-                server.HostLocation = getLocation(serverElem, out vho);
-                server.HostLocationName = vho;
-                server.HostRole = getRole(serverElem, server.HostLocation);
-                server.IsOnline = getIsOnline(server.HostFullName);
-                server.HostFunction = serverElem.HasAttributes && serverElem.FirstAttribute.Value.ToUpper().Equals("APP") ? ServerFunction.Application :
-                    serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("INFRASTRUCTURE")) ? ServerFunction.Infrastructure : ServerFunction.Unknown;
-
-                yield return server;
+                    yield return server;
+                }
             }
         }
 
@@ -187,7 +188,7 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                 {
                     pingReply = ping.Send(serverFullName);
                 }
-                catch
+                catch (Exception ex)
                 {
                     return false;
                 }
