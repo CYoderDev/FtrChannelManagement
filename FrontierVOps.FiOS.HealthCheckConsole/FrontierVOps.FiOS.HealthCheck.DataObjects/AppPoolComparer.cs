@@ -9,7 +9,7 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
 {
     public class AppPoolComparer : IEqualityComparer<ApplicationPool>
     {
-        public bool Equal(ApplicationPool apc1, ApplicationPool apc2)
+        public bool Equals(ApplicationPool apc1, ApplicationPool apc2)
         {
             if (apc1 == null && apc2 == null)
                 return true;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FrontierVOps.FiOS.Servers.Controllers;
 using FrontierVOps.FiOS.Servers.Objects;
 using FrontierVOps.Common;
-using FiOSHealthCheckConsole.Objects;
+using FrontierVOps.FiOS.HealthCheck.DataObjects;
 using Microsoft.Web.Administration;
 
 namespace FiOSHealthCheckConsole

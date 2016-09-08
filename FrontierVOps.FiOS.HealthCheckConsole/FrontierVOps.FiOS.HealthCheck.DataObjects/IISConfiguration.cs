@@ -7,7 +7,7 @@ using Microsoft.Web.Administration;
 
 namespace FrontierVOps.FiOS.HealthCheck.DataObjects
 {
-    public class IISConfiguration : I
+    public class IISConfiguration
     {
         public ApplicationPoolCollection AppPools { get; set; }
         public VirtualDirectoryCollection VirtualDirectories { get; set; }
