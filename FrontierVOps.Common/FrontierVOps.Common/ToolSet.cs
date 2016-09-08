@@ -297,10 +297,13 @@ namespace FrontierVOps.Common
                 mail.To.Add(sendTo[i]);
             }
 
-            for (int i = 0; i < attachments.Length; i++)
+            if (attachments != null)
             {
-                Attachment attachment = new Attachment(attachments[i]);
-                mail.Attachments.Add(attachment);
+                for (int i = 0; i < attachments.Length; i++)
+                {
+                    Attachment attachment = new Attachment(attachments[i]);
+                    mail.Attachments.Add(attachment);
+                }
             }
 
             if (useSSL && credentials == null)

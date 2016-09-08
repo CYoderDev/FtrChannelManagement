@@ -107,9 +107,9 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
             return false;
         }
 
-        public bool IsReadOnly()
+        public bool IsReadOnly
         {
-            return false;
+            get { return false; }
         }
 
         public void CopyTo(HealthRollup[] array, int arrayIndex)

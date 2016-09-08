@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FrontierVOps.FiOS.Servers.Components
 {
-    class HardDrive
+    public class HardDrive
     {
         public string DriveLetter { get; set; }
         public string Label { get; set; }
@@ -73,9 +73,9 @@ namespace FrontierVOps.FiOS.Servers.Components
         /// </summary>
         /// <param name="ServerName">Name of the remote server</param>
         /// <returns>Hard drive information</returns>
-        public static async Task<HardDrive> GetHardDriveAsync(string ServerName)
+        public static async Task<HardDrive[]> GetHardDriveAsync(string ServerName)
         {
-            var hdd = new HardDrive();
+            List<HardDrive> hddList = new List<HardDrive>();
 
             string scopeStr = string.Format(@"\\{0}\root\cimv2", ServerName);
 
@@ -89,6 +89,8 @@ namespace FrontierVOps.FiOS.Servers.Components
             {
                 foreach (ManagementObject disk in searcher.Get())
                 {
+                    var hdd = new HardDrive();
+
                     if (disk["DriveLetter"] != null)
                         hdd.DriveLetter = disk["DriveLetter"].ToString();
                     if (disk["Label"] != null)
@@ -107,10 +109,12 @@ namespace FrontierVOps.FiOS.Servers.Components
                         hdd.Name = disk["Name"].ToString();
                     if (disk["Status"] != null)
                         hdd.Status = (DriveStatus)int.Parse(disk["Status"].ToString());
+
+                    hddList.Add(hdd);
                 }
             }
 
-            return await Task.FromResult<HardDrive>(hdd);
+            return await Task.FromResult<HardDrive[]>(hddList.ToArray());
         }
 
         public enum DriveAvailabilities

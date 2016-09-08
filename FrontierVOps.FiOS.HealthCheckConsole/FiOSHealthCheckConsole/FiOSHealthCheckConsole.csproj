@@ -32,8 +32,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\IIS.Microsoft.Web.Administration.8.5.9600.17042\lib\Microsoft.Web.Administration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Management.Instrumentation" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,13 +47,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HealthCheckController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\FrontierVOps.Common\FrontierVOps.Common\FrontierVOps.Common.csproj">
+      <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>
+      <Name>FrontierVOps.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\FrontierVOps.Config\FrontierVOps.Config\FrontierVOps.Config.csproj">
       <Project>{fb122ed6-5112-4cf0-b287-cb187c451c8b}</Project>
       <Name>FrontierVOps.Config</Name>
@@ -60,10 +72,9 @@
       <Project>{cb01e1c6-0016-4695-a43e-d1e539df6fa3}</Project>
       <Name>FrontierVOps.FiOS.HealthCheck.Controllers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FrontierVOps.FiOS.HealthCheck.DataObjects\FrontierVOps.FiOS.HealthCheck.DataObjects.csproj">
-      <Project>{015a31be-f2e7-420d-a242-9be9d7f28fd3}</Project>
-      <Name>FrontierVOps.FiOS.HealthCheck.DataObjects</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Objects\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
