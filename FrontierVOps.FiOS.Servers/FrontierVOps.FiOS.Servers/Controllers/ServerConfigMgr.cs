@@ -45,7 +45,6 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                         dbServer.HostLocationName = vhoName;
                         dbServer.HostRole = getRole(serverElem, dbServer.HostLocation);
                         dbServer.HostFunction = ServerFunction.Database;
-                        dbServer.IsOnline = getIsOnline(dbServer.HostFullName);
 
                         yield return dbServer;
                     }
@@ -60,7 +59,6 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                         webServer.HostLocationName = vhoName;
                         webServer.HostRole = getRole(serverElem, webServer.HostLocation);
                         webServer.HostFunction = ServerFunction.Web;
-                        webServer.IsOnline = getIsOnline(webServer.HostFullName);
 
                         yield return webServer;
                     }
@@ -74,7 +72,6 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                     server.HostLocation = getLocation(serverElem, out vho);
                     server.HostLocationName = vho;
                     server.HostRole = getRole(serverElem, server.HostLocation);
-                    server.IsOnline = getIsOnline(server.HostFullName);
                     server.HostFunction = serverElem.HasAttributes && serverElem.FirstAttribute.Value.ToUpper().Equals("APP") ? ServerFunction.Application :
                         serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("INFRASTRUCTURE")) ? ServerFunction.Infrastructure : ServerFunction.Unknown;
 
@@ -177,24 +174,6 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                 throw new Exception(string.Format("No parent element with the DomainName attribute was found."));
 
             return string.Format("{0}.{1}", serverName, parentEle.FirstAttribute.Value);
-        }
-
-        private static bool getIsOnline(string serverFullName)
-        {
-            PingReply pingReply;
-            using (var ping = new Ping())
-            {
-                try
-                {
-                    pingReply = ping.Send(serverFullName);
-                }
-                catch (Exception ex)
-                {
-                    return false;
-                }
-            }
-
-            return pingReply.Status == IPStatus.Success;
         }
     }
 }

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace FrontierVOps.FiOS.HealthCheck.DataObjects
 {
-    public enum StatusResult
+    public enum HealthCheckType
     {
-        Ok = 0,
-        Warning = 1,
-        Error = 2,
-        Critical = 3,
+        GeneralServer,
+        IIS,
+        Database,
+        FiOSCheck,
     }
 }

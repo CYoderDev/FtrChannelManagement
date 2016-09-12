@@ -72,6 +72,9 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
 
         public void AddErrorDescriptionRows(List<string> Errors)
         {
+            if (Errors.Count < 1)
+                return;
+
             checkIsTableStarted();
             checkIsLastRowError();
 

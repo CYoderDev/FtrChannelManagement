@@ -13,7 +13,5 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
         public VirtualDirectoryCollection VirtualDirectories { get; set; }
         public ApplicationCollection Applications { get; set; }
         public BindingCollection Bindings { get; set; }
-
-        
     }
 }

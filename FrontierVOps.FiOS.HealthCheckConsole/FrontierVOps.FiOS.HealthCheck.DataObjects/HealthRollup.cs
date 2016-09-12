@@ -1,21 +1,35 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using FrontierVOps.FiOS.Servers.Objects;
 
 namespace FrontierVOps.FiOS.HealthCheck.DataObjects
 {
     public class HealthRollup
     {
-        public string ServerName { get; set; }
+        /// <summary>
+        /// FiOS Server
+        /// </summary>
+        public FiOSServer Server { get; set; }
+
+        /// <summary>
+        /// Result of the Health Rollup
+        /// </summary>
         public StatusResult Result { get; set; }
-        public List<string> Errors { get; set; }
+
+        /// <summary>
+        /// Errors for each type of health check
+        /// </summary>
+        public List<HealthCheckError> Errors { get; set; }
 
         public HealthRollup()
         {
-            this.Errors = new List<string>();
+            this.Errors = new List<HealthCheckError>();
         }
 
         public override bool Equals(object obj)
@@ -23,39 +37,82 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
             var hru = obj as HealthRollup;
 
             if (hru == null)
-                throw new ArgumentException("Incorrect object type");
+                throw new ArgumentException("Incorrect object type");         
 
-            if (this.Errors.Count == hru.Errors.Count)
-            {
-                for (int i = 0; i < this.Errors.Count; i++)
-                {
-                    if (!this.Errors.Contains(hru.Errors[i]) || !hru.Errors.Contains(this.Errors[i]))
-                    {
-                        return false;
-                    }
-                }
-            }
+            return this.Result.Equals(hru.Result) && this.Server.HostName.Equals(hru.Server.HostName);
+        }
 
-            return this.Result.Equals(hru.Result) && this.ServerName.Equals(hru.ServerName);
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 
     public class HealthRollupCollection : ICollection<HealthRollup>
     {
         private List<HealthRollup> _innerHealthRollColl;
+        private ConcurrentBag<HealthRollup> _concHealthRollColl;
+        private Func<HealthRollup> _objectGenerator;
 
         public HealthRollupCollection()
         {
             this._innerHealthRollColl = new List<HealthRollup>();
         }
 
+        public HealthRollupCollection(Func<HealthRollup> objectGenerator)
+        {
+            if (objectGenerator == null) throw new ArgumentNullException("objectGenerator");
+
+            _concHealthRollColl = new ConcurrentBag<HealthRollup>();
+            _objectGenerator = objectGenerator;
+        }
+
+        public HealthRollup GetObject()
+        {
+            HealthRollup hru;
+            if (_concHealthRollColl.TryTake(out hru)) return hru;
+            return _objectGenerator();
+        }
+
+        public void PutObject(HealthRollup item)
+        {
+            if (!_concHealthRollColl.Contains(item))
+            {
+                _concHealthRollColl.Add(item);
+            }
+        }
+
+        public void ConcurrentToList()
+        {
+            if (this._concHealthRollColl == null)
+                throw new Exception("Concurrent bag not initialized");
+
+            this._innerHealthRollColl = new List<HealthRollup>();
+
+            this._innerHealthRollColl = this._concHealthRollColl.GroupBy(x => x.Server).Select(y => new HealthRollup()
+                {
+                    Server = y.Key,
+                    Result = y.Select(x => x.Result).Max(),
+                    Errors = y.SelectMany(x => x.Errors).GroupBy(x => x.HCType)
+                    .Select(x => new HealthCheckError()
+                        {
+                           HCType = x.Key,
+                           Error = x.Where(z => z.HCType == x.Key).SelectMany(z => z.Error).ToList(),
+                        }).ToList(),
+                }).ToList();
+        }
+
         public IEnumerator<HealthRollup> GetEnumerator()
         {
+            if (this._innerHealthRollColl == null)
+                return this._concHealthRollColl.GetEnumerator();
             return this._innerHealthRollColl.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
+            if (this._innerHealthRollColl == null)
+                return this._concHealthRollColl.GetEnumerator();
             return this._innerHealthRollColl.GetEnumerator();
         }
 
@@ -81,7 +138,9 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
         public void Add(HealthRollup item)
         {
             if (!Contains(item))
+            {
                 _innerHealthRollColl.Add(item);
+            }
         }
 
         public void Clear()

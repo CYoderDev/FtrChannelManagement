@@ -16,13 +16,15 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
         public async Task<HealthRollup> CheckWebServer(FiOSWebServer Server)
         {
             HealthRollup hru = new HealthRollup();
-            hru.ServerName = Server.HostName;
+            HealthCheckError hce = new HealthCheckError();
+            hru.Server = Server;
             hru.Result = StatusResult.Ok;
+            hce.HCType = HealthCheckType.IIS;
 
             if (!Server.IsOnline)
             {
                 hru.Result = StatusResult.Critical;
-                hru.Errors.Add("Cannot communicate with web services due to the server being unreachable.");
+                hce.Error.Add(string.Format("{0} - Cannot communicate with web services due to the server being unreachable.", StatusResult.Critical));
             }
 
             try
@@ -37,15 +39,15 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
                                 break;
                             case ObjectState.Stopped:
                                 hru.Result = StatusResult.Critical;
-                                hru.Errors.Add(string.Format("IIS Site {0} is in a stopped state.", site.Name));
+                                hce.Error.Add(string.Format("{0} - IIS Site {1} is in a stopped state.", StatusResult.Critical, site.Name));
                                 break;
                             case ObjectState.Stopping:
                                 hru.Result = StatusResult.Error;
-                                hru.Errors.Add(string.Format("IIS Site {0} is currently in a stopping state."));
+                                hce.Error.Add(string.Format("{0} - IIS Site {1} is currently in a stopping state.", StatusResult.Error, site.Name));
                                 break;
                             case ObjectState.Starting:
                                 hru.Result = StatusResult.Warning;
-                                hru.Errors.Add(string.Format("IIS Site {0} is currently starting."));
+                                hce.Error.Add(string.Format("{0} - IIS Site {1} is currently starting.", StatusResult.Warning, site.Name));
                                 break;
                         }
                     }
@@ -54,9 +56,10 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             catch (Exception ex)
             {
                 hru.Result = StatusResult.Error;
-                hru.Errors.Add(string.Format("Error connecting to IIS. {0}", ex.Message));
+                hce.Error.Add(string.Format("{0} - Error connecting to IIS. {1}", StatusResult.Error, ex.Message));
             }
 
+            hru.Errors.Add(hce);
             return await Task.FromResult<HealthRollup>(hru);
         }
 
@@ -155,7 +158,7 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             var result = StatusResult.Ok;
 
             if (pm1.IdentityType != pm2.IdentityType)
-                errors.Add(string.Format(""));
+                errors.Add(string.Format("{0} - "));
 
             return Task.FromResult<Tuple<StatusResult, List<string>>>(new Tuple<StatusResult, List<string>>(result, errors));
         }
