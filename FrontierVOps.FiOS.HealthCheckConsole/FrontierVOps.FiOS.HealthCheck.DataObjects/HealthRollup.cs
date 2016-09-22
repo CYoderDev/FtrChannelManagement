@@ -18,11 +18,6 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
         public FiOSServer Server { get; set; }
 
         /// <summary>
-        /// Result of the Health Rollup
-        /// </summary>
-        public StatusResult Result { get; set; }
-
-        /// <summary>
         /// Errors for each type of health check
         /// </summary>
         public List<HealthCheckError> Errors { get; set; }
@@ -37,9 +32,9 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
             var hru = obj as HealthRollup;
 
             if (hru == null)
-                throw new ArgumentException("Incorrect object type");         
+                throw new ArgumentException("Incorrect object type");
 
-            return this.Result.Equals(hru.Result) && this.Server.HostName.Equals(hru.Server.HostName);
+            return this.Errors.Equals(hru.Errors) && this.Server.HostName.Equals(hru.Server.HostName);
         }
 
         public override int GetHashCode()
@@ -92,12 +87,13 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
             this._innerHealthRollColl = this._concHealthRollColl.GroupBy(x => x.Server).Select(y => new HealthRollup()
                 {
                     Server = y.Key,
-                    Result = y.Select(x => x.Result).Max(),
+                    //Result = y.Select(x => x.Result).Max(),
                     Errors = y.SelectMany(x => x.Errors).GroupBy(x => x.HCType)
                     .Select(x => new HealthCheckError()
                         {
                            HCType = x.Key,
                            Error = x.Where(z => z.HCType == x.Key).SelectMany(z => z.Error).ToList(),
+                           Result = x.Where(z => z.HCType == x.Key).Select(z => z.Result).Max(),
                         }).ToList(),
                 }).ToList();
         }

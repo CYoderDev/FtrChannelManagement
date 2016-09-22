@@ -12,6 +12,7 @@ namespace FrontierVOps.FiOS.Servers.Objects
         public string HostFullName { get; set; }
         public string DomainName { get; set; }
         public string HostLocationName { get; set; }
+        public string IPAddress { get; set; }
         public bool IsOnline { get; set; }
         public ServerRole HostRole { get; set; }
         public ServerLocation HostLocation { get; set; }

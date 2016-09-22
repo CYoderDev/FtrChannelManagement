@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="HealthCheck"
+    targetNamespace="http://FrontierVOps.FiOS.config/HealthCheck.xsd"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://FrontierVOps.FiOS.config/HealthCheck.xsd"
+    xmlns:mstns="http://FrontierVOps.FiOS.config/HealthCheck.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:sl="http://FrontierVOps.FiOS.config/ServerLayout.xsd"
+>
+  <xs:element name="configuration">
+    <xs:annotation>
+      <xs:documentation>Configuration Root Element</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="WindowsServiceCollection">
+    <xs:sequence>
+      
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WindowsService">
+    <xs:sequence>
+      <xs:element name="Service">
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Service">
+    <xs:sequence>
+      
+    </xs:sequence>
+    <xs:attribute name="Name">
+      <xs:annotation>
+        <xs:documentation>Name of the windows service</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:simpleType name="FiOSRoles">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AdminConsole" />
+      <xs:enumeration value="AES" />
+      <xs:enumeration value=""
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

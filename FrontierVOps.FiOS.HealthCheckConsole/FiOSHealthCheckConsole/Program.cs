@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using FrontierVOps.FiOS.Servers.Controllers;
 using FrontierVOps.FiOS.Servers.Objects;
+using FrontierVOps.FiOS.Servers.Components;
 using FrontierVOps.Common;
 using FrontierVOps.FiOS.HealthCheck.DataObjects;
+using FrontierVOps.FiOS.HealthCheck.Controllers;
 using Microsoft.Web.Administration;
 
 namespace FiOSHealthCheckConsole
@@ -15,6 +17,89 @@ namespace FiOSHealthCheckConsole
     {
         static void Main(string[] args)
         {
+
+
+            var svr = ServerConfigMgr.GetServers().Where(x => x.HostName.ToUpper().Equals("CTXV01PIMGD01")).FirstOrDefault();
+
+            var hcWServices = ServerHealthCheckConfigMgr.GetWindowsServicesToCheck()
+                        .Where
+                            (
+                                x => x.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count() > 0 && x.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0
+                                    || x.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() > 0 && x.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() == 0
+                                    || !x.Function.Equals(ServerFunction.Unknown) && (x.Function.Equals(svr.HostFunction) && x.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() + x.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0)
+                                    || ((x.Roles.Count + x.Servers.Count == 0) && (x.Function.Equals(ServerFunction.Unknown)))
+                            ).ToArray();
+
+            //hcWServices = ServerHealthCheckConfigMgr.GetWindowsServicesToCheck().Where(x => x.OnePerGroup).ToArray();
+
+            foreach (var svc in ServerHealthCheckConfigMgr.GetWindowsServicesToCheck())
+            {
+                var count = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count();
+                var count2 = svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count();
+           
+                //if (svc.Roles.Count >= 1)
+                //svc.Roles.ForEach(x => Console.WriteLine("{3}  - {0} | {1} | {2}", x.Item1, x.Item2, x.Item3, svc.Name));
+
+                bool bol1 = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count() > 0 && svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0;
+                bool bol2 = svc.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() > 0 && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() == 0;
+                bool bol3 = (svc.Function.Equals(svr.HostFunction) && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() + svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0);
+                bool bol4 = ((svc.Roles.Count + svc.Servers.Count == 0) && (svc.Function.Equals(ServerFunction.Unknown)));
+                bool bol5 = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count() > 0 && svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0
+                                    || svc.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() > 0 && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() == 0
+                                    || (svc.Function.Equals(svr.HostFunction) && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() + svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0)
+                                    || ((svc.Roles.Count + svc.Servers.Count == 0) && (svc.Function.Equals(ServerFunction.Unknown)));
+
+                Console.WriteLine("{0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8}", svc.Name, count, svr.HostFunction, svr.HostRole, count2, bol1, bol2, bol3, bol4, bol5);
+                
+            }
+
+            //var roleCheck = ServerHealthCheckConfigMgr.GetWindowsServicesToCheck().Where(x => x.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole).Count() > 0);
+
+            foreach(var service in hcWServices)
+            {
+                Console.WriteLine("Name:\t\t{0}", service.Name);
+                Console.WriteLine("Display:\t{0}", service.DisplayName);
+                if (service.CheckStatus.Count > 0)
+                    service.CheckStatus.ForEach(x => Console.WriteLine("Status:\t\t{0}", x.ToString()));
+                if (service.CheckStartupType.Count > 0)
+                    service.CheckStartupType.ForEach(x => Console.WriteLine("StartupType:\t{0}", x.ToString()));
+                if (service.CheckLogonAs.Count > 0)
+                {
+                    service.CheckLogonAs.ForEach(x => Console.WriteLine("LogonAs:\t{0} - {1}", x, GenericChecks.GetWindowsServiceLogonAccount("B1ZHN32", service.Name)));
+                    
+                }
+                if (service.Roles.Count > 0)
+                {
+                    service.Roles.ForEach((x) =>
+                    {
+                        if (x.Item1)
+                            Console.WriteLine("INCLUDE ROLES");
+                        else
+                            Console.WriteLine("EXCLUDE ROLES");
+                        Console.WriteLine("Role:\t\t{0}", x.Item2.ToString());
+                        Console.WriteLine("Function:\t{0}", x.Item3.ToString());
+                    });
+                }
+                if (service.Servers.Count > 0)
+                {
+                    service.Servers.ForEach((x) =>
+                        {
+                            if (x.Item1)
+                                Console.WriteLine("INCLUDE SERVERS");
+                            else
+                                Console.WriteLine("EXCLUDE SERVERS");
+
+                            Console.WriteLine("Server Name:\t{0}", x.Item2.HostName);
+                            Console.WriteLine("Server IP:\t{0}", x.Item2.IPAddress);
+                            Console.WriteLine("Server Location:\t{0}", x.Item2.HostLocation.ToString());
+                        });
+                }
+                Console.WriteLine("OnePerGroup:\t{0}", service.OnePerGroup);
+                Console.WriteLine();
+            }
+            Console.WriteLine("Press Enter to Continue...");
+            Console.ReadLine();
+
             HTMLFormatter formatter = new HTMLFormatter();
 
             formatter.SetRole(ServerRole.NSP.ToString());

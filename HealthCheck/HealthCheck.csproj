@@ -32,11 +32,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Common, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\FrontierVOps.FiOS.HealthCheckConsole\packages\EnterpriseLibrary.Common.6.0.1304.0\lib\NET45\Microsoft.Practices.EnterpriseLibrary.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Logging, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\FrontierVOps.FiOS.HealthCheckConsole\packages\EnterpriseLibrary.Logging.6.0.1304.0\lib\NET45\Microsoft.Practices.EnterpriseLibrary.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ObjectListView, Version=2.9.1.1072, Culture=neutral, PublicKeyToken=b1c5bf581481bcd4, processorArchitecture=MSIL">
       <HintPath>..\FrontierVOps.FiOS.HealthCheckConsole\packages\ObjectListView.Official.2.9.1\lib\net20\ObjectListView.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -83,6 +92,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FrontierVOps.Common\FrontierVOps.Common\FrontierVOps.Common.csproj">
+      <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>
+      <Name>FrontierVOps.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FrontierVOps.FiOS.HealthCheckConsole\FrontierVOps.FiOS.HealthCheck.Controllers\FrontierVOps.FiOS.HealthCheck.Controllers.csproj">
       <Project>{cb01e1c6-0016-4695-a43e-d1e539df6fa3}</Project>
       <Name>FrontierVOps.FiOS.HealthCheck.Controllers</Name>

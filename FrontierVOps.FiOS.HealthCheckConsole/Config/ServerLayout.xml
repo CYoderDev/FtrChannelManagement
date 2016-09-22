@@ -4,7 +4,19 @@
     <Servers>
       <Production>
         <AdminConsole>
-          <Server Function="Web">CTX</Server>
+          <Server Function="Web">IMGADTXCAWAPV01</Server>
+	  <Server Function="Web">IMGADTXCAWAPV02</Server>
+	  <Server Function="Web">IMGADTXCAWAPV03</Server>
+	  <Server Function="Web">IMGADTXCAWAPV04</Server>
+	  <Server Function="Web">IMGADTXCAWAPV05</Server>
+	  <Server Function="Database">IMGADTXCAWDPP01</Server>
+	  <Server Function="Database">IMGADTXCAWDPP02</Server>
+	  <Server Function="Database">IMGADTXCAWDPP03</Server>
+	  <Server Function="Database">IMGADTXCAWDPP04</Server>
+	  <Server Function="Database">IMGADTXCAWDPP05</Server>
+	  <Server Function="Database">IMGADTXCAWDPP06</Server>
+	  <Server Function="Database">IMGADTXCAWDPP07</Server>
+	  <Server Function="Database">IMGADTXCAWDPP08</Server>
         </AdminConsole>
         <AES>
           <FrontEnd>
@@ -178,7 +190,7 @@
       </Infrastructure>
     </Servers>
   </VHE>
-  <VHOs DomainName="VHO.FiOSProd.Net">
+  <VHOs DomainName="IMG.FiOSProd.Net">
     <VHO Name="VHO1">
       <Servers>
         <DomainControllers>

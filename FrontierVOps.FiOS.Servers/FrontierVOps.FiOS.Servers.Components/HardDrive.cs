@@ -36,7 +36,7 @@ namespace FrontierVOps.FiOS.Servers.Components
 
             ManagementScope scope = new ManagementScope(scopeStr);
             scope.Connect();
-
+            
             //Drive is niether a RAM disk (6) or a Compact disk (5) or a Removeable Disk (2)
             SelectQuery query = new SelectQuery("SELECT * FROM Win32_Volume WHERE DriveType != 6 AND DriveType != 5 AND DriveType != 2");
 

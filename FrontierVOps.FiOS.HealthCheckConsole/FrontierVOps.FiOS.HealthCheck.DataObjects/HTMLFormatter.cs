@@ -11,12 +11,20 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
         private StringBuilder _strBuilder { get; set; }
         private bool _isTableStarted { get; set; }
         private bool _isLastRowError { get; set; }
+        private bool _hasBody { get; set; }
 
         public HTMLFormatter()
         {
             _strBuilder = new StringBuilder();
             _isTableStarted = false;
             _isLastRowError = false;
+            _hasBody = false;
+        }
+
+        public void SetBody(string BGColorValue)
+        {
+            _strBuilder.AppendFormat("<body style=\"background-color:{0};\">", BGColorValue);
+            _hasBody = true;
         }
 
         public void SetRole(string Role)
@@ -27,6 +35,11 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
         }
 
         public void BeginTable(string ServerName)
+        {
+            BeginTable(ServerName, "#FFFFFF");
+        }
+
+        public void BeginTable(string ServerName, string BGColorValue)
         {
             _strBuilder.AppendLine("<div><br /></div>");
             _strBuilder.AppendLine("<table border=\"0\" style=\"border-collapse: collapse; width: 65%;\">");
@@ -54,7 +67,7 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
                     break;
                 case StatusResult.Warning:
                     _strBuilder.Append("#efad43;\">");
-                    this._isLastRowError = false;
+                    this._isLastRowError = true;
                     break;
                 case StatusResult.Error:
                     _strBuilder.Append("#c64b4b;\">");
@@ -76,7 +89,7 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
                 return;
 
             checkIsTableStarted();
-            checkIsLastRowError();
+            //checkIsLastRowError();
 
             _strBuilder.AppendLine("<tr>");
             _strBuilder.AppendLine("<td colspan=\"3\">");
@@ -101,6 +114,10 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
         {
             if (this._isTableStarted)
                 throw new Exception("Cannot format to string without closing the open table by calling EndTable method.");
+
+            if (this._hasBody)
+                _strBuilder.Append("</body>");
+
             return _strBuilder.ToString();
         }
 

@@ -18,12 +18,12 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             HealthRollup hru = new HealthRollup();
             HealthCheckError hce = new HealthCheckError();
             hru.Server = Server;
-            hru.Result = StatusResult.Ok;
+            hce.Result = StatusResult.Ok;
             hce.HCType = HealthCheckType.IIS;
 
             if (!Server.IsOnline)
             {
-                hru.Result = StatusResult.Critical;
+                hce.Result = StatusResult.Ok;
                 hce.Error.Add(string.Format("{0} - Cannot communicate with web services due to the server being unreachable.", StatusResult.Critical));
             }
 
@@ -38,15 +38,15 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
                             case ObjectState.Started:
                                 break;
                             case ObjectState.Stopped:
-                                hru.Result = StatusResult.Critical;
+                                hce.Result = StatusResult.Critical;
                                 hce.Error.Add(string.Format("{0} - IIS Site {1} is in a stopped state.", StatusResult.Critical, site.Name));
                                 break;
                             case ObjectState.Stopping:
-                                hru.Result = StatusResult.Error;
+                                hce.Result = StatusResult.Critical;
                                 hce.Error.Add(string.Format("{0} - IIS Site {1} is currently in a stopping state.", StatusResult.Error, site.Name));
                                 break;
                             case ObjectState.Starting:
-                                hru.Result = StatusResult.Warning;
+                                hce.Result = StatusResult.Critical;
                                 hce.Error.Add(string.Format("{0} - IIS Site {1} is currently starting.", StatusResult.Warning, site.Name));
                                 break;
                         }
@@ -55,7 +55,7 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             }
             catch (Exception ex)
             {
-                hru.Result = StatusResult.Error;
+                hce.Result = StatusResult.Error;
                 hce.Error.Add(string.Format("{0} - Error connecting to IIS. {1}", StatusResult.Error, ex.Message));
             }
 

@@ -36,6 +36,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppPoolComparer.cs" />
+    <Compile Include="HCWinService.cs" />
     <Compile Include="HealthCheckError.cs" />
     <Compile Include="HealthCheckType.cs" />
     <Compile Include="HealthRollup.cs" />
@@ -53,6 +55,9 @@
     <Compile Include="StatusResult.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Config\HealthCheck.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -139,6 +139,8 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                             return ServerRole.SFTP;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("VODENCRYPTION")))
                             return ServerRole.VOD;
+                        if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("STBLOGGING")))
+                            return ServerRole.Logging;
                         break;
                     }
                 case ServerLocation.VHO:

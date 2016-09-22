@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="HealthCheck"
+    targetNamespace="http://FrontierVOps.FiOS.config/HealthChecks.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://FrontierVOps.FiOS.config/HealthChecks.xsd"
+    xmlns:mstns="http://FrontierVOps.FiOS.config/HealthChecks.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:fr="http://FrontierVOps.FiOS.config/FiOSRoles.xsd"
+>
+  <xs:import namespace="http://FrontierVOps.FiOS.config/FiOSRoles.xsd"/>
+  <xs:element name="configuration">
+    <xs:annotation>
+      <xs:documentation>Configuration Root Element</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Services" type="WindowsServiceCollection" >
+          <xs:unique name="ws-unique">
+            <xs:selector xpath="*" />
+            <xs:field xpath="@Name" />
+          </xs:unique>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="WindowsServiceCollection">
+    <xs:sequence>
+      <xs:element name="WindowsService" type="WindowsService" minOccurs="1" maxOccurs="unbounded" />        
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WindowsService">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+      <xs:element name="Include" type="WindowsServiceFilter" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Exclude" type="WindowsServiceFilter" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Defaults" type="DefaultsType" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" use="required" />
+    <xs:attribute name="DisplayName" type="xs:string" use="required" />
+    <xs:attribute name="Earliest-OS" type="OSType" use="optional" />
+    <xs:attribute name="Latest-OS" type="OSType" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="WindowsServiceFilter">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="1">
+        <xs:sequence minOccurs="0" maxOccurs="1">
+          <xs:element name="Roles" type="fr:RoleType" minOccurs="0" maxOccurs="1">
+          </xs:element>
+          <xs:element name="Servers" type="WindowsServer" minOccurs="0" maxOccurs="1">
+            <xs:unique name="svr-unique">
+              <xs:selector xpath="*" />
+              <xs:field xpath="@Name" />
+            </xs:unique>
+          </xs:element>
+        </xs:sequence>
+        <xs:element name="Function" type="fr:Function" minOccurs="0" maxOccurs="1" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WindowsServer">
+    <xs:sequence>
+      <xs:element name="Server" minOccurs="1" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="Name" use="required" />
+          <xs:attribute name="Domain" use="required" />
+          <xs:attribute name="IP" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence> 
+  </xs:complexType>
+
+  <xs:complexType name="DefaultsType">
+    <xs:sequence>
+        <xs:element name="Status" minOccurs="0" maxOccurs="unbounded" type="ServiceStatusType" />
+        <xs:element name="StartupType" minOccurs="0" maxOccurs="unbounded" type="ServiceStartupType" />
+        <xs:element name="LogOnAs" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+    <xs:attribute name="OnePerGroup" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Only check if one server in the cluster has these settings for the service.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:simpleType name="ServiceStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Running" />
+      <xs:enumeration value="Stopped" />
+      <xs:enumeration value="Paused" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ServiceStartupType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Automatic" />
+      <xs:enumeration value="Disabled" />
+      <xs:enumeration value="Manual" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="OSType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Windows Server 2003" />
+      <xs:enumeration value="Windows Server 2008" />
+      <xs:enumeration value="Windows Server 2008 R2" />
+      <xs:enumeration value="Windows Server 2012" />
+      <xs:enumeration value="Windows Server 2012 R2" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
