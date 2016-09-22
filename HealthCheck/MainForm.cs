@@ -197,8 +197,23 @@ namespace HealthCheck
                 var btn = sender as Button;
                 disableButton(ref btn);
                 this.toolStripProgressBar1.Visible = true;
-                this.label_Progress.Visible = true;
+                this.toolStripStatusLabel_Progress.Visible = true;
                 this.bw.RunWorkerAsync();
+            }
+        }
+
+        private void button_Email_Click(object sender, EventArgs e)
+        {
+            var btn = sender as Button;
+            this.Opacity = 25;
+            var selectedItms = this.objectListView_Results.SelectedItems;
+            this.objectListView_Results.SelectAll();
+            using (EmailForm efrm = new EmailForm(this.webBrowser_Results.DocumentText))
+            {
+                if (efrm.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+                {
+                    this.label_Info.Text = "Email sent!";
+                }
             }
         }
         #endregion UserControlActions
@@ -424,7 +439,7 @@ namespace HealthCheck
         {
             this.toolStripProgressBar1.ProgressBar.Value = e.ProgressPercentage;
             this.toolStripProgressBar1.ProgressBar.Style = ProgressBarStyle.Continuous;
-            this.label_Progress.Text = e.ProgressPercentage.ToString("P2");
+            this.toolStripStatusLabel_Progress.Text = e.ProgressPercentage.ToString("P2");
             try
             {
                 if (e.ProgressPercentage % 5 == 0)
@@ -447,12 +462,12 @@ namespace HealthCheck
         private void bw_Complete(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Error != null)
-                this.label_Progress.Text = string.Format("Error - {0}", e.Error.Message);
+                this.toolStripStatusLabel_Progress.Text = string.Format("Error - {0}", e.Error.Message);
             else if (e.Cancelled)
-                this.label_Progress.Text = "Cancelled";
+                this.toolStripStatusLabel_Progress.Text = "Cancelled";
             else
             {
-                this.label_Progress.Text = "Complete!";
+                this.toolStripStatusLabel_Progress.Text = "Complete!";
                 var hru = e.Result as HealthRollupCollection;
                 hru.ConcurrentToList();
                 this.objectListView_Results.SetObjects(hru);

@@ -43,7 +43,8 @@
             this.olvColumn_Status = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvCol_ErrCount = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.webBrowser_Results = new System.Windows.Forms.WebBrowser();
-            this.label_Progress = new System.Windows.Forms.Label();
+            this.toolStripStatusLabel_Progress = new System.Windows.Forms.ToolStripStatusLabel();
+            this.label_Info = new System.Windows.Forms.Label();
             this.statusStrip_Main.SuspendLayout();
             this.menuStrip_Main.SuspendLayout();
             this.tableLayoutPanel_Main.SuspendLayout();
@@ -55,7 +56,8 @@
             // statusStrip_Main
             // 
             this.statusStrip_Main.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripProgressBar1});
+            this.toolStripProgressBar1,
+            this.toolStripStatusLabel_Progress});
             this.statusStrip_Main.Location = new System.Drawing.Point(0, 792);
             this.statusStrip_Main.Name = "statusStrip_Main";
             this.statusStrip_Main.Size = new System.Drawing.Size(1280, 22);
@@ -116,6 +118,7 @@
             this.tableLayoutPanel_Left.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5F));
             this.tableLayoutPanel_Left.Controls.Add(this.button_Begin, 1, 1);
             this.tableLayoutPanel_Left.Controls.Add(this.button_Email, 1, 2);
+            this.tableLayoutPanel_Left.Controls.Add(this.label_Info, 1, 3);
             this.tableLayoutPanel_Left.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel_Left.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel_Left.Name = "tableLayoutPanel_Left";
@@ -225,18 +228,28 @@
             this.webBrowser_Results.Size = new System.Drawing.Size(1076, 223);
             this.webBrowser_Results.TabIndex = 1;
             // 
-            // label_Progress
+            // toolStripStatusLabel_Progress
             // 
-            this.label_Progress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label_Progress.AutoSize = true;
-            this.label_Progress.BackColor = System.Drawing.SystemColors.MenuBar;
-            this.label_Progress.ForeColor = System.Drawing.Color.RoyalBlue;
-            this.label_Progress.Location = new System.Drawing.Point(211, 795);
-            this.label_Progress.Name = "label_Progress";
-            this.label_Progress.Size = new System.Drawing.Size(0, 16);
-            this.label_Progress.TabIndex = 3;
-            this.label_Progress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label_Progress.Visible = false;
+            this.toolStripStatusLabel_Progress.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.toolStripStatusLabel_Progress.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripStatusLabel_Progress.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.toolStripStatusLabel_Progress.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.toolStripStatusLabel_Progress.Margin = new System.Windows.Forms.Padding(5, 3, 5, 2);
+            this.toolStripStatusLabel_Progress.Name = "toolStripStatusLabel_Progress";
+            this.toolStripStatusLabel_Progress.Size = new System.Drawing.Size(0, 17);
+            this.toolStripStatusLabel_Progress.Visible = false;
+            // 
+            // label_Info
+            // 
+            this.label_Info.AutoSize = true;
+            this.label_Info.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label_Info.ForeColor = System.Drawing.Color.Azure;
+            this.label_Info.Location = new System.Drawing.Point(14, 466);
+            this.label_Info.Margin = new System.Windows.Forms.Padding(5, 10, 5, 10);
+            this.label_Info.Name = "label_Info";
+            this.label_Info.Size = new System.Drawing.Size(167, 286);
+            this.label_Info.TabIndex = 2;
+            this.label_Info.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // mainForm
             // 
@@ -244,7 +257,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(66)))), ((int)(((byte)(58)))));
             this.ClientSize = new System.Drawing.Size(1280, 814);
-            this.Controls.Add(this.label_Progress);
             this.Controls.Add(this.tableLayoutPanel_Main);
             this.Controls.Add(this.statusStrip_Main);
             this.Controls.Add(this.menuStrip_Main);
@@ -260,6 +272,7 @@
             this.menuStrip_Main.PerformLayout();
             this.tableLayoutPanel_Main.ResumeLayout(false);
             this.tableLayoutPanel_Left.ResumeLayout(false);
+            this.tableLayoutPanel_Left.PerformLayout();
             this.tableLayoutPanel_Results.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.objectListView_Results)).EndInit();
             this.ResumeLayout(false);
@@ -284,7 +297,8 @@
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.Label label_Progress;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel_Progress;
+        private System.Windows.Forms.Label label_Info;
     }
 }
 
