@@ -439,7 +439,7 @@ namespace HealthCheck
         {
             this.toolStripProgressBar1.ProgressBar.Value = e.ProgressPercentage;
             this.toolStripProgressBar1.ProgressBar.Style = ProgressBarStyle.Continuous;
-            this.toolStripStatusLabel_Progress.Text = e.ProgressPercentage.ToString("P2");
+            this.toolStripStatusLabel_Progress.Text = (e.ProgressPercentage / 100).ToString("0%");
             try
             {
                 if (e.ProgressPercentage % 5 == 0)
