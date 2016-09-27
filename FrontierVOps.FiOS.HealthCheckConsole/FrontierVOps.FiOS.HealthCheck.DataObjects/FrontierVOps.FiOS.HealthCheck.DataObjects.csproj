@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppPoolComparer.cs" />
+    <Compile Include="ExemptionType.cs" />
     <Compile Include="HCWinService.cs" />
     <Compile Include="HealthCheckError.cs" />
     <Compile Include="HealthCheckType.cs" />

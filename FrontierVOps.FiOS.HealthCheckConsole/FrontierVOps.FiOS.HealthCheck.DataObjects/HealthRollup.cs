@@ -87,7 +87,6 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
             this._innerHealthRollColl = this._concHealthRollColl.GroupBy(x => x.Server).Select(y => new HealthRollup()
                 {
                     Server = y.Key,
-                    //Result = y.Select(x => x.Result).Max(),
                     Errors = y.SelectMany(x => x.Errors).GroupBy(x => x.HCType)
                     .Select(x => new HealthCheckError()
                         {

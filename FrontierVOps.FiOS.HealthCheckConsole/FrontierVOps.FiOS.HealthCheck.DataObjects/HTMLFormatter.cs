@@ -23,8 +23,17 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
 
         public void SetBody(string BGColorValue)
         {
-            _strBuilder.AppendFormat("<body style=\"background-color:{0};\">", BGColorValue);
+            if (!string.IsNullOrEmpty(BGColorValue))
+                _strBuilder.AppendFormat("<body style=\"background-color:{0};\">", BGColorValue);
+            else
+                _strBuilder.Append("<body>");
             _hasBody = true;
+        }
+
+        public void SetBody(string BGColorValue, string text)
+        {
+            SetBody(BGColorValue);
+            _strBuilder.AppendFormat("<h2>{0}</h2>", text);
         }
 
         public void SetRole(string Role)
@@ -36,14 +45,14 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
 
         public void BeginTable(string ServerName)
         {
-            BeginTable(ServerName, "#FFFFFF");
+            BeginTable(ServerName, "#000000");
         }
 
         public void BeginTable(string ServerName, string BGColorValue)
         {
             _strBuilder.AppendLine("<div><br /></div>");
             _strBuilder.AppendLine("<table border=\"0\" style=\"border-collapse: collapse; width: 65%;\">");
-            _strBuilder.AppendLine("<th colspan=\"3\" style=\"font-size: 110%; padding: 4px; font-variant: small-caps; background: black; color: white;\">");
+            _strBuilder.AppendFormat("<th colspan=\"3\" style=\"font-size: 110%; padding: 4px; font-variant: small-caps; background: {0}; color: white;\">", BGColorValue);
             _strBuilder.Append(ServerName.ToLower());
             _strBuilder.AppendLine("</th>");
             this._isTableStarted = true;
@@ -58,7 +67,7 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
             _strBuilder.Append(CheckName);
             _strBuilder.AppendLine("</td>");
             _strBuilder.Append("<td style=\"border: 1px solid black; padding: 2px; background:");
-
+            
             switch (Result)
             {
                 case StatusResult.Ok:
@@ -75,6 +84,10 @@ namespace FrontierVOps.FiOS.HealthCheck.DataObjects
                     break;
                 case StatusResult.Critical:
                     _strBuilder.Append("#e50b0b; font-weight: bold;\">");
+                    this._isLastRowError = true;
+                    break;
+                case StatusResult.Skipped:
+                    _strBuilder.Append("#7b68ee;\">");
                     this._isLastRowError = true;
                     break;
             }
