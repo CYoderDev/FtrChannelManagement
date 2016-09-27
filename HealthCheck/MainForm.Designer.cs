@@ -28,8 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             this.statusStrip_Main = new System.Windows.Forms.StatusStrip();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.toolStripStatusLabel_Progress = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip_Main = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -37,19 +39,18 @@
             this.tableLayoutPanel_Left = new System.Windows.Forms.TableLayoutPanel();
             this.button_Begin = new System.Windows.Forms.Button();
             this.button_Email = new System.Windows.Forms.Button();
-            this.tableLayoutPanel_Results = new System.Windows.Forms.TableLayoutPanel();
+            this.label_Info = new System.Windows.Forms.Label();
             this.objectListView_Results = new BrightIdeasSoftware.ObjectListView();
             this.olvCol_Servers = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumn_Status = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvCol_Function = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvCol_ErrCount = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.splitContainer_Main = new System.Windows.Forms.SplitContainer();
             this.webBrowser_Results = new System.Windows.Forms.WebBrowser();
-            this.toolStripStatusLabel_Progress = new System.Windows.Forms.ToolStripStatusLabel();
-            this.label_Info = new System.Windows.Forms.Label();
             this.statusStrip_Main.SuspendLayout();
             this.menuStrip_Main.SuspendLayout();
             this.tableLayoutPanel_Main.SuspendLayout();
             this.tableLayoutPanel_Left.SuspendLayout();
-            this.tableLayoutPanel_Results.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.objectListView_Results)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,9 +59,9 @@
             this.statusStrip_Main.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripProgressBar1,
             this.toolStripStatusLabel_Progress});
-            this.statusStrip_Main.Location = new System.Drawing.Point(0, 792);
+            this.statusStrip_Main.Location = new System.Drawing.Point(0, 666);
             this.statusStrip_Main.Name = "statusStrip_Main";
-            this.statusStrip_Main.Size = new System.Drawing.Size(1280, 22);
+            this.statusStrip_Main.Size = new System.Drawing.Size(1153, 22);
             this.statusStrip_Main.TabIndex = 0;
             this.statusStrip_Main.Text = "statusStrip_Main";
             // 
@@ -70,13 +71,24 @@
             this.toolStripProgressBar1.Size = new System.Drawing.Size(200, 16);
             this.toolStripProgressBar1.Visible = false;
             // 
+            // toolStripStatusLabel_Progress
+            // 
+            this.toolStripStatusLabel_Progress.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.toolStripStatusLabel_Progress.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripStatusLabel_Progress.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.toolStripStatusLabel_Progress.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.toolStripStatusLabel_Progress.Margin = new System.Windows.Forms.Padding(5, 3, 5, 2);
+            this.toolStripStatusLabel_Progress.Name = "toolStripStatusLabel_Progress";
+            this.toolStripStatusLabel_Progress.Size = new System.Drawing.Size(0, 17);
+            this.toolStripStatusLabel_Progress.Visible = false;
+            // 
             // menuStrip_Main
             // 
             this.menuStrip_Main.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem});
             this.menuStrip_Main.Location = new System.Drawing.Point(0, 0);
             this.menuStrip_Main.Name = "menuStrip_Main";
-            this.menuStrip_Main.Size = new System.Drawing.Size(1280, 24);
+            this.menuStrip_Main.Size = new System.Drawing.Size(1153, 24);
             this.menuStrip_Main.TabIndex = 1;
             this.menuStrip_Main.Text = "menuStrip_Main";
             // 
@@ -94,6 +106,7 @@
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.menuItem_Exit_Click);
             // 
             // tableLayoutPanel_Main
             // 
@@ -101,13 +114,14 @@
             this.tableLayoutPanel_Main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
             this.tableLayoutPanel_Main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 85F));
             this.tableLayoutPanel_Main.Controls.Add(this.tableLayoutPanel_Left, 0, 0);
-            this.tableLayoutPanel_Main.Controls.Add(this.tableLayoutPanel_Results, 1, 0);
+            //this.tableLayoutPanel_Main.Controls.Add(this.tableLayoutPanel_Results, 1, 0);
+            this.tableLayoutPanel_Main.Controls.Add(this.splitContainer_Main, 1, 0);
             this.tableLayoutPanel_Main.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel_Main.Location = new System.Drawing.Point(0, 24);
             this.tableLayoutPanel_Main.Name = "tableLayoutPanel_Main";
             this.tableLayoutPanel_Main.RowCount = 1;
             this.tableLayoutPanel_Main.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel_Main.Size = new System.Drawing.Size(1280, 768);
+            this.tableLayoutPanel_Main.Size = new System.Drawing.Size(1153, 642);
             this.tableLayoutPanel_Main.TabIndex = 2;
             // 
             // tableLayoutPanel_Left
@@ -127,8 +141,17 @@
             this.tableLayoutPanel_Left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 15F));
             this.tableLayoutPanel_Left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 15F));
             this.tableLayoutPanel_Left.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            this.tableLayoutPanel_Left.Size = new System.Drawing.Size(186, 762);
+            this.tableLayoutPanel_Left.Size = new System.Drawing.Size(166, 636);
             this.tableLayoutPanel_Left.TabIndex = 0;
+            //
+            // splitContainer_Main
+            //
+            this.splitContainer_Main.Name = "splitContainer_Main";
+            this.splitContainer_Main.Panel1.Controls.Add(this.objectListView_Results);
+            this.splitContainer_Main.Panel2.Controls.Add(this.webBrowser_Results);
+            this.splitContainer_Main.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.splitContainer_Main.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer_Main.SplitterWidth = 5;
             // 
             // button_Begin
             // 
@@ -136,10 +159,10 @@
             this.button_Begin.Dock = System.Windows.Forms.DockStyle.Fill;
             this.button_Begin.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_Begin.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.button_Begin.Location = new System.Drawing.Point(14, 238);
+            this.button_Begin.Location = new System.Drawing.Point(13, 200);
             this.button_Begin.Margin = new System.Windows.Forms.Padding(5, 10, 5, 10);
             this.button_Begin.Name = "button_Begin";
-            this.button_Begin.Size = new System.Drawing.Size(167, 94);
+            this.button_Begin.Size = new System.Drawing.Size(148, 75);
             this.button_Begin.TabIndex = 0;
             this.button_Begin.Text = "Begin";
             this.button_Begin.UseVisualStyleBackColor = false;
@@ -152,33 +175,32 @@
             this.button_Email.Enabled = false;
             this.button_Email.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_Email.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.button_Email.Location = new System.Drawing.Point(14, 352);
+            this.button_Email.Location = new System.Drawing.Point(13, 295);
             this.button_Email.Margin = new System.Windows.Forms.Padding(5, 10, 5, 10);
             this.button_Email.Name = "button_Email";
-            this.button_Email.Size = new System.Drawing.Size(167, 94);
+            this.button_Email.Size = new System.Drawing.Size(148, 75);
             this.button_Email.TabIndex = 1;
             this.button_Email.Text = "Email Results";
             this.button_Email.UseVisualStyleBackColor = false;
+            this.button_Email.Click += new System.EventHandler(this.button_Email_Click);
             // 
-            // tableLayoutPanel_Results
+            // label_Info
             // 
-            this.tableLayoutPanel_Results.ColumnCount = 1;
-            this.tableLayoutPanel_Results.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel_Results.Controls.Add(this.objectListView_Results, 0, 0);
-            this.tableLayoutPanel_Results.Controls.Add(this.webBrowser_Results, 0, 1);
-            this.tableLayoutPanel_Results.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel_Results.Location = new System.Drawing.Point(195, 3);
-            this.tableLayoutPanel_Results.Name = "tableLayoutPanel_Results";
-            this.tableLayoutPanel_Results.RowCount = 2;
-            this.tableLayoutPanel_Results.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70F));
-            this.tableLayoutPanel_Results.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.tableLayoutPanel_Results.Size = new System.Drawing.Size(1082, 762);
-            this.tableLayoutPanel_Results.TabIndex = 1;
+            this.label_Info.AutoSize = true;
+            this.label_Info.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label_Info.ForeColor = System.Drawing.Color.Azure;
+            this.label_Info.Location = new System.Drawing.Point(13, 390);
+            this.label_Info.Margin = new System.Windows.Forms.Padding(5, 10, 5, 10);
+            this.label_Info.Name = "label_Info";
+            this.label_Info.Size = new System.Drawing.Size(148, 236);
+            this.label_Info.TabIndex = 2;
+            this.label_Info.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // objectListView_Results
             // 
             this.objectListView_Results.AllColumns.Add(this.olvCol_Servers);
             this.objectListView_Results.AllColumns.Add(this.olvColumn_Status);
+            this.objectListView_Results.AllColumns.Add(this.olvCol_Function);
             this.objectListView_Results.AllColumns.Add(this.olvCol_ErrCount);
             this.objectListView_Results.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(197)))), ((int)(((byte)(202)))), ((int)(((byte)(204)))));
             this.objectListView_Results.CellEditUseWholeCell = false;
@@ -188,11 +210,14 @@
             this.objectListView_Results.HeaderMinimumHeight = 50;
             this.objectListView_Results.Location = new System.Drawing.Point(3, 3);
             this.objectListView_Results.Name = "objectListView_Results";
-            this.objectListView_Results.Size = new System.Drawing.Size(1076, 527);
+            this.objectListView_Results.Size = new System.Drawing.Size(969, 439);
             this.objectListView_Results.TabIndex = 0;
             this.objectListView_Results.TintSortColumn = true;
             this.objectListView_Results.UseCompatibleStateImageBehavior = false;
             this.objectListView_Results.View = System.Windows.Forms.View.Details;
+            this.objectListView_Results.HideSelection = false;
+            this.objectListView_Results.UseHotItem = true;
+            this.objectListView_Results.HotItemStyle = new BrightIdeasSoftware.HotItemStyle();
             // 
             // olvCol_Servers
             // 
@@ -211,6 +236,14 @@
             this.olvColumn_Status.Text = "Status";
             this.olvColumn_Status.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // olvCol_Function
+            // 
+            this.olvCol_Function.AspectName = "Function";
+            this.olvCol_Function.FillsFreeSpace = true;
+            this.olvCol_Function.HeaderTextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.olvCol_Function.Text = "Server Function";
+            this.olvCol_Function.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // olvCol_ErrCount
             // 
             this.olvCol_ErrCount.AspectName = "Errors";
@@ -222,45 +255,23 @@
             // webBrowser_Results
             // 
             this.webBrowser_Results.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webBrowser_Results.Location = new System.Drawing.Point(3, 536);
+            this.webBrowser_Results.Location = new System.Drawing.Point(3, 448);
             this.webBrowser_Results.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser_Results.Name = "webBrowser_Results";
-            this.webBrowser_Results.Size = new System.Drawing.Size(1076, 223);
+            this.webBrowser_Results.Size = new System.Drawing.Size(969, 185);
             this.webBrowser_Results.TabIndex = 1;
-            // 
-            // toolStripStatusLabel_Progress
-            // 
-            this.toolStripStatusLabel_Progress.BackColor = System.Drawing.SystemColors.MenuBar;
-            this.toolStripStatusLabel_Progress.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripStatusLabel_Progress.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.toolStripStatusLabel_Progress.ForeColor = System.Drawing.Color.RoyalBlue;
-            this.toolStripStatusLabel_Progress.Margin = new System.Windows.Forms.Padding(5, 3, 5, 2);
-            this.toolStripStatusLabel_Progress.Name = "toolStripStatusLabel_Progress";
-            this.toolStripStatusLabel_Progress.Size = new System.Drawing.Size(0, 17);
-            this.toolStripStatusLabel_Progress.Visible = false;
-            // 
-            // label_Info
-            // 
-            this.label_Info.AutoSize = true;
-            this.label_Info.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label_Info.ForeColor = System.Drawing.Color.Azure;
-            this.label_Info.Location = new System.Drawing.Point(14, 466);
-            this.label_Info.Margin = new System.Windows.Forms.Padding(5, 10, 5, 10);
-            this.label_Info.Name = "label_Info";
-            this.label_Info.Size = new System.Drawing.Size(167, 286);
-            this.label_Info.TabIndex = 2;
-            this.label_Info.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(66)))), ((int)(((byte)(58)))));
-            this.ClientSize = new System.Drawing.Size(1280, 814);
+            this.ClientSize = new System.Drawing.Size(1153, 688);
             this.Controls.Add(this.tableLayoutPanel_Main);
             this.Controls.Add(this.statusStrip_Main);
             this.Controls.Add(this.menuStrip_Main);
             this.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip_Main;
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "mainForm";
@@ -273,7 +284,6 @@
             this.tableLayoutPanel_Main.ResumeLayout(false);
             this.tableLayoutPanel_Left.ResumeLayout(false);
             this.tableLayoutPanel_Left.PerformLayout();
-            this.tableLayoutPanel_Results.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.objectListView_Results)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -288,11 +298,12 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel_Left;
         private System.Windows.Forms.Button button_Begin;
         private System.Windows.Forms.Button button_Email;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel_Results;
         private BrightIdeasSoftware.ObjectListView objectListView_Results;
         private BrightIdeasSoftware.OLVColumn olvCol_Servers;
         private BrightIdeasSoftware.OLVColumn olvColumn_Status;
         private BrightIdeasSoftware.OLVColumn olvCol_ErrCount;
+        private BrightIdeasSoftware.OLVColumn olvCol_Function;
+        private System.Windows.Forms.SplitContainer splitContainer_Main;
         private System.Windows.Forms.WebBrowser webBrowser_Results;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -20,7 +21,10 @@ namespace HealthCheck
         public EmailForm(string htmlDoc)
         {
             InitializeComponent();
-            this.textBox_SendTo.TextChanged += textBox_SendTo_TextChanged;
+            this.textBox_SendTo.Text = ConfigurationManager.AppSettings.GetValues("DefaultEmail").FirstOrDefault();
+            this.textBox_SendTo.TextChanged += new EventHandler(textBox_SendTo_TextChanged);
+            this.button_Cancel.Click += new EventHandler(button_Cancel_Click);
+            this.button_Send.Click += new EventHandler(button_Send_Click);
             this._htmlFormatter = htmlDoc;
         }
 
@@ -47,9 +51,10 @@ namespace HealthCheck
             btn.Enabled = false;
             this.button_Cancel.Enabled = false;
             this.label_Status.Text = "Sending...";
+            var strSMTPServer = ConfigurationManager.AppSettings.GetValues("SMTPServer").FirstOrDefault();
             try
             {
-                Toolset.SendEmail("smtp.VHE.FiOSProd.Net", null, null, false, "FiOS Health Check", this._htmlFormatter, "HealthCheck@FiOSProd.net", new string[1] { this.textBox_SendTo.Text }, null);
+                Toolset.SendEmail(strSMTPServer, null, null, false, "FiOS Health Check", this._htmlFormatter, "HealthCheck@FiOSProd.net", new string[1] { this.textBox_SendTo.Text }, null);
                 this.label_Status.Text += "Sent!";
                 this.DialogResult = System.Windows.Forms.DialogResult.OK;
                 this.Close();
@@ -68,10 +73,9 @@ namespace HealthCheck
             this.Close();
         }
 
-        private void form_Paint(object sender, PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs e)
         {
-            Form frm = sender as Form;
-            ControlPaint.DrawBorder(e.Graphics, frm.ClientRectangle,
+            ControlPaint.DrawBorder(e.Graphics, this.ClientRectangle,
                 Color.Black, 5, ButtonBorderStyle.Inset,
                 Color.Black, 5, ButtonBorderStyle.Inset,
                 Color.Black, 5, ButtonBorderStyle.Inset,
