@@ -35,48 +35,97 @@ namespace FrontierVOps.FiOS.Servers.Controllers
             {
                 if (serverElem.HasAttributes)
                 {
-                    if (serverElem.FirstAttribute.Value.ToUpper().Equals("DATABASE"))
+                    if (serverElem.Attributes().Any(x => x.Name.LocalName.ToUpper().Equals("FUNCTION")))
+                    {
+                        if (serverElem.Attribute("Function").Value.ToUpper().Equals("DATABASE"))
+                        {
+                            string vhoName = null;
+                            var dbServer = new FiOSDbServer();
+                            dbServer.HostFunction = ServerFunction.Database;
+                            dbServer.HostName = getName(serverElem);
+                            dbServer.HostFullName = getFullName(dbServer.HostName);
+                            dbServer.HostLocation = getLocation(serverElem, out vhoName);
+                            dbServer.HostLocationName = vhoName;
+                            dbServer.HostRole = getRole(serverElem, dbServer.HostLocation);
+                            dbServer.IPAddress = getIP(serverElem);
+                            dbServer.IsActive = getIsActive(serverElem);
+
+                            yield return dbServer;
+                        }
+                        else if (serverElem.Attribute("Function").Value.ToUpper().Equals("WEB"))
+                        {
+                            string vhoName = null;
+                            var webServer = new FiOSWebServer();
+                            webServer.HostFunction = ServerFunction.Web;
+                            webServer.HostName = getName(serverElem);
+                            webServer.HostFullName = getFullName(webServer.HostName);
+                            webServer.HostLocation = getLocation(serverElem, out vhoName);
+                            webServer.HostLocationName = vhoName;
+                            webServer.HostRole = getRole(serverElem, webServer.HostLocation);
+                            webServer.IPAddress = getIP(serverElem);
+                            webServer.IsActive = getIsActive(serverElem);
+
+                            yield return webServer;
+                        }
+                    }
+                    else
                     {
                         string vhoName = null;
-                        var dbServer = new FiOSDbServer();
-                        dbServer.HostName = serverElem.Value;
-                        dbServer.HostFullName = getFullName(dbServer.HostName);
-                        dbServer.HostLocation = getLocation(serverElem, out vhoName);
-                        dbServer.HostLocationName = vhoName;
-                        dbServer.HostRole = getRole(serverElem, dbServer.HostLocation);
-                        dbServer.HostFunction = ServerFunction.Database;
+                        var server = new FiOSServer();
+                        server.HostName = getName(serverElem);
+                        server.HostFullName = getFullName(server.HostName);
+                        server.HostLocation = getLocation(serverElem, out vhoName);
+                        server.HostLocationName = vhoName;
+                        server.HostRole = getRole(serverElem, server.HostLocation);
+                        server.HostFunction = serverElem.HasAttributes && serverElem.FirstAttribute.Value.ToUpper().Equals("APP") ? ServerFunction.Application :
+                            serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("INFRASTRUCTURE")) || 
+                                serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("DOMAINCONTROLLERS")) ? ServerFunction.Infrastructure : ServerFunction.Unknown;
+                        server.IPAddress = getIP(serverElem);
+                        server.IsActive = getIsActive(serverElem);
 
-                        yield return dbServer;
+                        yield return server;
                     }
-                    else if (serverElem.FirstAttribute.Value.ToUpper().Equals("WEB"))
-                    {
-                        string vhoName = null;
-                        var webServer = new FiOSWebServer();
-                        webServer.HostFunction = ServerFunction.Web;
-                        webServer.HostName = serverElem.Value;
-                        webServer.HostFullName = getFullName(webServer.HostName);
-                        webServer.HostLocation = getLocation(serverElem, out vhoName);
-                        webServer.HostLocationName = vhoName;
-                        webServer.HostRole = getRole(serverElem, webServer.HostLocation);
-                        webServer.HostFunction = ServerFunction.Web;
-
-                        yield return webServer;
-                    }
-                }
+                } 
                 else
                 {
-                    string vho = null;
-                    var server = new FiOSServer();
-                    server.HostName = serverElem.Value;
-                    server.HostFullName = getFullName(server.HostName);
-                    server.HostLocation = getLocation(serverElem, out vho);
-                    server.HostLocationName = vho;
-                    server.HostRole = getRole(serverElem, server.HostLocation);
-                    server.HostFunction = serverElem.HasAttributes && serverElem.FirstAttribute.Value.ToUpper().Equals("APP") ? ServerFunction.Application :
-                        serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("INFRASTRUCTURE")) ? ServerFunction.Infrastructure : ServerFunction.Unknown;
-
-                    yield return server;
+                    throw new FormatException("XML Format error. Server element has no attributes.");
                 }
+            }
+        }
+
+        private static string getName(XElement serverElem)
+        {
+            try
+            {
+                return serverElem.Attribute("Name").Value;
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException(string.Format("Name attribute not found on Server element. {0}", ex.Message));
+            }
+        }
+
+        private static string getIP(XElement serverElem)
+        {
+            try
+            {
+                return serverElem.Attribute("IP").Value;
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException(string.Format("IP attribute not found on Server element. {0}", ex.Message));
+            }
+        }
+
+        private static bool getIsActive(XElement serverElem)
+        {
+            if (serverElem.Attributes().Any(x => x.Name.LocalName.ToUpper().Equals("ISACTIVE")))
+            {
+                return bool.Parse(serverElem.Attribute("IsActive").Value);
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -112,7 +161,12 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("DOMAINCONTROLLERS")))
                             return ServerRole.DomainController;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("FIOSADVANCED")))
-                            return ServerRole.FiOSAdvanced;
+                        {
+                            if (serverElem.Parent.Name.LocalName.ToUpper().Equals("AIM"))
+                                return ServerRole.FiOSAdvancedAIM;
+                            else if (serverElem.Parent.Name.LocalName.ToUpper().Equals("BANNER"))
+                                return ServerRole.FiOSAdvancedBanner;
+                        }
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("FOTG")))
                             return ServerRole.FiOSOnTheGo;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("HYDRA")))
@@ -165,12 +219,17 @@ namespace FrontierVOps.FiOS.Servers.Controllers
 
         private static string getFullName(string serverName)
         {
-            var serverElem = _config.Root.Descendants(_ns + "Server").Where(x => x.Value.ToUpper().Equals(serverName.ToUpper())).FirstOrDefault();
+            var serverElem = _config.Root.Descendants(_ns + "Server").Where(x => x.Attribute("Name").Value.ToUpper().Equals(serverName.ToUpper())).FirstOrDefault();
 
             if (serverElem == null)
                 throw new Exception(string.Format("No element with value of {0} was found.", serverName));
 
-            var parentEle = serverElem.Ancestors().Where(x => x.HasAttributes && x.FirstAttribute.Name == "DomainName").FirstOrDefault();
+            if (serverElem.Attributes().Any(x => x.Name.LocalName.ToUpper().Equals("DOMAIN")))
+            {
+                return string.Format("{0}.{1}", serverName, serverElem.Attribute("Domain").Value);
+            }
+
+            var parentEle = serverElem.Ancestors().Where(x => x.HasAttributes && x.FirstAttribute.Name.LocalName.ToUpper() == "DOMAINNAME").FirstOrDefault();
 
             if (parentEle == null)
                 throw new Exception(string.Format("No parent element with the DomainName attribute was found."));
