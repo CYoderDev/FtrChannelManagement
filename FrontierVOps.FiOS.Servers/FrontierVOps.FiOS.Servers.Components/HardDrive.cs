@@ -35,6 +35,7 @@ namespace FrontierVOps.FiOS.Servers.Components
             string scopeStr = string.Format(@"\\{0}\root\cimv2", ServerName);
 
             ManagementScope scope = new ManagementScope(scopeStr);
+            scope.Options.Timeout = new TimeSpan(0, 0, 5);
             scope.Connect();
             
             //Drive is niether a RAM disk (6) or a Compact disk (5) or a Removeable Disk (2)
@@ -42,6 +43,8 @@ namespace FrontierVOps.FiOS.Servers.Components
 
             using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, query))
             {
+                searcher.Options.Timeout = new TimeSpan(0, 0, 5);
+                searcher.Options.ReturnImmediately = false;
                 foreach (ManagementObject disk in searcher.Get())
                 {
                     if (disk["DriveLetter"] != null)
