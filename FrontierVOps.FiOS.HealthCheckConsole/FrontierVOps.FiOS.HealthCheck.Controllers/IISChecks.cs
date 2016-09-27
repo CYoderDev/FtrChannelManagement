@@ -21,10 +21,19 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             hce.Result = StatusResult.Ok;
             hce.HCType = HealthCheckType.IIS;
 
+            if (ServerHealthCheckConfigMgr.IsExempt(Server, ExemptionType.IIS))
+            {
+                hce.Result = StatusResult.Skipped;
+                hru.Errors.Add(hce);
+                return await Task.FromResult<HealthRollup>(hru);
+            }
+
             if (!Server.IsOnline)
             {
-                hce.Result = StatusResult.Ok;
+                hce.Result = StatusResult.Critical;
                 hce.Error.Add(string.Format("{0} - Cannot communicate with web services due to the server being unreachable.", StatusResult.Critical));
+                hru.Errors.Add(hce);
+                return await Task.FromResult<HealthRollup>(hru);
             }
 
             try

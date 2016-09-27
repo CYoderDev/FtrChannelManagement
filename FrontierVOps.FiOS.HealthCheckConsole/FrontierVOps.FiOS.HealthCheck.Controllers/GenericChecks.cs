@@ -35,10 +35,22 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
         /// <returns>A health rollup containing all general server checks</returns>
         public async Task<HealthRollup> PerformServerCheck(FiOSServer Server)
         {
-            Server.IsOnline = getIsOnline(Server.HostFullName);
             var hru = new HealthRollup();
             var hce = new HealthCheckError();
             hru.Server = Server;
+
+            if (!Server.IsActive)
+            {
+                hce.Result = StatusResult.Skipped;
+                hce.HCType = HealthCheckType.GeneralServer;
+                if (Server.IsOnline)
+                    hce.Error.Add("Server is marked as inactive but is currently online.");
+                else
+                    hce.Error.Add("Server is offline");
+
+                hru.Errors.Add(hce);
+                return await Task.FromResult<HealthRollup>(hru);
+            }
 
             if (!Server.IsOnline)
             {
@@ -56,6 +68,13 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
                 for (int i = 0; i < hdds.Length; i++)
                 {
                     var result = StatusResult.Ok;
+
+                    //If server is exempt, skip
+                    if (ServerHealthCheckConfigMgr.IsExempt(Server, ExemptionType.HardDrive, hdds[i].DriveLetter))
+                    {
+                        hce.Error.Add(string.Format("Skipped hard drive checks for drive letter {0}. {1}GB Remaining.", hdds[i].DriveLetter, ((decimal)hdds[i].FreeSpace / 1024M / 1024M / 1024M).ToString("N1")));
+                        continue;
+                    }
 
                     //Check Hard Drive Space
                     try
@@ -189,6 +208,41 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
 
             var hcErrors = new List<HealthCheckError>();
 
+            if (!Server.IsOnline || !Server.IsActive)
+            {             
+                var svcFuncts = ServicesToCheck.GroupBy(x => x.Function)
+                    .Select(x => new 
+                        {
+                            x.Key, 
+                            RoleFunctions = x.Where(y => y.Function.Equals(x.Key)).SelectMany(y => y.Roles.Select(z => z.Item3)).ToList(),
+                            ServerCount = x.Where(y => y.Function.Equals(x.Key)).SelectMany(y => y.Servers).Count(),
+                        }).ToList();
+
+                svcFuncts.ForEach(x =>
+                    {
+                        var hcErr = new HealthCheckError();
+
+                        if (Server.IsActive)
+                            hcErr.Result = StatusResult.Critical;
+                        else
+                            hcErr.Result = StatusResult.Skipped;
+
+                        if (x.Key == ServerFunction.Database || (x.RoleFunctions.Count > 0 && x.RoleFunctions.Any(y => y.Equals(ServerFunction.Database))))
+                            hcErr.HCType = HealthCheckType.Database;
+                        else if (x.Key == ServerFunction.Web || (x.RoleFunctions.Count > 0 && x.RoleFunctions.Any(y => y.Equals(ServerFunction.Web))))
+                            hcErr.HCType = HealthCheckType.IIS;
+                        else if (x.RoleFunctions.Count > 0 || x.ServerCount > 0)
+                            hcErr.HCType = HealthCheckType.FiOSCheck;
+
+                        if (!(hcErr.HCType == HealthCheckType.GeneralServer) && Server.IsActive)
+                            hcErr.Error.Add(string.Format("Cannot check windows services because the server is offline."));
+                        hcErrors.Add(hcErr);
+                    });
+                var hru = new HealthRollup() { Server = Server, Errors = hcErrors };
+                hruList.Add(hru);
+                return await Task.FromResult<IEnumerable<HealthRollup>>(hruList);
+            }
+
 
             hcErrors = await checkWindowsServices(Server.HostFullName, ServicesToCheck.Where(x => !x.OnePerGroup).ToArray());
 
@@ -313,7 +367,9 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
                         catch (Exception ex)
                         {
                             hcErr.Result = getCorrectStatusResult(hcErr.Result, StatusResult.Critical);
-                            hcErr.Error.Add(string.Format("{0} - Failed to check windows service startup type for \"{1}\" on \"{2}\". {3}", StatusResult.Critical, ServicesToCheck[i].Name, ServerName, ex.Message));
+                            hcErr.Error.Add(string.Format("{0} - Failed to check windows service \"{1}\" on \"{2}\". {3}", StatusResult.Critical, ServicesToCheck[i].Name, ServerName, ex.Message));
+                            errors.Add(hcErr);
+                            continue;
                         }
 
                         //Check LogonAs Account.
@@ -367,6 +423,7 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             string scopeStr = string.Format(@"\\{0}\root\cimv2", ServerName);
 
             ManagementScope scope = new ManagementScope(scopeStr);
+            scope.Options.Timeout = new TimeSpan(0, 0, 5);
 
             try
             {
@@ -381,26 +438,32 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
 
             using (var svc = new ManagementObjectSearcher(scope, query))
             {
+                svc.Options.Timeout = new TimeSpan(0, 0, 5);
+                svc.Options.ReturnImmediately = false;
                 using (var watcher = svc.Get())
                 {
                     foreach(var obj in watcher)
                     {
-                        switch(obj.GetPropertyValue("StartMode").ToString())
+                        using (obj)
                         {
-                            case "Auto":
-                            case "Automatic":
-                                return ServiceStartMode.Automatic;
-                            case "Manual":
-                                return ServiceStartMode.Manual;
-                            case "Disabled":
-                                return ServiceStartMode.Disabled;
-                            default:
-                                sm = obj.GetPropertyValue("StartMode").ToString();
-                                break;
+                            switch (obj.GetPropertyValue("StartMode").ToString())
+                            {
+                                case "Auto":
+                                case "Automatic":
+                                    return ServiceStartMode.Automatic;
+                                case "Manual":
+                                    return ServiceStartMode.Manual;
+                                case "Disabled":
+                                    return ServiceStartMode.Disabled;
+                                default:
+                                    sm = obj.GetPropertyValue("StartMode").ToString();
+                                    break;
+                            }
                         }
                     }
                 }
             }
+            
 
             throw new Exception(string.Format("Unable to get or unable to recognize windows service start mode value {0} for service {1} on {2}.", sm, ServiceName, ServerName));
         }
@@ -412,6 +475,7 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             string scopeStr = string.Format(@"\\{0}\root\cimv2", ServerName);
 
             ManagementScope scope = new ManagementScope(scopeStr);
+            scope.Options.Timeout = new TimeSpan(0, 0, 5);
 
             try
             {
@@ -424,11 +488,16 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
 
             using (var svc = new ManagementObjectSearcher(scope, query))
             {
+                svc.Options.Timeout = new TimeSpan(0, 0, 5);
+                svc.Options.ReturnImmediately = false;
                 using (var objCol = svc.Get())
                 {
                     foreach (var obj in objCol)
                     {
-                        return obj.GetPropertyValue("StartName").ToString();
+                        using (obj)
+                        {
+                            return obj.GetPropertyValue("StartName").ToString();
+                        }
                     }
                 }
             }
@@ -440,14 +509,14 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
         /// </summary>
         /// <param name="serverFullName">FQDN of the server</param>
         /// <returns>True if server is online, False otherwise</returns>
-        private static bool getIsOnline(string serverFullName)
+        public static bool getIsOnline(FiOSServer server)
         {
             PingReply pingReply;
             using (var ping = new Ping())
             {
                 try
                 {
-                    pingReply = ping.Send(serverFullName);
+                    pingReply = ping.Send(server.HostFullName);
                 }
                 catch
                 {

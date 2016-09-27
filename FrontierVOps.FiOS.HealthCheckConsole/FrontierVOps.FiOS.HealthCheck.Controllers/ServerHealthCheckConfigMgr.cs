@@ -113,7 +113,7 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                         throw new FormatException(string.Format("XML format error. Invalid value for defaults attribute ONEPERGROUP for windows service {0}", winService.Name));
                     }
                 } //End If - Defaults Check
-
+                var svcElems = serviceElem.Elements();
                 //Check for Includes
                 if (serviceElem.HasElements && serviceElem.Elements().Any(x => x.Name.LocalName.ToUpper().Equals("INCLUDE")))
                 {
@@ -128,6 +128,41 @@ namespace FrontierVOps.FiOS.Servers.Controllers
 
                 yield return winService;
             } //End Foreach - Service Element
+        }
+
+        public static bool IsExempt(FiOSServer Server, ExemptionType ExemptType, params string[] Args)
+        {
+            var exemptionsEle = _config.Root.Descendants(_ns + "Exemptions");
+            var exemptTypeEle = exemptionsEle.Elements().Where(x => x.Name.LocalName.ToUpper() == ExemptType.ToString().ToUpper());
+
+            if (exemptTypeEle.Count() == 0)
+                return false;
+
+            if (exemptTypeEle.Descendants().Any(x => x.Name.LocalName.ToUpper().Equals("SERVER")) && !exemptTypeEle.Descendants(_ns + "Server").Attributes("Name").Select(x => x.Value).Any(x => x.Equals(Server.HostName)))
+            {
+                return false;
+            }
+
+            if (ExemptType == ExemptionType.HardDrive)
+            {
+                var driveLetters = exemptTypeEle.Elements(_ns + "DriveLetter").Select(x => x.Value);
+
+                bool containsAll = true;
+                foreach(var dl in driveLetters)
+                {
+                    if (!(Args.Contains(dl) || Args.Contains(dl + ":")) && containsAll)
+                    {
+                        containsAll = false;
+                    }
+                }
+                return containsAll;
+            }
+            else if (ExemptType == ExemptionType.IIS)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static void processIncludeExclude(ref HCWinService winService, XElement elem, bool isInclude)
@@ -212,8 +247,10 @@ namespace FrontierVOps.FiOS.Servers.Controllers
                             retVal.Add(new Tuple<bool, ServerRole, ServerFunction>(isInclude, ServerRole.AutoProvisioning, getServerFunction(roleEle.Value)));
                             break;
                         case "FIOSADVANCED-AIM":
+                            retVal.Add(new Tuple<bool, ServerRole, ServerFunction>(isInclude, ServerRole.FiOSAdvancedAIM, getServerFunction(roleEle.Value)));
+                            break;
                         case "FIOSADVANCED-BANNER":
-                            retVal.Add(new Tuple<bool, ServerRole, ServerFunction>(isInclude, ServerRole.FiOSAdvanced, getServerFunction(roleEle.Value)));
+                            retVal.Add(new Tuple<bool, ServerRole, ServerFunction>(isInclude, ServerRole.FiOSAdvancedBanner, getServerFunction(roleEle.Value)));
                             break;
                         case "FOTG":
                             retVal.Add(new Tuple<bool, ServerRole, ServerFunction>(isInclude, ServerRole.FiOSOnTheGo, getServerFunction(roleEle.Value)));
