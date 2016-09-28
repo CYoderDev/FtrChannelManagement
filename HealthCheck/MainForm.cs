@@ -181,15 +181,24 @@ namespace HealthCheck
             var btn = sender as Button;
             if (!this.bw.IsBusy)
             {
-                //disableButton(ref btn);
+                //Disable email results button
+                if (this.button_Email.Enabled)
+                    disableButton(ref this.button_Email);
+
+                //Make the progress bar visible
                 this.toolStripProgressBar1.Visible = true;
                 this.toolStripStatusLabel_Progress.Visible = true;
+
+                //Begin background worker
                 this.bw.RunWorkerAsync();
+
+                //Change to cancel button
                 btn.Text = "Cancel";
                 btn.BackColor = Color.Red;
             }
             else
             {
+                //If the background worker is busy, then cancel if cancel button is pressed.
                 this.bw.CancelAsync();
                 disableButton(ref btn);
             }
@@ -264,7 +273,7 @@ namespace HealthCheck
                     var tskGeneric = genChecks.PerformServerCheck(server);                  
                     var tskWinServices = GenericChecks.CheckWindowsServices(server, winServicesToCheck);
                     var tskListGrpWinServices = new List<Task>();
-
+                    
                     if (server.IsOnline && server.IsActive)
                     {
                         //For the services that have onepergroup set, calculate the servers that belong to the group
