@@ -23,7 +23,8 @@ namespace HealthCheck
 {
     public partial class mainForm : Form
     {
-        BackgroundWorker bw { get; set; }
+        internal BackgroundWorker bw { get; set; }
+        internal bool healthCheckComplete { get; set; }
         private readonly object _lockObj = new object();
 
         public mainForm()
@@ -181,10 +182,8 @@ namespace HealthCheck
             var btn = sender as Button;
             if (!this.bw.IsBusy)
             {
-                //Disable email results button
-                if (this.button_Email.Enabled)
-                    disableButton(ref this.button_Email);
-
+                this.label_Info.Text = string.Empty;
+                
                 //Make the progress bar visible
                 this.toolStripProgressBar1.Visible = true;
                 this.toolStripStatusLabel_Progress.Visible = true;
@@ -195,6 +194,8 @@ namespace HealthCheck
                 //Change to cancel button
                 btn.Text = "Cancel";
                 btn.BackColor = Color.Red;
+
+                this.healthCheckComplete = false;
             }
             else
             {
@@ -202,16 +203,33 @@ namespace HealthCheck
                 this.bw.CancelAsync();
                 disableButton(ref btn);
             }
+
+            //Enable the email button
+            this.enableButton(ref this.button_Email, Color.DarkSlateBlue, Color.WhiteSmoke);
         }
 
         private void button_Email_Click(object sender, EventArgs e)
         {
-            var btn = sender as Button;
-            using (EmailForm efrm = new EmailForm(setHTMLSelectView(this.objectListView_Results, true)))
+            var btn = sender as Button;           
+            using (EmailForm efrm = new EmailForm(this))
             {
+                efrm.HTMLFormat = setHTMLSelectView(this.objectListView_Results, true);
+
+                efrm.EmailSent += (s, ev) =>
+                    {
+                        this.label_Info.Text = "Email sent!";
+                        enableButton(ref btn, Color.DarkSlateBlue, Color.WhiteSmoke);
+                    };
+
+                if (this.bw.IsBusy)
+                {
+                    this.label_Info.Text = "Email will send upon completion of the health check.";
+                    disableButton(ref btn);
+                }
+
                 if (efrm.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
                 {
-                    this.label_Info.Text = "Email sent!";
+                    
                 }
             }
         }
@@ -556,6 +574,7 @@ namespace HealthCheck
                 //Display complete in progress status label and enable email button
                 this.toolStripStatusLabel_Progress.Text = "Complete!";
                 this.enableButton(ref this.button_Email, Color.DarkSlateBlue, Color.WhiteSmoke);
+                this.healthCheckComplete = true;
                 writeVerbose("Checks complete!");
             }
 
@@ -591,6 +610,11 @@ namespace HealthCheck
                     }
                 }
             }
+        }
+
+        internal string setHTMLSelectView()
+        {
+            return setHTMLSelectView(this.objectListView_Results, true);
         }
 
         private string setHTMLSelectView(object sender, bool isEmail)
@@ -671,18 +695,22 @@ namespace HealthCheck
 
         private void disableButton(ref Button btn)
         {
+            if (!btn.Enabled)
+                return;
             btn.BackColor = System.Drawing.Color.LightGray;
             btn.Enabled = false;
         }
 
         private void enableButton(ref Button btn, Color backColor, Color foreColor)
         {
+            if (btn.Enabled && btn.BackColor == backColor && btn.ForeColor == foreColor)
+                return;
             btn.BackColor = backColor;
             btn.ForeColor = foreColor;
             btn.Enabled = true;
         }
 
-        private void writeVerbose(string message)
+        internal static void writeVerbose(string message)
         {
 #if DEBUG
             if (Logger.IsLoggingEnabled())
@@ -692,7 +720,7 @@ namespace HealthCheck
 #endif
         }
 
-        private void writeError(string message, int? eventId, System.Diagnostics.TraceEventType eventType, bool writeToEventLog = false, string title = "FiOS Health Check Application")
+        internal static void writeError(string message, int? eventId, System.Diagnostics.TraceEventType eventType, bool writeToEventLog = false, string title = "FiOS Health Check Application")
         {
             if (eventType != System.Diagnostics.TraceEventType.Error && eventType != System.Diagnostics.TraceEventType.Critical)
                 throw new ArgumentException("Event type must be an error or critical to write to the error log");
@@ -708,7 +736,7 @@ namespace HealthCheck
             }
         }
 
-        private void writeEvent(string message, int? eventId, System.Diagnostics.TraceEventType eventType, bool writeToErrorLog = false, string title = "FiOS Health Check Application")
+        internal static void writeEvent(string message, int? eventId, System.Diagnostics.TraceEventType eventType, bool writeToErrorLog = false, string title = "FiOS Health Check Application")
         {
             if (eventType != System.Diagnostics.TraceEventType.Error && eventType != System.Diagnostics.TraceEventType.Critical)
                 throw new ArgumentException("Event type must be an error or critical to write to the event log");

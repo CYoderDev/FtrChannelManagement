@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
             this.textBox_SendTo = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.panel_Buttons = new System.Windows.Forms.Panel();
-            this.button_Send = new System.Windows.Forms.Button();
             this.button_Cancel = new System.Windows.Forms.Button();
+            this.button_Send = new System.Windows.Forms.Button();
             this.label_Status = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel_Buttons.SuspendLayout();
@@ -48,18 +48,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(396, 62);
             this.panel1.TabIndex = 0;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.Gainsboro;
-            this.label1.Location = new System.Drawing.Point(12, 21);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(78, 19);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Send To:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // textBox_SendTo
             // 
@@ -79,6 +67,18 @@
             this.textBox_SendTo.Text = "FiOS.Operations@ftr.com";
             this.textBox_SendTo.WordWrap = false;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.Gainsboro;
+            this.label1.Location = new System.Drawing.Point(12, 21);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(78, 19);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Send To:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // panel_Buttons
             // 
             this.panel_Buttons.Controls.Add(this.button_Cancel);
@@ -87,18 +87,6 @@
             this.panel_Buttons.Name = "panel_Buttons";
             this.panel_Buttons.Size = new System.Drawing.Size(456, 83);
             this.panel_Buttons.TabIndex = 1;
-            // 
-            // button_Send
-            // 
-            this.button_Send.BackColor = System.Drawing.Color.DarkSlateGray;
-            this.button_Send.Font = new System.Drawing.Font("Arial", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_Send.ForeColor = System.Drawing.Color.Ivory;
-            this.button_Send.Location = new System.Drawing.Point(167, 3);
-            this.button_Send.Name = "button_Send";
-            this.button_Send.Size = new System.Drawing.Size(115, 41);
-            this.button_Send.TabIndex = 0;
-            this.button_Send.Text = "Send";
-            this.button_Send.UseVisualStyleBackColor = false;
             // 
             // button_Cancel
             // 
@@ -112,12 +100,24 @@
             this.button_Cancel.Text = "Cancel";
             this.button_Cancel.UseVisualStyleBackColor = false;
             // 
+            // button_Send
+            // 
+            this.button_Send.BackColor = System.Drawing.Color.DarkSlateGray;
+            this.button_Send.Font = new System.Drawing.Font("Arial", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_Send.ForeColor = System.Drawing.Color.Ivory;
+            this.button_Send.Location = new System.Drawing.Point(167, 3);
+            this.button_Send.Name = "button_Send";
+            this.button_Send.Size = new System.Drawing.Size(115, 41);
+            this.button_Send.TabIndex = 0;
+            this.button_Send.Text = "Send";
+            this.button_Send.UseVisualStyleBackColor = false;
+            // 
             // label_Status
             // 
             this.label_Status.AutoSize = true;
             this.label_Status.Font = new System.Drawing.Font("Arial Narrow", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_Status.ForeColor = System.Drawing.Color.Ivory;
-            this.label_Status.Location = new System.Drawing.Point(236, 11);
+            this.label_Status.Location = new System.Drawing.Point(54, 9);
             this.label_Status.Name = "label_Status";
             this.label_Status.Size = new System.Drawing.Size(0, 16);
             this.label_Status.TabIndex = 2;
