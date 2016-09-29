@@ -44,26 +44,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\IISServerMgr.cs" />
-    <Compile Include="Controllers\ServerMgr.cs" />
+    <Compile Include="Controllers\ServerConfigMgr.cs" />
     <Compile Include="Enumerators\FiOSServers.cs" />
     <Compile Include="Objects\DbType.cs" />
     <Compile Include="Objects\FiOSDbServer.cs" />
     <Compile Include="Objects\FiOSServer.cs" />
-    <Compile Include="Objects\FiOSIISServer.cs" />
+    <Compile Include="Objects\FiOSWebServer.cs" />
     <Compile Include="Objects\ServerFunction.cs" />
     <Compile Include="Objects\ServerLocation.cs" />
     <Compile Include="Objects\ServerRole.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Config\ServerLayout.xml">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Config\ServerLayout.xsd">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

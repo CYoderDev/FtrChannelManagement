@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="XMLSchema1"
+    targetNamespace="http://FrontierVOps.FiOS.config/NGVODPoster.xsd"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://FrontierVOps.FiOS.config/NGVODPoster.xsd"
+    xmlns:mstns="http://FrontierVOps.FiOS.config/NGVODPoster.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:element name="configuration">
+    <xs:annotation>
+      <xs:documentation>Configuration Root Element</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="VHOs" type="VHOCollection" minOccurs="1" maxOccurs="1" />
+        <xs:element name="PosterDestDir" type="Directory" minOccurs="1" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>The local directory on the primary IMG web server where the NGVodPoster file will be saved.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="PosterSourceDir" type="Directory" minOccurs="1" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>The initial source directory where the raw image files are stored.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Logs" type="Log" minOccurs="0" maxOccurs="1" />
+        <xs:element name="Parameters" type="Parameters" minOccurs="1" maxOccurs="1" />
+        <xs:element name="Email" type="SMTP" minOccurs="0" maxOccurs="1" />
+        <xs:element name="MaxThreads" type="xs:int" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>Maximum amount of threads to run in parallel while processing images.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="VHOCollection">
+    <xs:sequence>
+      <xs:element name="VHO" type="VHO" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="VHO">
+    <xs:sequence>
+      <xs:element name="IMGDb" type="Database" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>The VHO IMG Database Server</xs:documentation>
+        </xs:annotation>
+      </xs:element>  
+      <xs:element name="PrimaryWebServer" type="xs:string" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>The FQDN of the primary IMG web server in the VHO.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="Name" type="vhoname"/>
+  </xs:complexType>
+  <xs:complexType name="Database">
+    <xs:attribute name="InstanceName" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the SQL database instance for IMG</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the IMG frontend database that contains the tables with VOD asset information</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="SMTP">
+    <xs:sequence>
+      <xs:element name="Server" type="xs:string" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>SMTP server IP or FQDN</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Port" type="xs:int" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>Port used to send mail from the SMTP server (default 25)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="SendFrom" type="Email" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>Email address to send the missing poster log from.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="SendTo" type="Email" minOccurs="1" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Email address to send the missing poster log.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Log">
+    <xs:sequence>
+      <xs:element name="ErrorLogDir" minOccurs="0" maxOccurs="1" type="Directory">
+        <xs:annotation>
+          <xs:documentation>Directory where the error logs should be saved.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="MissingPosterLogDir" minOccurs="0" maxOccurs="1" type="Directory" >
+        <xs:annotation>
+          <xs:documentation>Directory where the missing posters log should be stored.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Parameters">
+    <xs:sequence>
+      <xs:element name="ImageWidthPx" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation>Preferred px width of the compressed image</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ImageHeightPx" type="xs:integer">
+        <xs:annotation>
+          <xs:documentation>Preferred px height of the compressed image</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="vhoname">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(^(?i)VHO(\d){1,2}$)" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Directory">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="^(.+)[/|\\]([^/]+)$" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Email">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

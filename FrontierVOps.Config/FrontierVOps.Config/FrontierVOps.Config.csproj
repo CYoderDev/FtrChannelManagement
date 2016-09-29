@@ -45,6 +45,36 @@
   <ItemGroup>
     <Folder Include="Vantage\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Config\FiOSRoles.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\HealthCheck.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\NGVODPoster.xml" />
+    <Content Include="Config\ServerLayout.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Config\FiOSRoles.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Config\HealthCheck.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Config\NGVODPoster.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Config\ServerLayout.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FrontierVOps.Common\FrontierVOps.Common\FrontierVOps.Common.csproj">
+      <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>
+      <Name>FrontierVOps.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

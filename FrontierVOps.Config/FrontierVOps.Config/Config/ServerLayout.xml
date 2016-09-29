@@ -13,8 +13,8 @@
           <Server Name="IMGADTXCAWDPP02" IP="10.106.1.35" Function="Database" />
           <Server Name="IMGADTXCAWDPP03" IP="10.106.1.36" Function="Database" />
           <Server Name="IMGADTXCAWDPP04" IP="10.106.1.37" Function="Database" />
-          <Server Name="IMGADTXCAWDPP05" IP="10.106.1.65" Function="Database" />
-          <Server Name="IMGADTXCAWDPP06" IP="10.106.1.66" Function="Database" />
+          <Server Name="IMGADTXCAWDPP05" IP="10.106.1.65" Function="Database" IsActive="false" />
+          <Server Name="IMGADTXCAWDPP06" IP="10.106.1.66" Function="Database" IsActive="false" />
           <Server Name="IMGADTXCAWDPP07" IP="10.106.1.67" Function="Database" IsActive="false" />
           <Server Name="IMGADTXCAWDPP08" IP="10.106.1.68" Function="Database" IsActive="false" />
         </AdminConsole>
