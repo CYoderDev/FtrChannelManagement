@@ -19,43 +19,47 @@ namespace FiOSHealthCheckConsole
         {
 
 
-            var svr = ServerConfigMgr.GetServers().Where(x => x.HostName.ToUpper().Equals("CTXV01PIMGD01")).FirstOrDefault();
+            var server = ServerConfigMgr.GetServers().Where(x => x.HostName.ToUpper().Equals("CTXV01PIMGD01")).FirstOrDefault();
 
-            var hcWServices = ServerHealthCheckConfigMgr.GetWindowsServicesToCheck()
+            bool isExempt = ServerHealthCheckConfigMgr.IsExempt(server, ExemptionType.HardDrive, "O");
+
+
+             var winServicesToCheck = ServerHealthCheckConfigMgr.GetWindowsServicesToCheck()
                         .Where
                             (
-                                x => x.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count() > 0 && x.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0
-                                    || x.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() > 0 && x.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() == 0
-                                    || !x.Function.Equals(ServerFunction.Unknown) && (x.Function.Equals(svr.HostFunction) && x.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() + x.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0)
+                                x => x.Servers.Where(y => y.Item1 && y.Item2.HostName == server.HostName).Count() > 0 && x.Roles.Where(y => !y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() == 0
+                                    || x.Roles.Where(y => y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() > 0 && x.Servers.Where(y => !y.Item1 && y.Item2.HostName == server.HostName).Count() == 0
+                                    || !x.Function.Equals(ServerFunction.Unknown) && (x.Function.Equals(server.HostFunction) && x.Servers.Where(y => !y.Item1 && y.Item2.HostName == server.HostName).Count() + x.Roles.Where(y => !y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() == 0)
                                     || ((x.Roles.Count + x.Servers.Count == 0) && (x.Function.Equals(ServerFunction.Unknown)))
                             ).ToArray();
 
+
             //hcWServices = ServerHealthCheckConfigMgr.GetWindowsServicesToCheck().Where(x => x.OnePerGroup).ToArray();
 
-            foreach (var svc in ServerHealthCheckConfigMgr.GetWindowsServicesToCheck())
+            foreach (var svc in ServerHealthCheckConfigMgr.GetWindowsServicesToCheck().Where(x => x.Name == "WAS"))
             {
-                var count = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count();
-                var count2 = svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count();
+                var count = svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == server.HostName).Count();
+                var count2 = svc.Roles.Where(y => !y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count();
            
                 //if (svc.Roles.Count >= 1)
                 //svc.Roles.ForEach(x => Console.WriteLine("{3}  - {0} | {1} | {2}", x.Item1, x.Item2, x.Item3, svc.Name));
 
-                bool bol1 = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count() > 0 && svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0;
-                bool bol2 = svc.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() > 0 && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() == 0;
-                bool bol3 = (svc.Function.Equals(svr.HostFunction) && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() + svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0);
+                bool bol1 = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == server.HostName).Count() > 0 && svc.Roles.Where(y => !y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() == 0;
+                bool bol2 = svc.Roles.Where(y => y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() > 0 && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == server.HostName).Count() == 0;
+                bool bol3 = (svc.Function.Equals(server.HostFunction) && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == server.HostName).Count() + svc.Roles.Where(y => !y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() == 0);
                 bool bol4 = ((svc.Roles.Count + svc.Servers.Count == 0) && (svc.Function.Equals(ServerFunction.Unknown)));
-                bool bol5 = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == svr.HostName).Count() > 0 && svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0
-                                    || svc.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() > 0 && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() == 0
-                                    || (svc.Function.Equals(svr.HostFunction) && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == svr.HostName).Count() + svc.Roles.Where(y => !y.Item1 && y.Item2 == svr.HostRole && y.Item3 == svr.HostFunction).Count() == 0)
+                bool bol5 = svc.Servers.Where(y => y.Item1 && y.Item2.HostName == server.HostName).Count() > 0 && svc.Roles.Where(y => !y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() == 0
+                                    || svc.Roles.Where(y => y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() > 0 && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == server.HostName).Count() == 0
+                                    || (svc.Function.Equals(server.HostFunction) && svc.Servers.Where(y => !y.Item1 && y.Item2.HostName == server.HostName).Count() + svc.Roles.Where(y => !y.Item1 && y.Item2 == server.HostRole && y.Item3 == server.HostFunction).Count() == 0)
                                     || ((svc.Roles.Count + svc.Servers.Count == 0) && (svc.Function.Equals(ServerFunction.Unknown)));
 
-                Console.WriteLine("{0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8}", svc.Name, count, svr.HostFunction, svr.HostRole, count2, bol1, bol2, bol3, bol4, bol5);
+                Console.WriteLine("{0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8}", svc.Name, count, server.HostFunction, server.HostRole, count2, bol1, bol2, bol3, bol4, bol5);
                 
             }
 
             //var roleCheck = ServerHealthCheckConfigMgr.GetWindowsServicesToCheck().Where(x => x.Roles.Where(y => y.Item1 && y.Item2 == svr.HostRole).Count() > 0);
 
-            foreach(var service in hcWServices)
+            foreach (var service in winServicesToCheck)
             {
                 Console.WriteLine("Name:\t\t{0}", service.Name);
                 Console.WriteLine("Display:\t{0}", service.DisplayName);
@@ -140,14 +144,14 @@ namespace FiOSHealthCheckConsole
             Toolset.SendEmail("mailrelay.corp.pvt", null, 25, false, "HealthCheck Test Email", formatter.ToString(), "FiOSHealthCheck@ftr.com", new string[1] { "cyy132@ftr.com" }, null);
 
             var servers = ServerConfigMgr.GetServers().ToList();
-            foreach (var server in servers.Where(x => x.HostRole == ServerRole.IMG))
+            foreach (var svr in servers.Where(x => x.HostRole == ServerRole.IMG))
             {
-                if (server is FiOSDbServer)
+                if (svr is FiOSDbServer)
                 {
                     Console.WriteLine("\nDATABASE:\n");
-                    Console.WriteLine((server as FiOSDbServer).DatabaseType);                
+                    Console.WriteLine((svr as FiOSDbServer).DatabaseType);                
                 }
-                else if (server is FiOSWebServer)
+                else if (svr is FiOSWebServer)
                 {
                     Console.WriteLine("\nIIS SERVER:\n");
                 }
@@ -156,20 +160,20 @@ namespace FiOSHealthCheckConsole
                     Console.Write("\nFiOS Server:\n");
                 }
 
-                Console.WriteLine(server.HostName);
-                Console.WriteLine(server.HostFullName);
-                Console.WriteLine(server.HostFunction);
-                Console.WriteLine(server.HostLocation);
-                Console.WriteLine(server.HostLocationName);
-                Console.WriteLine(server.HostName);
-                Console.WriteLine(server.HostRole);
-                Console.WriteLine(server.IsOnline);
+                Console.WriteLine(svr.HostName);
+                Console.WriteLine(svr.HostFullName);
+                Console.WriteLine(svr.HostFunction);
+                Console.WriteLine(svr.HostLocation);
+                Console.WriteLine(svr.HostLocationName);
+                Console.WriteLine(svr.HostName);
+                Console.WriteLine(svr.HostRole);
+                Console.WriteLine(svr.IsOnline);
 
                 try
                 {
-                    if (server is FiOSWebServer)
+                    if (svr is FiOSWebServer)
                     {
-                        using (var iisMgr = new IISServerMgr(server))
+                        using (var iisMgr = new IISServerMgr(svr))
                         {
                             try
                             {
@@ -204,7 +208,7 @@ namespace FiOSHealthCheckConsole
                             catch (Exception ex)
                             {
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine("Failed to get Sites for {0}. {1}", server.HostName, ex.Message);
+                                Console.WriteLine("Failed to get Sites for {0}. {1}", svr.HostName, ex.Message);
                                 Console.ResetColor();
                             }
                         }

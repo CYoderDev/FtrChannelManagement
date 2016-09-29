@@ -42,7 +42,7 @@
 
   <xs:complexType name="ProdServerCollection">
     <xs:sequence minOccurs="1">
-      <xs:element name="Server" type="ProdServer" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="Server" type="ProdServer" minOccurs="1" maxOccurs="unbounded"></xs:element>
     </xs:sequence>
   </xs:complexType>
   
@@ -52,8 +52,33 @@
     </xs:sequence>
   </xs:complexType>
   
-  <xs:complexType name="ProdServer" mixed="true">
-    <xs:attribute name="Function" type="ProdFunction" use="required" />
+  <xs:complexType name="ProdServer">
+    <xs:attribute name="Name" type="xs:string" use="required" />
+    <xs:attribute name="IP" type="xs:string" use ="required" />
+    <xs:attribute name="Function" type="ProdFunction" use="optional" default="None" />
+    <xs:attribute name="Domain" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specify only if domain of this server is different than it's ancestor elements</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="IsActive" type="xs:boolean" default="true" use="optional">
+      <xs:annotation>
+        <xs:documentation>Determines whether the server is actively used in production. Default is true.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="GeneralServer" mixed="true">
+    <xs:attribute name="Domain" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specify only if domain of this server is different than it's ancestor elements</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="IsActive" type="xs:boolean" default="true" use="optional">
+      <xs:annotation>
+        <xs:documentation>Determines whether the server is actively used in production. Default is true.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
   
   <xs:complexType name="VHERoleCollection">
@@ -69,8 +94,8 @@
       <xs:element name="AES" minOccurs="1" maxOccurs="1">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="FrontEnd" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-            <xs:element name="KeyGen" minOccurs="1" maxOccurs="1" type="ServerCollection" />
+            <xs:element name="FrontEnd" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+            <xs:element name="KeyGen" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -83,50 +108,50 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element name="FOTG" minOccurs="1" maxOccurs="1" type="ServerCollection" />
+      <xs:element name="FOTG" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
       <xs:element name="Hydra" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
       <xs:element name="MSV" minOccurs="1" maxOccurs="1" >
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="Injection" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-            <xs:element name="UltraViolet" minOccurs="1" maxOccurs="1" type="ServerCollection" />
+            <xs:element name="Injection" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+            <xs:element name="UltraViolet" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
             <xs:element name="Server" minOccurs="2" maxOccurs="unbounded" type="ProdServer" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
       <xs:element name="NSP" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
-      <xs:element name="PlayReady" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-      <xs:element name="RatingsRecom" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-      <xs:element name="Search" minOccurs="1" maxOccurs="1" type="ServerCollection" />
+      <xs:element name="PlayReady" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+      <xs:element name="RatingsRecom" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+      <xs:element name="Search" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
       <xs:element name="STBLogging" minOccurs="0" maxOccurs="1" type="ProdServerCollection" />
-      <xs:element name="VODEncryption" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-      <xs:element name="MediaMgr" minOccurs="0" maxOccurs="1" type="ServerCollection" />
+      <xs:element name="VODEncryption" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+      <xs:element name="MediaMgr" minOccurs="0" maxOccurs="1" type="ProdServerCollection" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="VHEInfrastructureRoles">
     <xs:sequence>
-      <xs:element name="DomainControllers" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-      <xs:element name="KMS-MDT" minOccurs="0" maxOccurs="1" type="ServerCollection" />
+      <xs:element name="DomainControllers" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+      <xs:element name="KMS-MDT" minOccurs="0" maxOccurs="1" type="ProdServerCollection" />
       <xs:element name="SCOM" minOccurs="1" maxOccurs="1">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="Gateway" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-            <xs:element name="Root" minOccurs="0" maxOccurs="1" type="ServerCollection" />
-            <xs:element name="Management" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-            <xs:element name="Database" minOccurs="1" maxOccurs="1" type="ServerCollection" />
+            <xs:element name="Gateway" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+            <xs:element name="Root" minOccurs="0" maxOccurs="1" type="ProdServerCollection" />
+            <xs:element name="Management" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+            <xs:element name="Database" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element name="SCCM" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-      <xs:element name="SFTP" minOccurs="0" maxOccurs="1" type="ServerCollection" />
+      <xs:element name="SCCM" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+      <xs:element name="SFTP" minOccurs="0" maxOccurs="1" type="ProdServerCollection" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="VHORoles">
     <xs:sequence>
-      <xs:element name="DomainControllers" minOccurs="1" maxOccurs="1" type="ServerCollection" />
-      <xs:element name="Gateway" minOccurs="1" maxOccurs="1" type="ServerCollection" />
+      <xs:element name="DomainControllers" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
+      <xs:element name="Gateway" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
       <xs:element name="IMG" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
       <xs:element name="MES" minOccurs="1" maxOccurs="1" type="ProdServerCollection" />
       <xs:element name="MGS" minOccurs="0" maxOccurs="1" type="ProdServerCollection" />
@@ -139,6 +164,7 @@
       <xs:enumeration value="Web" />
       <xs:enumeration value="App" />
       <xs:enumeration value="Database" />
+      <xs:enumeration value="None" />
     </xs:restriction>
   </xs:simpleType>
 

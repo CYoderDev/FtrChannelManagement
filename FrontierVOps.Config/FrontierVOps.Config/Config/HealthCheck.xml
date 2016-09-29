@@ -69,6 +69,7 @@
       <Defaults>
         <Status>Running</Status>
         <StartupType>Manual</StartupType>
+        <StartupType>Automatic</StartupType>
         <LogOnAs>LocalSystem</LogOnAs>
       </Defaults>
     </WindowsService>
@@ -95,6 +96,13 @@
       <Include>
         <Function All="Web"/>
       </Include>
+      <Exclude>
+        <Servers>
+          <!--Excluding VMS NSP servers because they don't have IIS installed-->
+          <Server Name="VMSSTXCAWAPV01" Domain="VHE.FiOSProd.Net" IP="10.106.1.51"/>
+          <Server Name="VMSSTXCAWAPV02" Domain="VHE.FiOSProd.Net" IP="10.106.1.52"/>
+        </Servers>
+      </Exclude>
       <Defaults>
         <Status>Running</Status>
         <StartupType>Manual</StartupType>
@@ -799,4 +807,22 @@
     <!--END MES-->
     <!--***************-->
   </Services>
+  
+  <!--EXEMPTIONS-->
+  <Exemptions>
+    <IIS>
+      <Servers>
+        <Server Name="VMSSTXCAWAPV01" Domain="VHE.FiOSProd.Net" IP="10.106.1.51"/>
+        <Server Name="VMSSTXCAWAPV02" Domain="VHE.FiOSProd.Net" IP="10.106.1.52"/>
+      </Servers>
+    </IIS>
+    <HardDrive>
+      <DriveLetter>O</DriveLetter>
+      <Filter>
+        <Servers>
+          <Server Name="CTXV01PIMGD03" Domain="IMG.FiOSProd.Net" IP="104.55.104.137"/>
+        </Servers>
+      </Filter>
+    </HardDrive>
+  </Exemptions>
 </configuration>
