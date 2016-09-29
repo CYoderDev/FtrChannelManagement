@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{80C87125-56F0-46F5-B280-293765C09DC6}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FiOSHealthCheckConsole</RootNamespace>
+    <AssemblyName>FiOSHealthCheckConsole</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\IIS.Microsoft.Web.Administration.8.5.9600.17042\lib\Microsoft.Web.Administration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Management.Instrumentation" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HealthCheckController.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FrontierVOps.Common\FrontierVOps.Common\FrontierVOps.Common.csproj">
+      <Project>{dd1dbdf9-af22-47a7-b393-e92fb7ecf518}</Project>
+      <Name>FrontierVOps.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FrontierVOps.Config\FrontierVOps.Config\FrontierVOps.Config.csproj">
+      <Project>{fb122ed6-5112-4cf0-b287-cb187c451c8b}</Project>
+      <Name>FrontierVOps.Config</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers.Components\FrontierVOps.FiOS.Servers.Components.csproj">
+      <Project>{53e4ec69-ace1-4c2f-ad8b-b30c35a86d18}</Project>
+      <Name>FrontierVOps.FiOS.Servers.Components</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers.csproj">
+      <Project>{f3bee8df-7c63-4ae8-9fa8-344395500fba}</Project>
+      <Name>FrontierVOps.FiOS.Servers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FrontierVOps.FiOS.HealthCheck.Controllers\FrontierVOps.FiOS.HealthCheck.Controllers.csproj">
+      <Project>{cb01e1c6-0016-4695-a43e-d1e539df6fa3}</Project>
+      <Name>FrontierVOps.FiOS.HealthCheck.Controllers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FrontierVOps.FiOS.HealthCheck.DataObjects\FrontierVOps.FiOS.HealthCheck.DataObjects.csproj">
+      <Project>{015a31be-f2e7-420d-a242-9be9d7f28fd3}</Project>
+      <Name>FrontierVOps.FiOS.HealthCheck.DataObjects</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Objects\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

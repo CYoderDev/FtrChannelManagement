@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiOSHealthCheckConsole", "FiOSHealthCheckConsole\FiOSHealthCheckConsole.csproj", "{80C87125-56F0-46F5-B280-293765C09DC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.FiOS.HealthCheck.Controllers", "FrontierVOps.FiOS.HealthCheck.Controllers\FrontierVOps.FiOS.HealthCheck.Controllers.csproj", "{CB01E1C6-0016-4695-A43E-D1E539DF6FA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.FiOS.Servers", "..\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers.csproj", "{F3BEE8DF-7C63-4AE8-9FA8-344395500FBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.Data", "..\FrontierVOps.Data\FrontierVOps.Data\FrontierVOps.Data.csproj", "{2791D577-7FE8-40E6-B10C-3493543542A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.Data.Objects", "..\FrontierVOps.Data\FrontierVOps.Data.Objects\FrontierVOps.Data.Objects.csproj", "{A15C34D5-112E-4534-82EF-FB5A5C73CF8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.Config", "..\FrontierVOps.Config\FrontierVOps.Config\FrontierVOps.Config.csproj", "{FB122ED6-5112-4CF0-B287-CB187C451C8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.Common", "..\FrontierVOps.Common\FrontierVOps.Common\FrontierVOps.Common.csproj", "{DD1DBDF9-AF22-47A7-B393-E92FB7ECF518}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.FiOS.Servers.Components", "..\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers.Components\FrontierVOps.FiOS.Servers.Components.csproj", "{53E4EC69-ACE1-4C2F-AD8B-B30C35A86D18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontierVOps.FiOS.HealthCheck.DataObjects", "FrontierVOps.FiOS.HealthCheck.DataObjects\FrontierVOps.FiOS.HealthCheck.DataObjects.csproj", "{015A31BE-F2E7-420D-A242-9BE9D7F28FD3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthCheck", "..\HealthCheck\HealthCheck.csproj", "{0FA3A267-BA5C-4E34-AF7A-7EB76BA03562}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "HealthCheckSetup", "..\HealthCheck\HealthCheckSetup\HealthCheckSetup.vdproj", "{B22A1E55-64EA-4863-B110-C7FF9823D043}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{80C87125-56F0-46F5-B280-293765C09DC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80C87125-56F0-46F5-B280-293765C09DC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80C87125-56F0-46F5-B280-293765C09DC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80C87125-56F0-46F5-B280-293765C09DC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB01E1C6-0016-4695-A43E-D1E539DF6FA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB01E1C6-0016-4695-A43E-D1E539DF6FA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB01E1C6-0016-4695-A43E-D1E539DF6FA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB01E1C6-0016-4695-A43E-D1E539DF6FA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3BEE8DF-7C63-4AE8-9FA8-344395500FBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3BEE8DF-7C63-4AE8-9FA8-344395500FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3BEE8DF-7C63-4AE8-9FA8-344395500FBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3BEE8DF-7C63-4AE8-9FA8-344395500FBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2791D577-7FE8-40E6-B10C-3493543542A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2791D577-7FE8-40E6-B10C-3493543542A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2791D577-7FE8-40E6-B10C-3493543542A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2791D577-7FE8-40E6-B10C-3493543542A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A15C34D5-112E-4534-82EF-FB5A5C73CF8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A15C34D5-112E-4534-82EF-FB5A5C73CF8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A15C34D5-112E-4534-82EF-FB5A5C73CF8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A15C34D5-112E-4534-82EF-FB5A5C73CF8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB122ED6-5112-4CF0-B287-CB187C451C8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB122ED6-5112-4CF0-B287-CB187C451C8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB122ED6-5112-4CF0-B287-CB187C451C8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB122ED6-5112-4CF0-B287-CB187C451C8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD1DBDF9-AF22-47A7-B393-E92FB7ECF518}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD1DBDF9-AF22-47A7-B393-E92FB7ECF518}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD1DBDF9-AF22-47A7-B393-E92FB7ECF518}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD1DBDF9-AF22-47A7-B393-E92FB7ECF518}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53E4EC69-ACE1-4C2F-AD8B-B30C35A86D18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53E4EC69-ACE1-4C2F-AD8B-B30C35A86D18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53E4EC69-ACE1-4C2F-AD8B-B30C35A86D18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53E4EC69-ACE1-4C2F-AD8B-B30C35A86D18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{015A31BE-F2E7-420D-A242-9BE9D7F28FD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{015A31BE-F2E7-420D-A242-9BE9D7F28FD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{015A31BE-F2E7-420D-A242-9BE9D7F28FD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{015A31BE-F2E7-420D-A242-9BE9D7F28FD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FA3A267-BA5C-4E34-AF7A-7EB76BA03562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FA3A267-BA5C-4E34-AF7A-7EB76BA03562}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FA3A267-BA5C-4E34-AF7A-7EB76BA03562}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FA3A267-BA5C-4E34-AF7A-7EB76BA03562}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B22A1E55-64EA-4863-B110-C7FF9823D043}.Debug|Any CPU.ActiveCfg = Debug
+		{B22A1E55-64EA-4863-B110-C7FF9823D043}.Debug|Any CPU.Build.0 = Debug
+		{B22A1E55-64EA-4863-B110-C7FF9823D043}.Release|Any CPU.ActiveCfg = Release
+		{B22A1E55-64EA-4863-B110-C7FF9823D043}.Release|Any CPU.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.Common.6.0.1304.0\lib\NET45;packages\EnterpriseLibrary.Logging.6.0.1304.0\lib\NET45
+	EndGlobalSection
+EndGlobal

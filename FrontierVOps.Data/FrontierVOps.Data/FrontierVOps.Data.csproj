@@ -42,6 +42,16 @@
     <Compile Include="DBFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers\FrontierVOps.FiOS.Servers.csproj">
+      <Project>{f3bee8df-7c63-4ae8-9fa8-344395500fba}</Project>
+      <Name>FrontierVOps.FiOS.Servers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FrontierVOps.Data.Objects\FrontierVOps.Data.Objects.csproj">
+      <Project>{a15c34d5-112e-4534-82ef-fb5a5c73cf8c}</Project>
+      <Name>FrontierVOps.Data.Objects</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

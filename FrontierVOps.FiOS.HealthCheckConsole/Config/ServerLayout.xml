@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration xmlns="http://FrontierVOps.FiOS.config/ServerLayout.xsd">
+  <VHE DomainName="VHE.FiOSProd.Net">
+    <Servers>
+      <Production>
+        <AdminConsole>
+          <Server Name="IMGADTXCAWAPV01" IP="10.106.1.29" Function="Web" />
+          <Server Name="IMGADTXCAWAPV02" IP="10.106.1.30" Function="Web" />
+          <Server Name="IMGADTXCAWAPV03" IP="10.106.1.31" Function="Web" />
+          <Server Name="IMGADTXCAWAPV04" IP="10.106.1.32" Function="Web" />
+          <Server Name="IMGADTXCAWAPV05" IP="10.106.1.33" Function="Web" />
+          <Server Name="IMGADTXCAWDPP01" IP="10.106.1.34" Function="Database" />
+          <Server Name="IMGADTXCAWDPP02" IP="10.106.1.35" Function="Database" />
+          <Server Name="IMGADTXCAWDPP03" IP="10.106.1.36" Function="Database" />
+          <Server Name="IMGADTXCAWDPP04" IP="10.106.1.37" Function="Database" />
+          <Server Name="IMGADTXCAWDPP05" IP="10.106.1.65" Function="Database" />
+          <Server Name="IMGADTXCAWDPP06" IP="10.106.1.66" Function="Database" />
+          <Server Name="IMGADTXCAWDPP07" IP="10.106.1.67" Function="Database" IsActive="false" />
+          <Server Name="IMGADTXCAWDPP08" IP="10.106.1.68" Function="Database" IsActive="false" />
+        </AdminConsole>
+        <AES>
+          <FrontEnd>
+            <Server Name="AESFETXCAWWPV01" IP="10.106.1.160" Function="Web"/>
+            <Server Name="AESFETXCAWWPV02" IP="10.106.1.161" Function="Web"/>
+          </FrontEnd>
+          <KeyGen>
+            <Server Name="AESKGTXCAWAPV01" IP="10.106.1.165" Function="App"/>
+            <Server Name="AESKGTXCAWAPV02" IP="10.106.1.166" Function="App"/>
+          </KeyGen>
+        </AES>
+        <AutoProvisioning>
+          <Server Name="APVTXCAWAPV01" IP="10.106.1.4" Function="App"/>
+          <Server Name="APVTXCAWAPV02" IP="10.106.1.5" Function="App"/>
+          <Server Name="SPVTXCAWAPV01" IP="10.106.1.81" Function="App"/>
+          <Server Name="SPVTXCAWAPV02" IP="10.106.1.82" Function="App"/>
+          <Server Name="APVTXCAWDPP01" IP="10.106.1.6" Function="Database"/>
+          <Server Name="APVTXCAWDPP02" IP="10.106.1.7" Function="Database"/>
+        </AutoProvisioning>
+        <FiOSAdvanced>
+          <AIM>
+            <Server Name="AIMTXCAWAPV01" IP="10.106.1.15" Function="App"/>
+            <Server Name="AIMTXCAWAPV02" IP="10.106.1.16" Function="App"/>
+            <Server Name="AIMTXCAWWPV01" IP="10.106.1.19" Function="Web"/>
+            <Server Name="AIMTXCAWWPV02" IP="10.106.1.20" Function="Web"/>
+            <Server Name="AIMTXCAWDPP01" IP="10.106.1.17" Function="Database"/>
+            <Server Name="AIMTXCAWDPP02" IP="10.106.1.18" Function="Database"/>
+          </AIM>
+          <Banner>
+            <Server Name="ADSTXCAWAPV01" IP="10.106.1.9" Function="App"/>
+            <Server Name="ADSTXCAWAPV02" IP="10.106.1.10" Function="App"/>
+            <Server Name="ADSTXCAWWPV01" IP="10.106.1.13" Function="Web"/>
+            <Server Name="ADSTXCAWWPV02" IP="10.106.1.14" Function="Web"/>
+            <Server Name="ADSTXCAWDPP01" IP="10.106.1.11" Function="Database"/>
+            <Server Name="ADSTXCAWDPP02" IP="10.106.1.12" Function="Database"/>
+          </Banner>
+        </FiOSAdvanced>
+        <FOTG>
+          <Server Name="FOTGTXCAWWPV01" IP="10.106.1.198" Function="Web"/>
+          <Server Name="FOTGTXCAWWPV02" IP="10.106.1.199" Function="Web"/>
+          <Server Name="FOTGTXCAWWPV03" IP="10.106.1.200" Function="Web"/>
+          <Server Name="FOTGTXCAWWPV04" IP="10.106.1.201" Function="Web"/>
+        </FOTG>
+        <Hydra>
+          <Server Name="HYDRATXCAWDPP01" IP="10.106.1.23" Function="Database"/>
+          <Server Name="HYDRATXCAWDPP02" IP="10.106.1.24" Function="Database"/>
+          <Server Name="HYDRATXCAWDPP03" IP="10.106.1.191" Function="Database"/>
+          <Server Name="HYDRATXCAWDPP04" IP="10.106.1.192" Function="Database"/>
+          <Server Name="HYDRATXCAWWPV01" IP="10.106.1.25" Function="Web"/>
+          <Server Name="HYDRATXCAWWPV02" IP="10.106.1.26" Function="Web"/>
+          <Server Name="HYDRATXCAWWPV03" IP="10.106.1.27" Function="Web"/>
+          <Server Name="HYDRATXCAWWPV04" IP="10.106.1.28" Function="Web"/>
+        </Hydra>
+        <MSV>
+          <Injection>
+            <Server Name="MSVINTXCAWAPV01" IP="10.106.1.195" Function="App"/>
+          </Injection>
+          <UltraViolet>
+            <Server Name="MSVUVTXCAWAPV01" IP="10.106.1.196" Function="App"/>
+            <Server Name="MSVUVTXCAWAPV02" IP="10.106.1.197" Function="App"/>
+          </UltraViolet>
+          <Server Name="MSVTXCAWDPP01" IP="10.106.1.93" Function="Database"/>
+          <Server Name="MSVTXCAWDPP02" IP="10.106.1.94" Function="Database"/>
+          <Server Name="MSVTXCAWWPV01" IP="10.106.1.45" Function="Web"/>
+          <Server Name="MSVTXCAWWPV02" IP="10.106.1.46" Function="Web"/>
+          <Server Name="MSVTXCAWWPV03" IP="10.106.1.180" Function="Web"/>
+          <Server Name="MSVTXCAWWPV04" IP="10.106.1.181" Function="Web"/>
+        </MSV>
+        <NSP>
+          <Server Name="NSPTXCAWDPP01" IP="10.106.1.47" Function="Database"/>
+          <Server Name="NSPTXCAWDPP02" IP="10.106.1.48" Function="Database"/>
+          <Server Name="NSPTXCAWDPP03" IP="10.106.1.49" Function="Database"/>
+          <Server Name="NSPTXCAWDPP04" IP="10.106.1.50" Function="Database"/>
+          <Server Name="NSPTXCAWAPV01" IP="10.106.1.53" Function="Web"/>
+          <Server Name="NSPTXCAWAPV02" IP="10.106.1.54" Function="Web"/>
+          <Server Name="NSPTXCAWAPV03" IP="10.106.1.55" Function="Web"/>
+          <Server Name="NSPTXCAWAPV04" IP="10.106.1.56" Function="Web"/>
+          <Server Name="NSPTXCAWAPV05" IP="10.106.1.57" Function="Web"/>
+          <Server Name="NSPTXCAWAPV06" IP="10.106.1.58" Function="Web"/>
+          <Server Name="NSPTXCAWAPV07" IP="10.106.1.59" Function="Web"/>
+          <Server Name="NSPTXCAWAPV08" IP="10.106.1.60" Function="Web"/>
+          <Server Name="VMSSTXCAWAPV01" IP="10.106.1.51" Function="Web"/>
+          <Server Name="VMSSTXCAWAPV02" IP="10.106.1.52" Function="Web"/>
+          <Server Name="NSPUTXCAWADP01" IP="10.106.1.63" Function="Web"/>
+          <Server Name="NSPUTXCAWADP02" IP="10.106.1.64" Function="Web"/>
+        </NSP>
+        <PlayReady>
+          <Server Name="PLRYTXCAWAPV01" IP="10.106.1.21" IsActive="false"/>
+          <Server Name="PLRYTXCAWAPV02" IP="10.106.1.22" IsActive="false"/>
+        </PlayReady>
+        <RatingsRecom>
+          <Server Name="ANLYTXCAWAPP05" IP="10.106.1.69" Function="App"/>
+          <Server Name="ANLYTXCAWAPP06" IP="10.106.1.70" Function="App"/>
+          <Server Name="TMSTXCAWAPP01" IP="10.106.1.71" Function="App"/>
+          <Server Name="TMSTXCAWAPP02" IP="10.106.1.72" Function="App"/>
+          <Server Name="TMSTXCAWAPP03" IP="10.106.1.73" Function="App"/>
+          <Server Name="TMSTXCAWAPP04" IP="10.106.1.74" Function="App"/>
+        </RatingsRecom>
+        <Search>
+          <Server Name="SRCHTXCAWWPV01" IP="10.106.1.207" Function="Web"/>
+          <Server Name="SRCHTXCAWWPV02" IP="10.106.1.208" Function="Web"/>
+          <Server Name="SRCHTXCAWWPV03" IP="10.106.1.209" Function="Web"/>
+          <Server Name="SRCHTXCAWWPV04" IP="10.106.1.210" Function="Web"/>
+        </Search>
+        <STBLogging>
+          <Server Name="LOGTXCAWDPP01" IP="10.106.1.83" Function="Database"/>
+          <Server Name="LOGTXCAWDPP02" IP="10.106.1.84" Function="Database"/>
+          <Server Name="LOGTXCAWAPV01" IP="10.106.1.85" Function="Web"/>
+          <Server Name="LOGTXCAWAPV02" IP="10.106.1.86" Function="Web"/>
+          <Server Name="LOGTXCAWAPV03" IP="10.106.1.87" Function="Web"/>
+          <Server Name="LOGTXCAWAPV04" IP="10.106.1.88" Function="Web"/>
+        </STBLogging>
+        <VODEncryption>
+          <Server Name="OLESTXCAUIPP01" IP="10.106.5.1" />
+          <Server Name="OLESTXCAUIPP02" IP="10.106.5.2" />
+          <Server Name="OLESTXCAUIPP03" IP="10.106.5.3" />
+          <Server Name="OLESTXCAUIPP04" IP="10.106.5.4" />
+          <Server Name="OLESTXCAUIPP05" IP="10.106.5.5" />
+          <Server Name="OLESTXCAUIPP06" IP="10.106.5.6" />
+          <Server Name="OLESTXCAUIPP07" IP="10.106.5.7" />
+          <Server Name="OLESTXCAUIPP08" IP="10.106.5.8" />
+          <Server Name="OLESTXCAUIPP09" IP="10.106.5.9" />
+          <Server Name="OLESTXCAUIPP10" IP="10.106.5.10" />
+          <Server Name="OLESTXCAUIPP11" IP="10.106.5.11" />
+          <Server Name="OLESTXCAUIPP12" IP="10.106.5.12" />
+          <Server Name="OLESTXCAUIPP13" IP="10.106.5.13" />
+          <Server Name="OLESTXCAUIPP14" IP="10.106.5.14" />
+          <Server Name="OLESTXCAUIPP15" IP="10.106.5.15" />
+          <Server Name="OLESTXCAUIPP16" IP="10.106.5.16" />
+          <Server Name="OLESTXCAUIPP17" IP="10.106.5.17" />
+          <Server Name="OLESTXCAUIPP18" IP="10.106.5.18" />
+        </VODEncryption>
+        <MediaMgr>
+          <Server Name="MMATXCAWWPV01" IP="10.106.1.89" Function="Web"/>
+          <Server Name="MMATXCAWWPV02" IP="10.106.1.90" Function="Web"/>
+          <Server Name="MMATXCAWWPV03" IP="10.106.1.91" Function="Web"/>
+          <Server Name="MMATXCAWWPV04" IP="10.106.1.92" Function="Web"/>
+        </MediaMgr>
+      </Production>
+      <Infrastructure>
+        <DomainControllers>
+          <Server Name="VHEDCTXCAWIPV01" IP="10.106.1.1"/>
+          <Server Name="VHEDCTXCAWIPV01" IP="10.106.1.2"/>
+          <Server Name="IMGDCTXCAWIPV01" IP="10.106.1.134" Domain="IMG.FiOSProd.Net"/>
+          <Server Name="IMGDCTXCAWIPV02" IP="10.106.1.133" Domain="IMG.FiOSProd.Net"/>
+        </DomainControllers>
+        <KMS-MDT>
+          <Server Name="KMSTXCAFIOS01" IP="10.106.1.97"/>
+          <Server Name="MDT" IP="10.106.1.95"/>
+        </KMS-MDT>
+        <SCOM>
+          <Gateway>
+            <Server Name="SCMGWTXCAWDPV01" IP="10.106.1.129" IsActive="false"/>
+            <Server Name="SCMGWTXCAWDPV02" IP="10.106.1.130" IsActive="false"/>
+          </Gateway>
+          <Management>
+            <Server Name="SCMGMTXCAWDPV01" IP="10.106.1.127"/>
+            <Server Name="SCMGMTXCAWDPV02" IP="10.106.1.128"/>
+          </Management>
+          <Database>
+            <Server Name="SCMDBTXCAWDPV01" IP="10.106.1.123" Function="Database"/>
+            <Server Name="SCMDBTXCAWDPV02" IP="10.106.1.124" Function="Database"/>
+          </Database>
+        </SCOM>
+        <SCCM>
+          <Server Name="SCCMTXCAWIPV01" IP="10.106.1.98"/>
+        </SCCM>
+        <SFTP>
+          <Server Name="SFTPTXCAWAPV01" IP="10.106.1.8"/>
+        </SFTP>
+      </Infrastructure>
+    </Servers>
+  </VHE>
+  <VHOs DomainName="IMG.FiOSProd.Net">
+    <VHO Name="VHO1">
+      <Servers>
+        <DomainControllers>
+          <Server Name="CTXV01PADC01" IP="104.55.104.134"/>
+        </DomainControllers>
+        <Gateway>
+          <Server Name="CTXV01PSCGW01" IP="104.55.4.246"/>
+        </Gateway>
+        <IMG>
+          <Server Name="CTXV01PIMGD01" IP="104.55.104.135" Function="Database"/>
+          <Server Name="CTXV01PIMGD02" IP="104.55.104.136" Function="Database"/>
+          <Server Name="CTXV01PIMGD03" IP="104.55.104.137" Function="Database"/>
+          <Server Name="CTXV01PIMGD04" IP="104.55.104.138" Function="Database"/>
+          <Server Name="CTXV01PIMGW01" IP="104.55.104.139" Function="Web"/>
+          <Server Name="CTXV01PIMGW02" IP="104.55.104.140" Function="Web"/>
+          <Server Name="CTXV01PIMGW03" IP="104.55.104.141" Function="Web"/>
+          <Server Name="CTXV01PIMGW04" IP="104.55.104.142" Function="Web"/>
+          <Server Name="CTXV01PIMGW05" IP="104.55.104.143" Function="Web"/>
+          <Server Name="CTXV01PIMGW06" IP="104.55.104.144" Function="Web"/>
+          <Server Name="CTXV01PIMGW07" IP="104.55.104.145" Function="Web"/>
+          <Server Name="CTXV01PIMGW08" IP="104.55.104.146" Function="Web"/>
+          <Server Name="CTXV01PIMGW09" IP="104.55.104.147" Function="Web"/>
+          <Server Name="CTXV01PIMGW10" IP="104.55.104.148" Function="Web"/>
+          <Server Name="CTXV01PIMGW11" IP="104.55.104.149" Function="Web"/>
+          <Server Name="CTXV01PIMGW12" IP="104.55.104.150" Function="Web"/>
+        </IMG>
+        <MES>
+          <Server Name="CTXV01PMESW01" IP="104.55.104.151" Function="Web"/>
+          <Server Name="CTXV01PMESW02" IP="104.55.104.152" Function="Web"/>
+          <Server Name="CTXV01PMESW03" IP="104.55.104.153" Function="Web"/>
+          <Server Name="CTXV01PMESW04" IP="104.55.104.154" Function="Web"/>
+          <Server Name="CTXV01PMESW05" IP="104.55.104.155" Function="Web"/>
+          <Server Name="CTXV01PMESW06" IP="104.55.104.156" Function="Web"/>
+          <Server Name="CTXV01PMESW07" IP="104.55.104.157" Function="Web"/>
+          <Server Name="CTXV01PMESW08" IP="104.55.104.158" Function="Web"/>
+        </MES>
+        <MGS>
+          <Server Name="CTXV01PMGSD01" IP="104.55.104.170" Function="Database"/>
+          <Server Name="CTXV01PMGSD02" IP="104.55.104.131" Function="Database"/>
+          <Server Name="CTXV01PMGSA01" IP="104.55.104.159" Function="App"/>
+          <Server Name="CTXV01PMGSA02" IP="104.55.104.160" Function="App"/>
+          <Server Name="CTXV01PMGSA03" IP="104.55.104.161" Function="App"/>
+          <Server Name="CTXV01PMGSA04" IP="104.55.104.162" Function="App"/>
+        </MGS>
+        <Thumbnail>
+          <Server Name="CTXV01MMGA01" IP="104.55.4.236" Function="App"/>
+          <Server Name="CTXV01MMGA02" IP="104.55.4.238" Function="App"/>
+          <Server Name="CTXV01MMGA03" IP="104.55.4.240" Function="App"/>
+          <Server Name="CTXV01MMGA04" IP="104.55.4.242" Function="App"/>
+          <Server Name="CTXV01MMGA05" IP="104.55.4.244" Function="App"/>
+          <Server Name="CTXV01MMGA06" IP="104.55.4.245" Function="App"/>
+        </Thumbnail>
+      </Servers>
+    </VHO>
+    <VHO Name="VHO2">
+      <Servers>
+        <DomainControllers>
+          <Server Name="TFLV02PADC01" IP="104.55.8.211"/>
+        </DomainControllers>
+        <Gateway>
+          <Server Name="TFLV02PSCGW01" IP="104.55.8.192"/>
+        </Gateway>
+        <IMG>
+          <Server Name="TFLV02PIMGD01" IP="104.55.8.204" Function="Database"/>
+          <Server Name="TFLV02PIMGD02" IP="104.55.8.203" Function="Database"/>
+          <Server Name="TFLV02PIMGD03" IP="104.55.8.201" Function="Database"/>
+          <Server Name="TFLV02PIMGD04" IP="104.55.8.202" Function="Database"/>
+          <Server Name="TFLV02PIMGW01" IP="104.55.8.231" Function="Web"/>
+          <Server Name="TFLV02PIMGW02" IP="104.55.8.224" Function="Web"/>
+          <Server Name="TFLV02PIMGW03" IP="104.55.8.223" Function="Web"/>
+          <Server Name="TFLV02PIMGW04" IP="104.55.8.222" Function="Web"/>
+          <Server Name="TFLV02PIMGW05" IP="104.55.8.221" Function="Web"/>
+          <Server Name="TFLV02PIMGW06" IP="104.55.8.220" Function="Web"/>
+          <Server Name="TFLV02PIMGW07" IP="104.55.8.219" Function="Web"/>
+          <Server Name="TFLV02PIMGW08" IP="104.55.8.218" Function="Web"/>
+          <Server Name="TFLV02PIMGW09" IP="104.55.8.217" Function="Web"/>
+          <Server Name="TFLV02PIMGW10" IP="104.55.8.216" Function="Web"/>
+          <Server Name="TFLV02PIMGW11" IP="104.55.8.215" Function="Web"/>
+          <Server Name="TFLV02PIMGW12" IP="104.55.8.214" Function="Web"/>
+        </IMG>
+        <MES>
+          <Server Name="TFLV02PMESW01" IP="104.55.8.200" Function="Web"/>
+          <Server Name="TFLV02PMESW02" IP="104.55.8.199" Function="Web"/>
+          <Server Name="TFLV02PMESW03" IP="104.55.8.198" Function="Web"/>
+          <Server Name="TFLV02PMESW04" IP="104.55.8.197" Function="Web"/>
+          <Server Name="TFLV02PMESW05" IP="104.55.8.196" Function="Web"/>
+          <Server Name="TFLV02PMESW06" IP="104.55.8.195" Function="Web"/>
+          <Server Name="TFLV02PMESW07" IP="104.55.8.194" Function="Web"/>
+          <Server Name="TFLV02PMESW08" IP="104.55.8.193" Function="Web"/>
+        </MES>
+        <MGS>
+          <Server Name="TFLV02PMGSD01" IP="104.55.8.210" Function="Database"/>
+          <Server Name="TFLV02PMGSD02" IP="104.55.8.209" Function="Database"/>
+          <Server Name="TFLV02PMGSA01" IP="104.55.8.208" Function="App"/>
+          <Server Name="TFLV02PMGSA02" IP="104.55.8.207" Function="App"/>
+          <Server Name="TFLV02PMGSA03" IP="104.55.8.206" Function="App"/>
+          <Server Name="TFLV02PMGSA04" IP="104.55.8.249" Function="App"/>
+        </MGS>
+        <Thumbnail>
+          <Server Name="TFLV02MMGA01" IP="104.55.8.236" Function="App"/>
+          <Server Name="TFLV02MMGA02" IP="104.55.8.238" Function="App"/>
+          <Server Name="TFLV02MMGA03" IP="104.55.8.240" Function="App"/>
+          <Server Name="TFLV02MMGA04" IP="104.55.8.242" Function="App"/>
+          <Server Name="TFLV02MMGA05" IP="104.55.8.190" Function="App"/>
+          <Server Name="TFLV02MMGA016" IP="104.55.8.191" Function="App"/>
+        </Thumbnail>
+      </Servers>
+    </VHO>
+    <VHO Name="VHO3">
+      <Servers>
+        <DomainControllers>
+          <Server Name="PCAV03PADC01" IP="104.55.112.163"/>
+        </DomainControllers>
+        <Gateway>
+          <Server Name="PCAV03PSCGW01" IP="104.55.12.200"/>
+        </Gateway>
+        <IMG>
+          <Server Name="PCAV03PIMGD01" IP="104.55.112.129" Function="Database"/>
+          <Server Name="PCAV03PIMGD02" IP="104.55.112.130" Function="Database"/>
+          <Server Name="PCAV03PIMGD03" IP="104.55.112.131" Function="Database"/>
+          <Server Name="PCAV03PIMGD04" IP="104.55.112.132" Function="Database"/>
+          <Server Name="PCAV03PIMGW01" IP="104.55.112.133" Function="Web"/>
+          <Server Name="PCAV03PIMGW02" IP="104.55.112.134" Function="Web"/>
+          <Server Name="PCAV03PIMGW03" IP="104.55.112.135" Function="Web"/>
+          <Server Name="PCAV03PIMGW04" IP="104.55.112.136" Function="Web"/>
+          <Server Name="PCAV03PIMGW05" IP="104.55.112.137" Function="Web"/>
+          <Server Name="PCAV03PIMGW06" IP="104.55.112.138" Function="Web"/>
+          <Server Name="PCAV03PIMGW07" IP="104.55.112.139" Function="Web"/>
+          <Server Name="PCAV03PIMGW08" IP="104.55.112.140" Function="Web"/>
+          <Server Name="PCAV03PIMGW09" IP="104.55.112.141" Function="Web"/>
+          <Server Name="PCAV03PIMGW10" IP="104.55.112.142" Function="Web"/>
+          <Server Name="PCAV03PIMGW11" IP="104.55.112.143" Function="Web"/>
+          <Server Name="PCAV03PIMGW12" IP="104.55.112.144" Function="Web"/>
+          <Server Name="PCAV03PIMGW13" IP="104.55.112.145" Function="Web"/>
+          <Server Name="PCAV03PIMGW14" IP="104.55.112.146" Function="Web"/>
+        </IMG>
+        <MES>
+          <Server Name="PCAV03PMESW01" IP="104.55.112.147" Function="Web"/>
+          <Server Name="PCAV03PMESW02" IP="104.55.112.148" Function="Web"/>
+          <Server Name="PCAV03PMESW03" IP="104.55.112.149" Function="Web"/>
+          <Server Name="PCAV03PMESW04" IP="104.55.112.150" Function="Web"/>
+          <Server Name="PCAV03PMESW05" IP="104.55.112.151" Function="Web"/>
+          <Server Name="PCAV03PMESW06" IP="104.55.112.152" Function="Web"/>
+          <Server Name="PCAV03PMESW07" IP="104.55.112.153" Function="Web"/>
+          <Server Name="PCAV03PMESW08" IP="104.55.112.154" Function="Web"/>
+        </MES>
+        <MGS>
+          <Server Name="PCAV03PMGSD01" IP="104.55.112.159" Function="Database"/>
+          <Server Name="PCAV03PMGSD02" IP="104.55.112.160" Function="Database"/>
+          <Server Name="PCAV03PMGSA01" IP="104.55.112.155" Function="App"/>
+          <Server Name="PCAV03PMGSA02" IP="104.55.112.156" Function="App"/>
+          <Server Name="PCAV03PMGSA03" IP="104.55.112.157" Function="App"/>
+          <Server Name="PCAV03PMGSA04" IP="104.55.112.158" Function="App"/>
+        </MGS>
+        <Thumbnail>
+          <Server Name="PCAV03MMGA01" IP="104.55.12.190" Function="App"/>
+          <Server Name="PCAV03MMGA02" IP="104.55.12.191" Function="App"/>
+          <Server Name="PCAV03MMGA03" IP="104.55.12.192" Function="App"/>
+          <Server Name="PCAV03MMGA04" IP="104.55.12.193" Function="App"/>
+          <Server Name="PCAV03MMGA05" IP="104.55.12.194" Function="App"/>
+          <Server Name="PCAV03MMGA06" IP="104.55.12.195" Function="App"/>
+          <Server Name="PCAV03MMGA07" IP="104.55.12.196" Function="App"/>
+          <Server Name="PCAV03MMGA08" IP="104.55.12.197" Function="App"/>
+          <Server Name="PCAV03MMGA09" IP="104.55.12.198" Function="App"/>
+          <Server Name="PCAV03MMGA10" IP="104.55.12.199" Function="App"/>
+        </Thumbnail>
+      </Servers>
+    </VHO>
+  </VHOs>
+</configuration>
