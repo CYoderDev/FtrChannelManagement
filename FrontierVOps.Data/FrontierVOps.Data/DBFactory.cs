@@ -28,12 +28,12 @@ namespace FrontierVOps.Data
         public static IEnumerable<IDataRecord> SQL_ExecuteReader(string InstanceName, string DBName, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters, string Username, SecureString Password, int Timeout = 30)
         {
             var sqlDB = new SqlDb();
-            sqlDB.DataSource = InstanceName;
+            var sqlDS = new Datasource(InstanceName);
             sqlDB.DatabaseName = DBName;
             sqlDB.Username = Username;
             sqlDB.Password = Password;
 
-            return SQL_ExecuteReader(sqlDB.CreateConnectionString(), CommandString, CmdType);
+            return SQL_ExecuteReader(sqlDB.CreateConnectionString(sqlDS), CommandString, CmdType);
         }
 
         /// <summary>
@@ -49,9 +49,9 @@ namespace FrontierVOps.Data
         public static IEnumerable<IDataRecord> SQL_ExecuteReader(string InstanceName, string DBName, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters, int Timeout = 30)
         {
             var sqlDB = new SqlDb();
-            sqlDB.DataSource = InstanceName;
+            var sqlDS = new Datasource(InstanceName);
             sqlDB.DatabaseName = DBName;
-            return SQL_ExecuteReader(sqlDB.CreateConnectionString(), CommandString, CmdType);
+            return SQL_ExecuteReader(sqlDB.CreateConnectionString(sqlDS), CommandString, CmdType);
         }
 
         /// <summary>
@@ -172,12 +172,12 @@ namespace FrontierVOps.Data
         public static int SQL_ExecuteNonQuery(string InstanceName, string DBName, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters, string UserName, SecureString Password, int Timeout = 30)
         {
             var sqlDB = new SqlDb();
-            sqlDB.DataSource = InstanceName;
+            var sqlDS = new Datasource(InstanceName);
             sqlDB.DatabaseName = DBName;
             sqlDB.Username = UserName;
             sqlDB.Password = Password;
             sqlDB.ConnectionTimeout = Timeout;
-            return (SQL_ExecuteNonQuery(sqlDB.CreateConnectionString(), CommandString, CmdType, Parameters));
+            return (SQL_ExecuteNonQuery(sqlDB.CreateConnectionString(sqlDS), CommandString, CmdType, Parameters));
         }
 
         /// <summary>
@@ -193,10 +193,10 @@ namespace FrontierVOps.Data
         public static int SQL_ExecuteNonQuery(string InstanceName, string DBName, string CommandString, CommandType CmdType, Tuple<string, object>[] Parameters, int Timeout = 30)
         {
             var sqlDB = new SqlDb();
-            sqlDB.DataSource = InstanceName;
+            var sqlDS = new Datasource(InstanceName);
             sqlDB.DatabaseName = DBName;
             sqlDB.ConnectionTimeout = Timeout;
-            return (SQL_ExecuteNonQuery(sqlDB.CreateConnectionString(), CommandString, CmdType, Parameters));
+            return (SQL_ExecuteNonQuery(sqlDB.CreateConnectionString(sqlDS), CommandString, CmdType, Parameters));
         }
 
         /// <summary>

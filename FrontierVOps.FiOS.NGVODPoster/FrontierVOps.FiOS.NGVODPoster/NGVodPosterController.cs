@@ -104,7 +104,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
 
             //Get the T-SQL connection string for the IMG front end database
-            string connectionStr = ngVho.IMGDb.CreateConnectionString(true);
+            string connectionStr = ngVho.IMGConnectString;
 
 #if DEBUG
             Trace.TraceInformation("Connection string for {0} --> {1}", vho, connectionStr);
@@ -207,7 +207,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         {
             foreach(var vho in config.Vhos)
             {
-                string conStr = vho.Value.IMGDb.CreateConnectionString();
+                string conStr = vho.Value.IMGDs.CreateConnectionString(vho.Value.IMGDb);
                 string sproc = "sp_FUI_GetAllVODFolderAssetInfo";
 
                 
@@ -350,7 +350,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 using (var dataController = new NGVodPosterDataController(connectionString))
                 {
                     dataController.BeginTransaction();
-                    Parallel.ForEach<VODAsset>(GetVODAssets(config.Vhos[vhoName].IMGDb.CreateConnectionString(), MaxImages, vhoName, config.SourceDir, destDir, cancelToken)
+                    Parallel.ForEach<VODAsset>(GetVODAssets(config.Vhos[vhoName].IMGConnectString, MaxImages, vhoName, config.SourceDir, destDir, cancelToken)
                         .OrderByDescending(x => !string.IsNullOrEmpty(x.PosterSource)).ThenByDescending(x => x.AssetId), po, (va) =>
                         {
                             try

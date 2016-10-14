@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FrontierVOps.Common.FiOS;
 
 namespace FrontierVOps.FiOS.Servers.Objects
 {
@@ -15,7 +16,7 @@ namespace FrontierVOps.FiOS.Servers.Objects
         public string IPAddress { get; set; }
         public bool IsOnline { get; set; }
         public bool IsActive { get; set; }
-        public ServerRole HostRole { get; set; }
+        public FiOSRole HostRole { get; set; }
         public ServerLocation HostLocation { get; set; }
         public ServerFunction HostFunction { get; set; }
     }

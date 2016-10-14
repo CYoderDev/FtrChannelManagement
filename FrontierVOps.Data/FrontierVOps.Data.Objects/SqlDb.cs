@@ -7,17 +7,13 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using FrontierVOps.Common;
+using FrontierVOps.Common.FiOS;
 using FrontierVOps.FiOS.Servers.Objects;
 
 namespace FrontierVOps.Data.Objects
 {
-    public class SqlDb : FiOSDbServer
+    public class SqlDb : FiOSDbServer, iDatabase
     {
-        /// <summary>
-        /// Get or set the name of the SQL instance
-        /// </summary>
-        public string DataSource { get { return this._dataSource; } set { this._dataSource = value; } }
-        private string _dataSource;
         /// <summary>
         /// Get or set the name of the SQL Database
         /// </summary>
@@ -41,10 +37,24 @@ namespace FrontierVOps.Data.Objects
         public SecureString Password { get { return this._password; } set { this._password = value; this.IntegratedSecurity = false; } }
         private SecureString _password;
         /// <summary>
-        /// Get whether or not the connection will use the user's windows credentials for the connection
+        /// Get or set whether or not the connection will use the user's windows credentials for the connection
         /// </summary>
-        public bool IntegratedSecurity { get { return _integratedSecurity; } private set { _integratedSecurity = value; } }
+        public bool IntegratedSecurity { get { return _integratedSecurity; } set { _integratedSecurity = value; } }
         private bool _integratedSecurity;
+
+        /// <summary>
+        /// Get or set the location of the database within the FiOS environment
+        /// </summary>
+        public FiOSLocation FiosLocation { get { return this._fiosLocation; } set { this._fiosLocation = value; } }
+        private FiOSLocation _fiosLocation;
+
+        dynamic iDatabase.Location { get { return this._fiosLocation; } set { this._fiosLocation = (FiOSLocation)value; } }
+
+        /// <summary>
+        /// Get or set the database core function.
+        /// </summary>
+        public DbFunction Function { get { return this._function; } set { this._function = value; } }
+        private DbFunction _function;
 
         public SqlDb()
         {
@@ -54,10 +64,10 @@ namespace FrontierVOps.Data.Objects
             this.DatabaseType = FiOS.Servers.Objects.DbType.TSQL;
         }
 
-        public string CreateConnectionString(bool useMARs)
+        public string CreateConnectionString(Datasource DS, bool useMARs)
         {
             SqlConnectionStringBuilder strBuilder = new SqlConnectionStringBuilder();
-            strBuilder.DataSource = this._dataSource;
+            strBuilder.DataSource = DS.Name;
             strBuilder.InitialCatalog = this._databaseName;
             strBuilder.ConnectTimeout = this._connectionTimeout;
             strBuilder.IntegratedSecurity = this._integratedSecurity;
@@ -72,16 +82,14 @@ namespace FrontierVOps.Data.Objects
             return strBuilder.ConnectionString;
         }
 
-        public string CreateConnectionString()
+        public string CreateConnectionString(Datasource DS)
         {
-            return CreateConnectionString(false);
+            return CreateConnectionString(DS, false);
         }
 
         private void validateArgs()
         {
-            if (this._dataSource == null)
-                throw new ArgumentNullException("Datasource cannot be null");
-            else if (this._databaseName == null)
+            if (this._databaseName == null)
                 throw new ArgumentNullException("DatabaseName cannot be null");
         }
     }

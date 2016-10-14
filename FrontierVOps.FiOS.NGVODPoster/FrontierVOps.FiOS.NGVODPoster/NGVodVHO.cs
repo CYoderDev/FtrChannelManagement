@@ -26,6 +26,16 @@ namespace FrontierVOps.FiOS.NGVODPoster
         public SqlDb IMGDb { get; set; }
 
         /// <summary>
+        /// The vho front end IMG data source
+        /// </summary>
+        public Datasource IMGDs { get; set; }
+
+        /// <summary>
+        /// Connection string for the front end IMG database
+        /// </summary>
+        public string IMGConnectString { get; set; }
+
+        /// <summary>
         /// The admin share path to the poster directory
         /// </summary>
         public string PosterDir 

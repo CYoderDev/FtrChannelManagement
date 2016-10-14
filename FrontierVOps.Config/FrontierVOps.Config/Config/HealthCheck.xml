@@ -678,6 +678,36 @@
     </WindowsService>
     <!--END FILE REPLICATION-->
     
+    <!--BEGIN AP GATEWAY-->
+    <WindowsService Name="APGateway" DisplayName="APGateway">
+      <Include>
+        <Servers>
+          <Server Name="APVTXCAWAPV01" Domain="VHE.FIOSPROD.NET" IP="10.106.1.4"/>
+          <Server Name="APVTXCAWAPV02" Domain="VHE.FIOSPROD.NET" IP="10.106.1.5"/>
+        </Servers>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    
+    <WindowsService Name="MySQL" DisplayName="MySQL">
+      <Include>
+        <Servers>
+          <Server Name="APVTXCAWAPV01" Domain="VHE.FIOSPROD.NET" IP="10.106.1.4"/>
+          <Server Name="APVTXCAWAPV02" Domain="VHE.FIOSPROD.NET" IP="10.106.1.5"/>
+        </Servers>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>NT AUTHORITY\NetworkService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END AP GATEWAY-->
+    
     <!--BEGIN HYDRA WEB-->
     <WindowsService Name="DataStax_DDC_Server" DisplayName="DataStax DDC Server 3.4.0">
       <Include>

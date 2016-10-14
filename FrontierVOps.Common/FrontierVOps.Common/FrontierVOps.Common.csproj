@@ -48,6 +48,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FiOS\FiOSRole.cs" />
+    <Compile Include="FiOS\FiOSLocation.cs" />
+    <Compile Include="FiOS\STBType.cs" />
     <Compile Include="ToolSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WinForms\ProColorsTable.cs" />

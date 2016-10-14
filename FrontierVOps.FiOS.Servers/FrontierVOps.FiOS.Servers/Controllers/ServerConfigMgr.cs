@@ -6,6 +6,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using FrontierVOps.Common.FiOS;
 using FrontierVOps.Config.FiOS;
 using FrontierVOps.FiOS.Servers.Enumerators;
 using FrontierVOps.FiOS.Servers.Objects;
@@ -146,75 +147,75 @@ namespace FrontierVOps.FiOS.Servers.Controllers
             return ServerLocation.Unknown;
         }
 
-        private static ServerRole getRole(XElement serverElem, ServerLocation location)
+        private static FiOSRole getRole(XElement serverElem, ServerLocation location)
         {
             switch(location)
             {
                 case ServerLocation.VHE:
                     {
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("AES")))
-                            return ServerRole.AES;
+                            return FiOSRole.AES;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("ADMINCONSOLE")))
-                            return ServerRole.AdminConsole;
+                            return FiOSRole.AdminConsole;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("AUTOPROVISIONING")))
-                            return ServerRole.AutoProvisioning;
+                            return FiOSRole.AutoProvisioning;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("DOMAINCONTROLLERS")))
-                            return ServerRole.DomainController;
+                            return FiOSRole.DomainController;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("FIOSADVANCED")))
                         {
                             if (serverElem.Parent.Name.LocalName.ToUpper().Equals("AIM"))
-                                return ServerRole.FiOSAdvancedAIM;
+                                return FiOSRole.FiOSAdvancedAIM;
                             else if (serverElem.Parent.Name.LocalName.ToUpper().Equals("BANNER"))
-                                return ServerRole.FiOSAdvancedBanner;
+                                return FiOSRole.FiOSAdvancedBanner;
                         }
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("FOTG")))
-                            return ServerRole.FiOSOnTheGo;
+                            return FiOSRole.FiOSOnTheGo;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("HYDRA")))
-                            return ServerRole.Hydra;
+                            return FiOSRole.Hydra;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("KMS-MDT")))
-                            return ServerRole.KMSorMDT;
+                            return FiOSRole.KMSorMDT;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("MEDIAMGR")))
-                            return ServerRole.MediaManager;
+                            return FiOSRole.MediaManager;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("MSV")))
-                            return ServerRole.MSV;
+                            return FiOSRole.MSV;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("NSP")))
-                            return ServerRole.NSP;
+                            return FiOSRole.NSP;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("PLAYREADY")))
-                            return ServerRole.Playready;
+                            return FiOSRole.Playready;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("RATINGSRECOM")))
-                            return ServerRole.RatingsAndRecomm;
+                            return FiOSRole.RatingsAndRecomm;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("SCCM")))
-                            return ServerRole.SCCM;
+                            return FiOSRole.SCCM;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("SCOM")))
-                            return ServerRole.SCOM;
+                            return FiOSRole.SCOM;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("SEARCH")))
-                            return ServerRole.Search;
+                            return FiOSRole.Search;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("SFTP")))
-                            return ServerRole.SFTP;
+                            return FiOSRole.SFTP;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("VODENCRYPTION")))
-                            return ServerRole.VOD;
+                            return FiOSRole.VOD;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("STBLOGGING")))
-                            return ServerRole.Logging;
+                            return FiOSRole.Logging;
                         break;
                     }
                 case ServerLocation.VHO:
                     {
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("DOMAINCONTROLLERS")))
-                            return ServerRole.DomainController;          
+                            return FiOSRole.DomainController;          
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("GATEWAY")))
-                            return ServerRole.Gateway;
+                            return FiOSRole.Gateway;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("IMG")))
-                            return ServerRole.IMG;        
+                            return FiOSRole.IMG;        
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("MES")))
-                            return ServerRole.MES;
+                            return FiOSRole.MES;
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("MGS")))
-                            return ServerRole.MGS;        
+                            return FiOSRole.MGS;        
                         if (serverElem.Ancestors().Any(x => x.Name.LocalName.ToUpper().Equals("THUMBNAIL")))
-                            return ServerRole.Thumbnail;
+                            return FiOSRole.Thumbnail;
                         break;
                     }
             }
-            return ServerRole.Unknown;
+            return FiOSRole.Unknown;
         }
 
         private static string getFullName(string serverName)

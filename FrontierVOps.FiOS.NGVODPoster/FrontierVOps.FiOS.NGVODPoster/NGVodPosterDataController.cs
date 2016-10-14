@@ -308,7 +308,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 CancelToken.ThrowIfCancellationRequested();
                 NGVodVHO vodvho = config.Vhos[vho];
 
-                foreach (var dr in DBFactory.SQL_ExecuteReader(vodvho.IMGDb.CreateConnectionString(), sbCmd.ToString(), CommandType.Text, null))
+                foreach (var dr in DBFactory.SQL_ExecuteReader(vodvho.IMGDs.CreateConnectionString(vodvho.IMGDb), sbCmd.ToString(), CommandType.Text, null))
                 {
                     CancelToken.ThrowIfCancellationRequested();
                     yield return new Tuple<int, string>(int.Parse(dr.GetString(0)), dr.IsDBNull(1) ? string.Empty : Path.Combine(config.SourceDir, dr.GetString(1)));

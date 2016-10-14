@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FiOS\CfgComparer.cs" />
     <Compile Include="FiOS\CfgHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -46,6 +47,7 @@
     <Folder Include="Vantage\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\Database.xml" />
     <Content Include="Config\FiOSRoles.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -56,6 +58,9 @@
     <Content Include="Config\ServerLayout.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Config\Database.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Config\FiOSRoles.xsd">
       <SubType>Designer</SubType>
     </None>

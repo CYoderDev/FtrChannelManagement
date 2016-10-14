@@ -274,14 +274,16 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 try
                 {
                     var vho = new NGVodVHO();
+                    var sqlDb = new SqlDb();
 
                     vho.Name = el.Attribute("Name").Value;
                     vho.WebServerName = el.Element(ns + "PrimaryWebServer").Value;
-                    vho.IMGDb.DatabaseName = el.Element(ns + "IMGDb").Attribute("Name").Value;
-                    vho.IMGDb.DataSource = el.Element(ns + "IMGDb").Attribute("InstanceName").Value;
-
+                    sqlDb.DatabaseName = el.Element(ns + "IMGDb").Attribute("Name").Value;
+                    vho.IMGDs = new Datasource(el.Element(ns + "IMGDb").Attribute("InstanceName").Value);
+                    vho.IMGDs.Databases.Add(sqlDb);
+                    vho.IMGConnectString = vho.IMGDs.CreateConnectionString(true, vho.IMGDb);
 #if DEBUG
-                    Trace.WriteLine(string.Format("Name: {0} | WS: {1} | DBName: {2} | DBSource: {3}", vho.Name, vho.WebServerName, vho.IMGDb.DatabaseName, vho.IMGDb.DataSource));
+                    Trace.WriteLine(string.Format("Name: {0} | WS: {1} | DBName: {2} | DBSource: {3}", vho.Name, vho.WebServerName, vho.IMGDb.DatabaseName, vho.IMGDs.Name));
 #endif
                     try
                     {

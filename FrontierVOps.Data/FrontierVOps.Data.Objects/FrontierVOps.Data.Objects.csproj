@@ -39,6 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Datasource.cs" />
+    <Compile Include="DbFunction.cs" />
+    <Compile Include="iDatabase.cs" />
     <Compile Include="SqlDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
