@@ -424,6 +424,8 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                     {
                                         Trace.TraceError("Insert task failed for skipped asset {0} in {1}. {2}", va.AssetId, vhoName, ex.Message);
                                     }
+
+                                    
                                     return;
                                 }
 
@@ -511,6 +513,21 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                         insertTsk.Dispose();
                                     }
                                 }
+
+                                //Commit transaction every 5 minutes to avoid filling up the transaction log
+                                //if (this.ngProgress.Time.Elapsed.Minutes % 5 == 0 && this.ngProgress.Success >= 50 && this.ngProgress.Time.Elapsed.Minutes > 0)
+                                //{
+                                //    try
+                                //    {
+                                //        if (dataController.CommitTransaction(true))
+                                //            Trace.TraceInformation("Committed transaction to {0}.", vhoName);
+                                //    }
+                                //    catch (Exception ex)
+                                //    {
+                                //        dataController.RollbackTransaction();
+                                //        Trace.TraceError("Commit to database failed at {0}%. {1}", this.ngProgress.Success, ex.Message);
+                                //    }
+                                //}
 
                                 po.CancellationToken.ThrowIfCancellationRequested();
                             }

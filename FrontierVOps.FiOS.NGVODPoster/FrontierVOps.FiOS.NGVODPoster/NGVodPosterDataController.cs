@@ -18,6 +18,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
         private bool isOpen = false;
         private SqlConnection connection;
         private SqlTransaction transaction;
+        private bool committing = false;
+        private bool resetting = false;
+        int inserts = 0;
 
         public NGVodPosterDataController(string ConnectionString)
         {
@@ -48,12 +51,39 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 this.Open();
 
             this.transaction = this.connection.BeginTransaction();
+            committing = false;
         }
 
-        public void CommitTransaction()
+        public bool CommitTransaction(bool resetConnection = false)
         {
-            if (this.transaction != null && this.isOpen)
+            if (this.transaction != null && this.isOpen && !this.committing && !this.resetting)
+            {
+                this.committing = true;
                 this.transaction.Commit();
+                this.committing = false;
+                if (resetConnection)
+                    this.ResetConnection();
+                return true;
+            }
+            return false;
+        }
+
+        public void ResetConnection()
+        {
+            if (!this.committing & this.isOpen)
+            {
+                this.resetting = true;
+                this.isOpen = false;
+                string connectString = this.connection.ConnectionString;
+                this.connection.Dispose();
+                this.transaction.Dispose();
+
+                this.connection = new SqlConnection(connectString);
+                this.Open();
+                this.transaction = this.connection.BeginTransaction();
+                this.inserts = 0;
+                this.resetting = false;
+            }
         }
 
         public void RollbackTransaction()
@@ -106,6 +136,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 throw new ArgumentNullException("Asset poster source cannot be null");
             }
 
+            
+
+            while (this.committing || this.resetting)
+            {
+                await Task.Delay(100, CancelToken);
+            }
+
             if (!this.isOpen)
                 await this.OpenAsync(CancelToken);
 
@@ -137,8 +174,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 
                 command.CommandText = strCmd.ToString();
 
-
                 await command.ExecuteNonQueryAsync(CancelToken);
+            }
+            this.inserts++;
+
+            if (this.inserts % 100 == 0)
+            {
+                this.CommitTransaction(true);
             }
         }
 

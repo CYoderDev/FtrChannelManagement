@@ -279,6 +279,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                     vho.Name = el.Attribute("Name").Value;
                     vho.WebServerName = el.Element(ns + "PrimaryWebServer").Value;
                     sqlDb.DatabaseName = el.Element(ns + "IMGDb").Attribute("Name").Value;
+                    vho.IMGDb = sqlDb;
                     vho.IMGDs = new Datasource(el.Element(ns + "IMGDb").Attribute("InstanceName").Value);
                     vho.IMGDs.Databases.Add(sqlDb);
                     vho.IMGConnectString = vho.IMGDs.CreateConnectionString(true, vho.IMGDb);

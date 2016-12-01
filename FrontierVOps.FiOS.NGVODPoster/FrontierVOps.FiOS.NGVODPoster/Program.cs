@@ -406,12 +406,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
             else if (Math.Ceiling((progPerc * 100)) % 1 == 0)
             {
                 double minRemaining = (value.Time.Elapsed.TotalMinutes / (total - value.Skipped)) * (value.Total - total);
-#if DEBUG
-                Trace.TraceInformation("MinRem: {0} | ElapsedMin: {1} | Total: {2} | Skipped: {3} | Val Total: {4} | ({5} * {6})", minRemaining, value.Time.Elapsed.TotalMinutes, total, value.Skipped, value.Total,
-                    (value.Time.Elapsed.TotalMinutes / (total - value.Skipped)), (value.Total - total));
-#endif
+
                 string rem = minRemaining > 60 ? minRemaining > 1440 ? (minRemaining / 60 / 24).ToString("N1") + " days" : (minRemaining / 60).ToString("N1") + " hrs" :
                     minRemaining < 1 ? (minRemaining * 60).ToString("N0") + "s" : minRemaining.ToString("N0") + " min";
+
+#if DEBUG
+                Trace.TraceInformation("MinRem: {0} | ElapsedMin: {1} | Total: {2} | Skipped: {3} | Val Total: {4}   ", rem, (int)value.Time.Elapsed.TotalMinutes, total, value.Skipped, value.Total);
+#endif
 
                 //Write progress to the same console line
                 Console.Write(string.Format("\rP: {0:P1} | OK: {1} | F: {2} | Sk: {3} | T: {4} | R: {5} | {6}   ",

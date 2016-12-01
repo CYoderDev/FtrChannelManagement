@@ -231,8 +231,6 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
                             hcErr.HCType = HealthCheckType.Database;
                         else if (x.Key == ServerFunction.Web || (x.RoleFunctions.Count > 0 && x.RoleFunctions.Any(y => y.Equals(ServerFunction.Web))))
                             hcErr.HCType = HealthCheckType.IIS;
-                        else if (x.RoleFunctions.Count > 0 || x.ServerCount > 0)
-                            hcErr.HCType = HealthCheckType.FiOSCheck;
 
                         if (!(hcErr.HCType == HealthCheckType.GeneralServer) && Server.IsActive)
                             hcErr.Error.Add(string.Format("Cannot check windows services because the server is offline."));
@@ -323,8 +321,6 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
                             hcErr.HCType = HealthCheckType.Database;
                         else if (ServicesToCheck[i].Function == ServerFunction.Web || (ServicesToCheck[i].Roles.Count > 0 && ServicesToCheck[i].Roles.Any(x => x.Item3.Equals(ServerFunction.Web))))
                             hcErr.HCType = HealthCheckType.IIS;
-                        else if (ServicesToCheck[i].Roles.Count > 0 || ServicesToCheck[i].Servers.Count > 0)
-                            hcErr.HCType = HealthCheckType.FiOSCheck;
 
                         //Check Status
                         try
@@ -525,6 +521,21 @@ namespace FrontierVOps.FiOS.HealthCheck.Controllers
             }
 
             return pingReply.Status == IPStatus.Success;
+        }
+
+        public static bool WindowsServiceExists(string ServiceName, string ServerName)
+        {
+            try
+            {
+                using (ServiceController ctrl = new ServiceController(ServiceName, ServerName))
+                {
+                    return ctrl.Status == ServiceControllerStatus.Running;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
