@@ -14,13 +14,45 @@ namespace FrontierVOps.FiOS.NGVODPoster
 {
     public class NGVodPosterDataController : IDisposable
     {
+        /// <summary>
+        /// Name of the table that contains maps to the poster source file name
+        /// </summary>
         private static readonly string _posterSourceMapTbl = "[dbo].[tFIOSVODAssetPosterSourceMap]";
+
+        /// <summary>
+        /// Connection is open or closed
+        /// </summary>
         private bool isOpen = false;
+
+        /// <summary>
+        /// SQL connection to the database
+        /// </summary>
         private SqlConnection connection;
+
+        /// <summary>
+        /// SQL transaction
+        /// </summary>
         private SqlTransaction transaction;
+
+        /// <summary>
+        /// Determines whether there is an existing commit taking place on the transaction
+        /// </summary>
         private bool committing = false;
+
+        /// <summary>
+        /// Determines whether the connection is currently resetting in order to open a second transaction
+        /// </summary>
         private bool resetting = false;
-        private bool inserting = false;
+
+        /// <summary>
+        /// Determines whether there is currently an action taking place on the transaction that would
+        /// prevent the transaction from being able to perform a commit
+        /// </summary>
+        private int inserting = 0;
+
+        /// <summary>
+        /// The number of successful inserts that has taken place on the current transaction
+        /// </summary>
         int inserts = 0;
 
         public NGVodPosterDataController(string ConnectionString)
@@ -46,6 +78,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
         }
 
+        /// <summary>
+        /// Creates a transaction on the connection
+        /// </summary>
         public void BeginTransaction()
         {
             if (!this.isOpen)
@@ -55,6 +90,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
             committing = false;
         }
 
+        /// <summary>
+        /// Performs a commit on the transaction and syncs all parallel instances
+        /// </summary>
+        /// <param name="resetConnection">Whether the connection should also be reset in order to create a new transaction</param>
+        /// <returns></returns>
         public bool CommitTransaction(bool resetConnection = false)
         {
             if (this.transaction != null && this.isOpen && !this.committing && !this.resetting)
@@ -89,6 +129,9 @@ namespace FrontierVOps.FiOS.NGVODPoster
             return false;
         }
 
+        /// <summary>
+        /// Resets the connection in order to be able to create a new transaction
+        /// </summary>
         public void ResetConnection()
         {
             if (!this.committing & this.isOpen)
@@ -96,7 +139,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 this.resetting = true;
                 this.isOpen = false;
                 string connectString = this.connection.ConnectionString;
-                while (this.inserting)
+                while (this.inserting != 0)
                 {
                     Thread.Sleep(100);
                 }
@@ -111,41 +154,13 @@ namespace FrontierVOps.FiOS.NGVODPoster
             }
         }
 
+        /// <summary>
+        /// Roles back the existing transaction
+        /// </summary>
         public void RollbackTransaction()
         {
-            if (this.transaction != null && this.isOpen)
+            if (this.transaction != null && this.isOpen && this.inserting == 0)
                 this.transaction.Rollback();
-        }
-
-        /// <summary>
-        /// Bulk insert Vod Asset Poster Source Map to SQL database
-        /// </summary>
-        /// <param name="VodAssets">All VOD Assets</param>
-        /// <param name="ConnectionString">SQL Connection String</param>
-        public void BulkInsertData (VODAsset[] VodAssets)
-        {
-            VodAssets = VodAssets.Where(x => !string.IsNullOrEmpty(x.PosterSource)).ToArray();
-
-            if (!this.isOpen)
-                this.connection.Open();
-
-            using (var command = this.connection.CreateCommand())
-            {
-                command.CommandText = "TRUNCATE TABLE " + _posterSourceMapTbl;
-                command.CommandType = CommandType.Text;
-                command.ExecuteNonQuery();
-            }
-            using (var bcp = new SqlBulkCopy(this.connection))
-            {
-                bcp.DestinationTableName = _posterSourceMapTbl;
-                bcp.ColumnMappings.Add("AssetId", "strAssetId");
-                bcp.ColumnMappings.Add("PosterSource", "strPosterFile");
-
-                using (var bcpReader = ObjectReader.Create(VodAssets, "AssetId", "PosterSource"))
-                {
-                    bcp.WriteToServer(bcpReader);
-                }
-            }
         }
 
         /// <summary>
@@ -176,154 +191,45 @@ namespace FrontierVOps.FiOS.NGVODPoster
             bool isAlreadyExists = false;
 
             CancelToken.ThrowIfCancellationRequested();
-            this.inserting = true;
-            using (var command = this.connection.CreateCommand())
+            this.inserting++;
+            try
             {
-                command.Transaction = this.transaction;
-
-                command.CommandText = strCmd.ToString();
-                command.CommandType = CommandType.Text;
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                using (var command = this.connection.CreateCommand())
                 {
-                    isAlreadyExists = reader.HasRows;
-                }
+                    command.Transaction = this.transaction;
 
-                strCmd.Clear();
-                if (isAlreadyExists)
-                {
-                    strCmd.AppendFormat("UPDATE {0} SET {0}.strPosterFile = '{1}' WHERE {0}.strAssetId = '{2}'", _posterSourceMapTbl, Path.GetFileName(Asset.PosterSource), Asset.AssetId);
-                }
-                else
-                {
-                    strCmd.AppendFormat("INSERT INTO {0} VALUES ('{1}', '{2}')", _posterSourceMapTbl, Asset.AssetId, Path.GetFileName(Asset.PosterSource));
-                }
-                
-                command.CommandText = strCmd.ToString();
+                    command.CommandText = strCmd.ToString();
+                    command.CommandType = CommandType.Text;
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        isAlreadyExists = reader.HasRows;
+                    }
 
-                await command.ExecuteNonQueryAsync(CancelToken);
+                    strCmd.Clear();
+                    if (isAlreadyExists)
+                    {
+                        strCmd.AppendFormat("UPDATE {0} SET {0}.strPosterFile = '{1}' WHERE {0}.strAssetId = '{2}'", _posterSourceMapTbl, Path.GetFileName(Asset.PosterSource), Asset.AssetId);
+                    }
+                    else
+                    {
+                        strCmd.AppendFormat("INSERT INTO {0} VALUES ('{1}', '{2}')", _posterSourceMapTbl, Asset.AssetId, Path.GetFileName(Asset.PosterSource));
+                    }
+
+                    command.CommandText = strCmd.ToString();
+
+                    await command.ExecuteNonQueryAsync(CancelToken);
+                }
             }
-            this.inserting = false;
+            finally
+            {
+                this.inserting--;
+            }
             this.inserts++;
 
             if (this.inserts % 100 == 0)
             {
                 this.CommitTransaction(true);
             }
-        }
-
-        /// <summary>
-        /// Insert multiple Vod Asset Poster Source Maps into the SQL database
-        /// </summary>
-        /// <param name="VAssets">Vod Assets to insert into the database</param>
-        /// <param name="ConnectionString">SQL Connection String</param>
-        /// <returns></returns>
-        public async Task InsertMultipleAssetsAsync (VODAsset[] VAssets, CancellationToken CancelToken)
-        {
-
-#if DEBUG
-            Console.WriteLine("\nNumber of Vod Assets --> {0}", VAssets.Length);
-            int tmpVal = 0;
-#endif
-            StringBuilder sbCmd = new StringBuilder();
-
-            CancelToken.ThrowIfCancellationRequested();
-
-            using (var command = this.connection.CreateCommand())
-            {
-                await connection.OpenAsync();
-                using (var trans = this.connection.BeginTransaction())
-                {
-                    command.Transaction = trans;
-                    for (int i = 0; i < VAssets.Length; i++)
-                    {
-                        CancelToken.ThrowIfCancellationRequested();
-                        sbCmd.Clear();
-                        //Check if the value already exists in the database
-                        sbCmd.AppendFormat("SELECT TOP 1 * FROM {0} WHERE {0}.strAssetId = '{1}'", _posterSourceMapTbl, VAssets[i].AssetId);
-
-                        command.CommandText = sbCmd.ToString();
-
-                        bool isAlreadyExists = false;
-                        bool isMatch = false;
-
-                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
-                        {
-                            isAlreadyExists = reader.HasRows;
-                            
-                            if (isAlreadyExists)
-                            {
-                                await reader.ReadAsync();
-                                isMatch = await reader.IsDBNullAsync(1) ? false : reader.GetString(1).ToLower().Equals(Path.GetFileName(VAssets[i].PosterSource).ToLower());
-                            }
-                        }
-
-                        sbCmd.Clear();
-
-#if DEBUG
-                        int curVal = (int)((((decimal)i + 1 / (decimal)VAssets.Length) * 100) / 5);
-                        if (tmpVal != curVal && (curVal * 5) % 5 == 0)
-                        {
-                            Console.WriteLine("\n{0} / {1}", i, VAssets.Length);
-                            tmpVal = curVal;
-                        }
-#endif
-
-                        //If the record already exists for this asset and the poster source is null or empty, then delete the record.
-                        //If the record already exists and the poster source is not null or empty and the poster source file is different, then update the existing record.
-                        //If the record does not exist and the poster source is not null or empty, then insert a new record. Otherwise continue to next asset
-                        if (isAlreadyExists && string.IsNullOrEmpty(VAssets[i].PosterSource))
-                        {
-                            sbCmd.AppendFormat("DELETE FROM {0} WHERE {0}.strAssetId = '{1}'", _posterSourceMapTbl, VAssets[i].AssetId);
-                        }
-                        else if (isAlreadyExists && !isMatch)
-                        {
-                            sbCmd.AppendFormat("UPDATE {0} SET {0}.strPosterFile = '{1}' WHERE {0}.strAssetId = '{2}'", _posterSourceMapTbl, Path.GetFileName(VAssets[i].PosterSource), VAssets[i].AssetId);
-                        }
-                        else if (!string.IsNullOrEmpty(VAssets[i].PosterSource) && !isAlreadyExists)
-                        {
-                            sbCmd.AppendFormat("INSERT INTO {0} VALUES ('{1}', '{2}')", _posterSourceMapTbl, VAssets[i].AssetId, Path.GetFileName(VAssets[i].PosterSource));
-                        }
-                        else
-                        {
-                            continue;
-                        }
-
-                        command.CommandText = sbCmd.ToString();
-
-                        //Execute the query, rollback the transaction and break if an exception is thrown
-                        try
-                        {
-                            if (!CancelToken.IsCancellationRequested)
-                                await command.ExecuteNonQueryAsync();
-                        }
-                        catch
-                        {
-                            command.Transaction.Rollback();
-                            throw;
-                        }
-                        CancelToken.ThrowIfCancellationRequested();
-                    } //end for loop
-
-
-                    //Commit Transaction to database, rollback if an error is thrown
-                    try
-                    {
-                        if (!CancelToken.IsCancellationRequested)
-                            command.Transaction.Commit();
-#if DEBUG
-                        Console.WriteLine("Completed successfully --> {0}", VAssets.Length);
-#endif
-                    }
-                    catch
-                    {
-                        command.Transaction.Rollback();
-#if DEBUG
-                        Console.WriteLine("Failed --> {0}", VAssets.Length);
-#endif
-                        throw;
-                    }
-                } //end using transaction
-            } //end using command
         }
 
         /// <summary>
@@ -405,30 +311,40 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 await Task.Delay(100, CancelToken);
             }
 
-            using (var command = this.connection.CreateCommand())
+            this.inserting++;
+            try
             {
-                await this.OpenAsync(CancelToken);
-
-                
-                command.CommandText = sbCmd.ToString();
-                    
-
-                using (var reader = await command.ExecuteReaderAsync(CancelToken))
+                using (var command = this.connection.CreateCommand())
                 {
-                    isExists = reader.HasRows;
+
+
+                    await this.OpenAsync(CancelToken);
+
+
+                    command.CommandText = sbCmd.ToString();
+
+
+                    using (var reader = await command.ExecuteReaderAsync(CancelToken))
+                    {
+                        isExists = reader.HasRows;
+                    }
+
+                    if (!isExists)
+                        return;
+
+                    sbCmd.Clear();
+                    sbCmd.AppendFormat("DELETE FROM {0} WHERE {0}.strAssetId = '{1}'", _posterSourceMapTbl, VAsset.AssetId);
+
+                    command.Transaction = this.transaction;
+                    command.CommandText = sbCmd.ToString();
+
+                    if (!CancelToken.IsCancellationRequested)
+                        await command.ExecuteNonQueryAsync(CancelToken);
                 }
-
-                if (!isExists)
-                    return;
-
-                sbCmd.Clear();
-                sbCmd.AppendFormat("DELETE FROM {0} WHERE {0}.strAssetId = '{1}'", _posterSourceMapTbl, VAsset.AssetId);
-
-                command.Transaction = this.transaction;
-                command.CommandText = sbCmd.ToString();
-
-                if (!CancelToken.IsCancellationRequested)
-                    await command.ExecuteNonQueryAsync(CancelToken);
+            }
+            finally
+            {
+                this.inserting--;
             }
         }
 
