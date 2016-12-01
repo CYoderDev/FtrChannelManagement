@@ -20,6 +20,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
         private SqlTransaction transaction;
         private bool committing = false;
         private bool resetting = false;
+        private bool inserting = false;
         int inserts = 0;
 
         public NGVodPosterDataController(string ConnectionString)
@@ -58,11 +59,31 @@ namespace FrontierVOps.FiOS.NGVODPoster
         {
             if (this.transaction != null && this.isOpen && !this.committing && !this.resetting)
             {
+                int retry = 0;
                 this.committing = true;
-                this.transaction.Commit();
-                this.committing = false;
-                if (resetConnection)
-                    this.ResetConnection();
+                try
+                {
+                    while (retry != 5)
+                    {
+                        try
+                        {
+                            this.transaction.Commit();
+                            this.committing = false;
+                            if (resetConnection)
+                                this.ResetConnection();
+                            break;
+                        }
+                        catch
+                        {
+                            retry++;
+                            Thread.Sleep(100);
+                        }
+                    }
+                }
+                finally
+                {
+                    this.committing = false;
+                }
                 return true;
             }
             return false;
@@ -75,6 +96,10 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 this.resetting = true;
                 this.isOpen = false;
                 string connectString = this.connection.ConnectionString;
+                while (this.inserting)
+                {
+                    Thread.Sleep(100);
+                }
                 this.connection.Dispose();
                 this.transaction.Dispose();
 
@@ -151,6 +176,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
             bool isAlreadyExists = false;
 
             CancelToken.ThrowIfCancellationRequested();
+            this.inserting = true;
             using (var command = this.connection.CreateCommand())
             {
                 command.Transaction = this.transaction;
@@ -176,6 +202,7 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
                 await command.ExecuteNonQueryAsync(CancelToken);
             }
+            this.inserting = false;
             this.inserts++;
 
             if (this.inserts % 100 == 0)
@@ -373,6 +400,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
 
             CancelToken.ThrowIfCancellationRequested();
 
+            while (this.committing || this.resetting)
+            {
+                await Task.Delay(100, CancelToken);
+            }
+
             using (var command = this.connection.CreateCommand())
             {
                 await this.OpenAsync(CancelToken);
@@ -392,24 +424,11 @@ namespace FrontierVOps.FiOS.NGVODPoster
                 sbCmd.Clear();
                 sbCmd.AppendFormat("DELETE FROM {0} WHERE {0}.strAssetId = '{1}'", _posterSourceMapTbl, VAsset.AssetId);
 
-                using (var trans = this.connection.BeginTransaction())
-                {
-                    command.Transaction = trans;
-                    command.CommandText = sbCmd.ToString();
+                command.Transaction = this.transaction;
+                command.CommandText = sbCmd.ToString();
 
-                    if (!CancelToken.IsCancellationRequested)
-                        await command.ExecuteNonQueryAsync(CancelToken);
-
-                    try
-                    {
-                        if (!CancelToken.IsCancellationRequested)
-                            command.Transaction.Commit();
-                    }
-                    catch
-                    {
-                        command.Transaction.Rollback();
-                    }
-                }
+                if (!CancelToken.IsCancellationRequested)
+                    await command.ExecuteNonQueryAsync(CancelToken);
             }
         }
 

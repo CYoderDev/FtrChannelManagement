@@ -514,21 +514,6 @@ namespace FrontierVOps.FiOS.NGVODPoster
                                     }
                                 }
 
-                                //Commit transaction every 5 minutes to avoid filling up the transaction log
-                                //if (this.ngProgress.Time.Elapsed.Minutes % 5 == 0 && this.ngProgress.Success >= 50 && this.ngProgress.Time.Elapsed.Minutes > 0)
-                                //{
-                                //    try
-                                //    {
-                                //        if (dataController.CommitTransaction(true))
-                                //            Trace.TraceInformation("Committed transaction to {0}.", vhoName);
-                                //    }
-                                //    catch (Exception ex)
-                                //    {
-                                //        dataController.RollbackTransaction();
-                                //        Trace.TraceError("Commit to database failed at {0}%. {1}", this.ngProgress.Success, ex.Message);
-                                //    }
-                                //}
-
                                 po.CancellationToken.ThrowIfCancellationRequested();
                             }
                             catch (OperationCanceledException)
