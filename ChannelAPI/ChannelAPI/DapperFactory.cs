@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Dapper;
 using Dapper.Mapper;
 
@@ -11,13 +12,9 @@ namespace ChannelAPI
 {
     public class DapperFactory
     {
-        public static string ConnectionString { get { return _connectionString; } set { if (string.IsNullOrEmpty(_connectionString)) { _connectionString = value; } } }
+        public static string ConnectionString { get { return _connectionString; } internal set { if (string.IsNullOrEmpty(_connectionString)) { _connectionString = value; } } }
         private static string _connectionString;
 
-        static DapperFactory()
-        {
-            
-        }
 
         public static IDbConnection GetOpenConnection()
         {
@@ -31,7 +28,7 @@ namespace ChannelAPI
         {
             var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            
+
             return connection;
         }
 

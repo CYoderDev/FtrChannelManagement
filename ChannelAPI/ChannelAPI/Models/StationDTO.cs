@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper.Contrib.Extensions;
 
 namespace ChannelAPI.Models
 {
+    [Table("tFiosStation")]
     public class StationDTO
     {
+        [Key]
         public string strFIOSServiceId { get; set; }
         public string strStationName { get; set; }
         public string strStationUniqueDescription { get; set; }
