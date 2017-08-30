@@ -18,6 +18,7 @@ namespace ChannelAPI
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile("project.json", optional: false, reloadOnChange: false)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -29,6 +30,8 @@ namespace ChannelAPI
         {
             // Add framework services.
             services.AddMvc();
+
+            services.AddSingleton<IConfiguration>(Configuration);
 #if DEBUG
             DapperFactory.ConnectionString = Configuration.GetConnectionString("FIOSAPP_DC_DEBUG");
 #else
@@ -41,6 +44,16 @@ namespace ChannelAPI
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseStatusCodePages();
+            }
+            else
+            {
+                app.UseExceptionHandler();
+            }
 
             app.UseMvc();
         }
