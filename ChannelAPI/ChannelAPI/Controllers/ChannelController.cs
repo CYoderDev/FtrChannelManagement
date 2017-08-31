@@ -42,7 +42,7 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // Get api/vho/{id}
+        // GET: api/vho/{id}
         [HttpGet("vho/{id}")]
         public async Task<IActionResult> GetByVHOId(string id)
         {
@@ -61,7 +61,7 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // Get api/channel/station/{name}
+        // GET: api/channel/station/{name}
         [HttpGet("station/{name}")]
         public async Task<IActionResult> GetByStationName(string name)
         {
@@ -80,7 +80,7 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // Get api/channel/callsign/{name}
+        // GET: api/channel/callsign/{name}
         [HttpGet("callsign/{name}")]
         public async Task<IActionResult> GetByCallSign(string name)
         {
@@ -99,7 +99,7 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET api/channel
+        // GET: api/channel
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -119,7 +119,7 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET api/channel/{id}
+        // GET: api/channel/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {

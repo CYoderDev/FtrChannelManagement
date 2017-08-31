@@ -3,6 +3,7 @@ using System.Collections.Generic;
 //using System.Data;
 //using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Dapper;
 using Dapper.Contrib.Extensions;
 using Dapper.Mapper;
@@ -13,6 +14,13 @@ namespace ChannelAPI.Repositories
 
     public class StationRepository : IRepository<StationDTO>
     {
+        private string _version;
+
+        public StationRepository(IConfiguration config)
+        {
+            this._version = config.GetValue<string>("FiosChannelData:VersionAliasId");
+        }
+
         public long Add(StationDTO obj)
         {
             using (var connection = DapperFactory.GetOpenConnection())
@@ -91,6 +99,34 @@ namespace ChannelAPI.Repositories
             {
                 await connection.UpdateAsync<StationDTO>(obj);
             }
+        }
+
+        public async Task<int> UpdateBitmap(string FiosServiceId, int bitmapId)
+        {
+            using (var connection = await DapperFactory.GetOpenConnectionAsync())
+            {
+                var bmDTO = await connection.GetAsync<BitmapStationMapDTO>(FiosServiceId);
+                if (bmDTO.intBitmapId == 0)
+                {
+                    bmDTO = new BitmapStationMapDTO();
+                    bmDTO.intBitmapId = bitmapId;
+                    bmDTO.strFIOSServiceId = FiosServiceId;
+                    bmDTO.strFIOSVersionAliasId = this._version;
+                    bmDTO.dtCreateDate = DateTime.Now;
+                    bmDTO.dtLastUpdateDate = DateTime.Now;
+                    return await connection.InsertAsync<BitmapStationMapDTO>(bmDTO);
+                }
+                else
+                {
+                    bmDTO.intBitmapId = bitmapId;
+                    bmDTO.strFIOSServiceId = FiosServiceId;
+                    bmDTO.strFIOSVersionAliasId = this._version;
+                    bmDTO.dtCreateDate = DateTime.Now;
+                    bmDTO.dtLastUpdateDate = DateTime.Now;
+                    if (await connection.UpdateAsync<BitmapStationMapDTO>(bmDTO)) { return 1; }
+                }
+            }
+            return 0;
         }
     }
 }

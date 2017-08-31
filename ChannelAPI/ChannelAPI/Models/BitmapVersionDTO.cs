@@ -9,14 +9,14 @@ namespace ChannelAPI.Models
     [Table("tFIOSBitmapVersion")]
     public class BitmapVersionDTO
     {
-        [Key]
+        [ExplicitKey]
         public int intBitmapId { get; set; }
         public string strBitmapMD5Digest { get; set; }
-        [Key]
+        [ExplicitKey]
         public string strFIOSVersionAliasId { get; set; }
         public DateTime dtCreateDate { get; set; }
         public DateTime dtLastUpdateDate { get; set; }
-        public string BitMapIsfOffline_YN { get; set; }
+        public string strBitMapIsfOffline_YN { get; set; }
         public DateTime dtImageLastUpdateTimestamp { get; set; }
         public string strBitMapIsfOffline_YN_HD { get; set; }
     }
