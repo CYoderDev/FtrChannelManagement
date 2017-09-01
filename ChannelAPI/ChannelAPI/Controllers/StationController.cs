@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -41,14 +42,17 @@ namespace ChannelAPI.Controllers
             return Json(response);
         }
 
-        [HttpPut("{fiosid}/bitmap/{bitmapid}")]
-        public async Task<IActionResult> PutBitmap(string fiosid, int bitmapid)
+        [HttpPut("{fiosid}/logo/{bitmapid}")]
+        public async Task<IActionResult> PutBitmap(string fiosid, int bitmapid, [FromBody] Image logo)
         {
             try
             {
+                var bitmapRepo = new BitmapRepository(this._config);
                 var stationRepo = new StationRepository(this._config);
-                var response = await stationRepo.UpdateBitmap(fiosid, bitmapid);
-                return Json(response);
+                await bitmapRepo.UpdateBitmap(logo, bitmapid.ToString());
+                var response = await bitmapRepo.UpdateChannelBitmap(bitmapid);
+                response += await stationRepo.UpdateBitmap(fiosid, bitmapid);
+                return Ok(response);
             }
             catch (Exception ex)
             {

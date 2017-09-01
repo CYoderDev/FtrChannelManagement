@@ -12,7 +12,6 @@ namespace ChannelAPI.Models
         [Key]
         public string strFIOSServiceId { get; set; }
         public int intBitmapId { get; set; }
-        [Key]
         public string strFIOSVersionAliasId { get; set; }
         public DateTime dtCreateDate { get; set; }
         public DateTime dtLastUpdateDate { get; set; }

@@ -53,10 +53,20 @@ namespace ChannelAPI.Repositories
             //return await Task.FromResult<Image>(Bitmap.FromFile(bitmapFullPath));
         }
 
+        public async Task<IEnumerable<BitmapStationMapDTO>> GetStationsByBitmapId(int bitmapId)
+        {
+            string query = "SELECT * FROM tFiosBitmapStationMap WHERE intBitMapId = @id AND strFIOSVersionAliasId = @version";
+
+            using (var connection = await DapperFactory.GetOpenConnectionAsync())
+            {
+                return await connection.QueryAsync<BitmapStationMapDTO>(query, new { id = bitmapId, version = this._version });
+            }
+        }
+
         public async Task InsertBitmap(Image logo, string id)
         {
             if (logo.Height != this._logoHeight || logo.Width != this._logoWidth)
-                logo = resizeImage(logo);
+                resizeImage(ref logo);
 
             Exception tskException = null;
 
@@ -79,12 +89,9 @@ namespace ChannelAPI.Repositories
         public async Task UpdateBitmap(Image logo, string id)
         {
             if (logo.Height != this._logoHeight || logo.Width != this._logoWidth)
-                logo = resizeImage(logo);
+                resizeImage(ref logo);
 
             var logoPath = Path.Combine(this._bitmapDirectory, (id + this._logoFormat));
-
-            if (!File.Exists(logoPath))
-                throw new FileNotFoundException("Could not find logo to update.", logoPath);
 
             if (await Task.Factory.StartNew<bool>(() => { return moveFileToArchive(logoPath); }))
             {
@@ -92,15 +99,22 @@ namespace ChannelAPI.Repositories
             }
         }
 
-        public async Task<int> UpdateChannelBitmap(int oldBitmapId, int? newBitmapId, Image logo)
+        public async Task<int> UpdateChannelBitmap(int newBitmapId)
         {
-            if (!newBitmapId.HasValue)
-                newBitmapId = oldBitmapId;
+            using (var stream = await this.GetBitmapById(newBitmapId.ToString()))
+            {
+                return await UpdateChannelBitmap(newBitmapId, Image.FromStream(stream));
+            }
+        }
+
+        public async Task<int> UpdateChannelBitmap(int newBitmapId, Image logo)
+        {
             int retVal = 0;
+            
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                retVal += await updateBitmapDTO(connection, newBitmapId.Value, logo);
-                retVal += await updateBitmapVersionDTO(connection, newBitmapId.Value, logo);
+                retVal += await updateBitmapDTO(connection, newBitmapId, logo);
+                retVal += await updateBitmapVersionDTO(connection, newBitmapId, logo);
             }
 
             return retVal;
@@ -196,6 +210,8 @@ namespace ChannelAPI.Repositories
 
         private bool moveFileToArchive(string filePath)
         {
+            if (!File.Exists(filePath))
+                return true;
             string archiveDirectory = Path.Combine(this._bitmapDirectory, "Archive");
             if (!Directory.Exists(archiveDirectory))
                 Directory.CreateDirectory(archiveDirectory);
@@ -233,13 +249,10 @@ namespace ChannelAPI.Repositories
             File.Delete(archiveFile);
         }
 
-        private Image resizeImage(Image originalImg)
+        private void resizeImage(ref Image originalImg)
         {
-            using (originalImg)
-            {
-                Size size = new Size(this._logoWidth, this._logoHeight);
-                return new Bitmap(originalImg, size);
-            }
+            Size size = new Size(this._logoWidth, this._logoHeight);
+            originalImg = new Bitmap(originalImg, size);
         }
 
         private ImageFormat getImageFormat()

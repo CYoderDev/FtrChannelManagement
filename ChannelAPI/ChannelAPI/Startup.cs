@@ -29,7 +29,10 @@ namespace ChannelAPI
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.InputFormatters.Insert(0, new ImageFormatter());
+            });
 
             services.AddSingleton<IConfiguration>(Configuration);
 #if DEBUG

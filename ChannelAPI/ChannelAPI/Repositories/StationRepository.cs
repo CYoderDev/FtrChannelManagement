@@ -101,15 +101,16 @@ namespace ChannelAPI.Repositories
             }
         }
 
-        public async Task<int> UpdateBitmap(string FiosServiceId, int bitmapId)
+        public async Task<int> UpdateBitmap(string FiosServiceId, int newBitmapId)
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                var bmDTO = await connection.GetAsync<BitmapStationMapDTO>(FiosServiceId);
-                if (bmDTO.intBitmapId == 0)
+                string query = "SELECT * FROM tFIOSBitmapStationMap WHERE strFIOSServiceId = @id AND strFIOSVersionAliasId = @version";
+                var bmDTO = await connection.QueryFirstOrDefaultAsync<BitmapStationMapDTO>(query, new { id = FiosServiceId, version = this._version });
+                if (bmDTO == null || bmDTO.intBitmapId == 0)
                 {
                     bmDTO = new BitmapStationMapDTO();
-                    bmDTO.intBitmapId = bitmapId;
+                    bmDTO.intBitmapId = newBitmapId;
                     bmDTO.strFIOSServiceId = FiosServiceId;
                     bmDTO.strFIOSVersionAliasId = this._version;
                     bmDTO.dtCreateDate = DateTime.Now;
@@ -118,15 +119,12 @@ namespace ChannelAPI.Repositories
                 }
                 else
                 {
-                    bmDTO.intBitmapId = bitmapId;
-                    bmDTO.strFIOSServiceId = FiosServiceId;
-                    bmDTO.strFIOSVersionAliasId = this._version;
-                    bmDTO.dtCreateDate = DateTime.Now;
-                    bmDTO.dtLastUpdateDate = DateTime.Now;
-                    if (await connection.UpdateAsync<BitmapStationMapDTO>(bmDTO)) { return 1; }
+                    query = @"
+                             UPDATE tFIOSBitmapStationMap SET dtCreateDate = @date, dtLastUpdateDate = @date, intBitmapId = @bmid 
+                             WHERE strFIOSServiceId = @id";
+                    return await connection.ExecuteAsync(query, new { date = DateTime.Now, bmid = newBitmapId, id = FiosServiceId });
                 }
             }
-            return 0;
         }
     }
 }
