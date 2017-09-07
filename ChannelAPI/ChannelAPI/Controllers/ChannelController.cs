@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Dapper;
 using Dapper.Contrib.Extensions;
@@ -24,6 +25,7 @@ namespace ChannelAPI.Controllers
         }
 
         // GET: api/channel/Region/{regionid}
+        [AllowAnonymous]
         [HttpGet("region/{id}")]
         public async Task<IActionResult> GetByRegion(string id)
         {
@@ -43,6 +45,7 @@ namespace ChannelAPI.Controllers
         }
 
         // GET: api/vho/{id}
+        [AllowAnonymous]
         [HttpGet("vho/{id}")]
         public async Task<IActionResult> GetByVHOId(string id)
         {
@@ -62,6 +65,7 @@ namespace ChannelAPI.Controllers
         }
 
         // GET: api/channel/station/{name}
+        [AllowAnonymous]
         [HttpGet("station/{name}")]
         public async Task<IActionResult> GetByStationName(string name)
         {
@@ -81,6 +85,7 @@ namespace ChannelAPI.Controllers
         }
 
         // GET: api/channel/callsign/{name}
+        [AllowAnonymous]
         [HttpGet("callsign/{name}")]
         public async Task<IActionResult> GetByCallSign(string name)
         {
@@ -100,6 +105,7 @@ namespace ChannelAPI.Controllers
         }
 
         // GET: api/channel
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -120,6 +126,7 @@ namespace ChannelAPI.Controllers
         }
 
         // GET: api/channel/{id}
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {

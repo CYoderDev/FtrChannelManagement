@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,13 @@ namespace ChannelAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Build cors policy
+            var corsBuilder = new CorsPolicyBuilder();
+            corsBuilder.AllowCredentials();
+            corsBuilder.AllowAnyMethod();
+            corsBuilder.AllowAnyOrigin();
+            corsBuilder.AllowAnyHeader();
+
             // Add framework services.
             services.AddMvc(options =>
             {
@@ -35,6 +43,19 @@ namespace ChannelAPI
             });
 
             services.AddSingleton<IConfiguration>(Configuration);
+
+            services.Configure<IISOptions>(options =>
+            {
+                options.ForwardWindowsAuthentication = true;
+            });
+
+            //Add Cors
+            services.AddCors(options =>
+            {
+                options.AddPolicy("ChannelAPICorsPolicy", corsBuilder.Build());
+            });
+
+            services.AddAuthorization();
 #if DEBUG
             DapperFactory.ConnectionString = Configuration.GetConnectionString("FIOSAPP_DC_DEBUG");
 #else

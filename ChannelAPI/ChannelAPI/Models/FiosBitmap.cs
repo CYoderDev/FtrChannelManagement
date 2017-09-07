@@ -7,7 +7,7 @@ using Dapper.Contrib.Extensions;
 namespace ChannelAPI.Models
 {
     [Table("tFIOSBitMap")]
-    public class BitmapDTO
+    public class FiosBitmap
     {
         [Key]
         public int intBitmapId { get; set; }

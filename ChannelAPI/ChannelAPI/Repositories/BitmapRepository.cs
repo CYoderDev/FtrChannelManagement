@@ -39,7 +39,7 @@ namespace ChannelAPI.Repositories
                 this._logoFormat = "." + this._logoFormat;
         }
 
-        public async Task<Stream> GetBitmapById(string id)
+        public Stream GetBitmapById(string id)
         {
             string bitmapFileName = id + this._logoFormat;
 
@@ -70,6 +70,11 @@ namespace ChannelAPI.Repositories
 
             Exception tskException = null;
 
+            var imgPath = Path.Combine(this._bitmapDirectory, (id + this._logoFormat));
+
+            if (File.Exists(imgPath))
+                throw new ArgumentException(string.Format("File at {0} already exists. Use PUT method.", imgPath));
+
             await Task.Factory.StartNew(() => 
             {
                 try
@@ -97,11 +102,15 @@ namespace ChannelAPI.Repositories
             {
                 logo.Save(logoPath, getImageFormat());
             }
+            else
+            {
+                throw new IOException("Failed to backup image file to archive.");
+            }
         }
 
         public async Task<int> UpdateChannelBitmap(int newBitmapId)
         {
-            using (var stream = await this.GetBitmapById(newBitmapId.ToString()))
+            using (var stream = this.GetBitmapById(newBitmapId.ToString()))
             {
                 return await UpdateChannelBitmap(newBitmapId, Image.FromStream(stream));
             }
@@ -110,11 +119,21 @@ namespace ChannelAPI.Repositories
         public async Task<int> UpdateChannelBitmap(int newBitmapId, Image logo)
         {
             int retVal = 0;
-            
+
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
+            using (var trans = connection.BeginTransaction())
             {
-                retVal += await updateBitmapDTO(connection, newBitmapId, logo);
-                retVal += await updateBitmapVersionDTO(connection, newBitmapId, logo);
+                try
+                {
+                    retVal += await updateBitmapDTO(connection, newBitmapId, logo);
+                    retVal += await updateBitmapVersionDTO(connection, newBitmapId, logo);
+                }
+                catch(Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+                trans.Commit();
             }
 
             return retVal;
@@ -126,10 +145,11 @@ namespace ChannelAPI.Repositories
             if (!File.Exists(fileName))
                 return;
 
-            File.Delete(fileName);
+            if (moveFileToArchive(fileName))
+                File.Delete(fileName);
         }
 
-        public IEnumerable<int> GetAllIds()
+        public IEnumerable<int> GetAllRepositoryIds()
         {
             return Directory.EnumerateFiles(this._bitmapDirectory, "*" + _logoFormat, SearchOption.TopDirectoryOnly).Select(x =>
             {
@@ -143,17 +163,17 @@ namespace ChannelAPI.Repositories
 
         private async Task<int> updateBitmapDTO(IDbConnection connection, int bitmapId, Image logo)
         {
-            var bmDTO = await connection.GetAsync<BitmapDTO>(bitmapId);
+            var bmDTO = await connection.GetAsync<FiosBitmap>(bitmapId);
             if (bmDTO.intBitmapId == 0)
             {
-                bmDTO = new BitmapDTO();
+                bmDTO = new FiosBitmap();
                 bmDTO.intBitmapId = bitmapId;
                 bmDTO.strBitMapFileName = Path.Combine(this._bitmapDirectory, bitmapId + this._logoFormat);
                 bmDTO.strBitMapName = bitmapId + this._logoFormat;
                 bmDTO.strBitMapMD5Digest = getMD5(logo);
                 bmDTO.dtCreateDate = DateTime.Now;
                 bmDTO.dtLastUpdateDate = DateTime.Now;
-                return await connection.InsertAsync<BitmapDTO>(bmDTO);
+                return await connection.InsertAsync<FiosBitmap>(bmDTO);
             }
             else
             {
@@ -161,7 +181,7 @@ namespace ChannelAPI.Repositories
                 bmDTO.strBitMapMD5Digest = getMD5(logo);
                 bmDTO.dtCreateDate = DateTime.Now;
                 bmDTO.dtLastUpdateDate = DateTime.Now;
-                if (await connection.UpdateAsync<BitmapDTO>(bmDTO)) { return 1; }
+                if (await connection.UpdateAsync<FiosBitmap>(bmDTO)) { return 1; }
             }
             return 0;
         }

@@ -6,18 +6,18 @@ using Dapper.Contrib.Extensions;
 
 namespace ChannelAPI.Models
 {
-    [Table("tFIOSProviderStation")]
-    public class ProviderStationDTO
+    [Table("tFIOSStationFlagMap")]
+    public class FiosStationFlagMap
     {
         [Key]
-        public string strDataProviderId { get; set; }
-        [Key]
-        public string strProviderStationId { get; set; }
-        public string strProviderStationName { get; set; }
-        [Key]
         public string strFIOSServiceId { get; set; }
+        [Key]
+        public string strStationFlagId { get; set; }
+        public string strStationFlagValue { get; set; }
         public DateTime dtCreateDate { get; set; }
         public DateTime dtLastUpdateDate { get; set; }
-        public bool isPrimary { get; set; }
+        [Key]
+        public string strfiosversion { get; set; }
+        public int intFormatId { get; set; }
     }
 }

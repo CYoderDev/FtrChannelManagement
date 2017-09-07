@@ -7,7 +7,7 @@ using Dapper.Contrib.Extensions;
 namespace ChannelAPI.Models
 {
     [Table("tFIOSRegion")]
-    public class RegionDTO
+    public class FiosRegion
     {
         [Key]
         public string strFIOSRegionId { get; set; }

@@ -12,7 +12,7 @@ using ChannelAPI.Models;
 namespace ChannelAPI.Repositories
 {
 
-    public class StationRepository : IRepository<StationDTO>
+    public class StationRepository : IRepository<FiosStation>
     {
         private string _version;
 
@@ -21,83 +21,83 @@ namespace ChannelAPI.Repositories
             this._version = config.GetValue<string>("FiosChannelData:VersionAliasId");
         }
 
-        public long Add(StationDTO obj)
+        public long Add(FiosStation obj)
         {
             using (var connection = DapperFactory.GetOpenConnection())
             {
-                return connection.Insert<StationDTO>(obj);
+                return connection.Insert<FiosStation>(obj);
             }
         }
 
-        public async Task<long> AddAsync(StationDTO obj)
+        public async Task<long> AddAsync(FiosStation obj)
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                return await connection.InsertAsync<StationDTO>(obj);
+                return await connection.InsertAsync<FiosStation>(obj);
             }
         }
 
-        public StationDTO FindByID(string id)
+        public FiosStation FindByID(string id)
         {
             using (var connection = DapperFactory.GetOpenConnection())
             {
-                return connection.Get<StationDTO>(id);
+                return connection.Get<FiosStation>(id);
             }
         }
 
-        public async Task<StationDTO> FindByIDAsync(string id)
+        public async Task<FiosStation> FindByIDAsync(string id)
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                return await connection.GetAsync<StationDTO>(id);
+                return await connection.GetAsync<FiosStation>(id);
             }
         }
 
-        public IEnumerable<StationDTO> GetAll()
+        public IEnumerable<FiosStation> GetAll()
         {
             using (var connection = DapperFactory.GetOpenConnection())
             {
-                return connection.GetAll<StationDTO>();
+                return connection.GetAll<FiosStation>();
             }
         }
 
-        public async Task<IEnumerable<StationDTO>> GetAllAsync()
+        public async Task<IEnumerable<FiosStation>> GetAllAsync()
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                return await connection.GetAllAsync<StationDTO>();
+                return await connection.GetAllAsync<FiosStation>();
             }
         }
 
-        public void Remove(StationDTO obj)
+        public void Remove(FiosStation obj)
         {
             using (var connection = DapperFactory.GetOpenConnection())
             {
-                connection.Delete<StationDTO>(obj);
+                connection.Delete<FiosStation>(obj);
             }
         }
 
-        public async void RemoveAsync(StationDTO obj)
+        public async void RemoveAsync(FiosStation obj)
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                await connection.DeleteAsync<StationDTO>(obj);
+                await connection.DeleteAsync<FiosStation>(obj);
             }
         }
 
-        public void Update(StationDTO obj)
+        public void Update(FiosStation obj)
         {
             using (var connection = DapperFactory.GetOpenConnection())
             {
-                connection.Update<StationDTO>(obj);
+                connection.Update<FiosStation>(obj);
             }
         }
 
-        public async void UpdateAsync(StationDTO obj)
+        public async void UpdateAsync(FiosStation obj)
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                await connection.UpdateAsync<StationDTO>(obj);
+                await connection.UpdateAsync<FiosStation>(obj);
             }
         }
 

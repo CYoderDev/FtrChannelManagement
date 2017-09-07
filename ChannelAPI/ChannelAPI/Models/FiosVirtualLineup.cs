@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ChannelAPI.Models
 {
-    public class VirtualLineupDTO : LineupDTO
+    public class FiosVirtualLineup : FiosLineup
     {
         public char isIMG { get; set; }
     }

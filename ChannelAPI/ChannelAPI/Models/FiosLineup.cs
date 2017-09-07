@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ChannelAPI.Models
 {
-    public class LineupDTO
+    public class FiosLineup
     {
         public string strFIOSRegionId { get; set; }
         public string strFIOSServiceId { get; set; }

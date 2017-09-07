@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using ChannelAPI.Models;
@@ -18,6 +19,8 @@ namespace ChannelAPI.Controllers
         {
             this._config = config;
         }
+
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -31,6 +34,7 @@ namespace ChannelAPI.Controllers
             return Json(response);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
@@ -42,6 +46,7 @@ namespace ChannelAPI.Controllers
             return Json(response);
         }
 
+        [Authorize(Roles = "VHE\\FUI-IMG, CORP\\FTW Data Center")]
         [HttpPut("{fiosid}/logo/{bitmapid}")]
         public async Task<IActionResult> PutBitmap(string fiosid, int bitmapid, [FromBody] Image logo)
         {
