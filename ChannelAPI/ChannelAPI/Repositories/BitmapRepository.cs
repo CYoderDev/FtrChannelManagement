@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Dapper;
 using Dapper.Contrib.Extensions;
 using Dapper.Mapper;
@@ -23,8 +24,9 @@ namespace ChannelAPI.Repositories
         private int _logoWidth;
         private string _logoFormat;
         private string _version;
+        private ILogger _logger;
 
-        public BitmapRepository(IConfiguration config)
+        public BitmapRepository(IConfiguration config, ILoggerFactory loggerFactory)
         {
 #if DEBUG
             this._bitmapDirectory = config.GetValue<string>("FiosChannelData:LogoRepository_DEBUG");
@@ -37,10 +39,13 @@ namespace ChannelAPI.Repositories
             this._logoFormat = config.GetValue<string>("FiosChannelData:LogoFormat");
             if (!_logoFormat.StartsWith("."))
                 this._logoFormat = "." + this._logoFormat;
+
+            this._logger = loggerFactory.CreateLogger<BitmapRepository>();
         }
 
         public Stream GetBitmapById(string id)
         {
+            _logger.LogDebug("Getting bitmap by id {0}", id);
             string bitmapFileName = id + this._logoFormat;
 
             string bitmapFullPath = Path.Combine(this._bitmapDirectory, bitmapFileName);
@@ -49,8 +54,6 @@ namespace ChannelAPI.Repositories
                 return null;
 
             return File.OpenRead(bitmapFullPath);
-            
-            //return await Task.FromResult<Image>(Bitmap.FromFile(bitmapFullPath));
         }
 
         public async Task<IEnumerable<BitmapStationMapDTO>> GetStationsByBitmapId(int bitmapId)

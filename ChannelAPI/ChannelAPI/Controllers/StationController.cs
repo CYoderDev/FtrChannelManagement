@@ -19,12 +19,14 @@ namespace ChannelAPI.Controllers
         private IConfiguration _config;
         private ILogger<StationController> _logger;
         private StationRepository _stationRepo;
+        private BitmapRepository _bitmapRepo;
 
-        public StationController(IConfiguration config, ILogger<StationController> logger)
+        public StationController(IConfiguration config, ILogger<StationController> logger, ILoggerFactory loggerFactory)
         {
             this._config = config;
             this._logger = logger;
-            this._stationRepo = new StationRepository(config);
+            this._stationRepo = new StationRepository(config, loggerFactory);
+            this._bitmapRepo = new BitmapRepository(config, loggerFactory);
         }
 
         [AllowAnonymous]
@@ -99,9 +101,8 @@ namespace ChannelAPI.Controllers
             try
             {
                 _logger.LogTrace("Begin. params: fiosid={0}, bitmapid={1}, logo={2}", fiosid, bitmapid, logo != null);
-                var bitmapRepo = new BitmapRepository(this._config);
-                await bitmapRepo.UpdateBitmap(logo, bitmapid.ToString());
-                var response = await bitmapRepo.UpdateChannelBitmap(bitmapid);
+                await _bitmapRepo.UpdateBitmap(logo, bitmapid.ToString());
+                var response = await _bitmapRepo.UpdateChannelBitmap(bitmapid);
                 response += await _stationRepo.UpdateBitmap(fiosid, bitmapid);
                 return Ok(response);
             }

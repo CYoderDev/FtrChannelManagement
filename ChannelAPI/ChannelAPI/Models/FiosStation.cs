@@ -12,7 +12,8 @@ namespace ChannelAPI.Models
         [Key]
         public string strFIOSServiceId { get; set; }
         public string strStationName { get; set; }
-        public string strStationUniqueDescription { get; set; }
+        public string strStationUniqueString { get; set; }
+        public string strStationDescription { get; set; }
         public string strStationCallSign { get; set; }
         public string strStationAffiliateId { get; set; }
         public string strCityId { get; set; }

@@ -20,12 +20,14 @@ namespace ChannelAPI.Controllers
         private IConfiguration _config;
         private ILogger<ChannelLogoController> _logger;
         private BitmapRepository _bitmapRepo;
+        private StationRepository _stationRepo;
 
-        public ChannelLogoController(IConfiguration config, ILogger<ChannelLogoController> logger)
+        public ChannelLogoController(IConfiguration config, ILogger<ChannelLogoController> logger, ILoggerFactory loggerFactory)
         {
             this._config = config;
             this._logger = logger;
-            this._bitmapRepo = new BitmapRepository(config);
+            this._bitmapRepo = new BitmapRepository(config, loggerFactory);
+            this._stationRepo = new StationRepository(config, loggerFactory);
         }
 
         // GET: api/channellogo
@@ -191,8 +193,7 @@ namespace ChannelAPI.Controllers
                     _logger.LogWarning("Invalid ID. Must be greater than 0 and less than {0}. Provided value: {1}", maxVal, bitmapid);
                     return BadRequest();
                 }
-                var stationRepo = new StationRepository(this._config);
-                var retVal = await stationRepo.UpdateBitmap(fiosid, bitmapid);
+                var retVal = await _stationRepo.UpdateBitmap(fiosid, bitmapid);
                 return Ok(retVal);
             }
             catch (Exception ex)

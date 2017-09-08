@@ -4,6 +4,8 @@ using System.Collections.Generic;
 //using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 using Dapper;
 using Dapper.Contrib.Extensions;
 using Dapper.Mapper;
@@ -15,10 +17,12 @@ namespace ChannelAPI.Repositories
     public class StationRepository : IRepository<FiosStation>
     {
         private string _version;
+        private ILogger _logger;
 
-        public StationRepository(IConfiguration config)
+        public StationRepository(IConfiguration config, ILoggerFactory loggerFactory)
         {
             this._version = config.GetValue<string>("FiosChannelData:VersionAliasId");
+            this._logger = loggerFactory.CreateLogger<StationRepository>();
         }
 
         public long Add(FiosStation obj)
