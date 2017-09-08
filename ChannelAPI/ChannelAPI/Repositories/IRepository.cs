@@ -11,9 +11,9 @@ namespace ChannelAPI.Repositories
         long Add(T obj);
         Task<long> AddAsync(T obj);
         void Remove(T obj);
-        void RemoveAsync(T obj);
+        Task RemoveAsync(T obj);
         void Update(T obj);
-        void UpdateAsync(T obj);
+        Task UpdateAsync(T obj);
         T FindByID(string id);
         Task<T> FindByIDAsync(string id);
         IEnumerable<T> GetAll();

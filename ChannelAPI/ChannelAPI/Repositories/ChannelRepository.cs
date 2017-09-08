@@ -127,7 +127,7 @@ namespace ChannelAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public async void RemoveAsync(ChannelDTO obj)
+        public async Task RemoveAsync(ChannelDTO obj)
         {
             throw new NotImplementedException();
         }
@@ -137,7 +137,7 @@ namespace ChannelAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public async void UpdateAsync(ChannelDTO obj)
+        public async Task UpdateAsync(ChannelDTO obj)
         {
             throw new NotImplementedException();
         }

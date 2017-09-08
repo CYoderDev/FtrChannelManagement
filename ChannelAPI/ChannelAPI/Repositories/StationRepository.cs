@@ -77,7 +77,7 @@ namespace ChannelAPI.Repositories
             }
         }
 
-        public async void RemoveAsync(FiosStation obj)
+        public async Task RemoveAsync(FiosStation obj)
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
@@ -93,7 +93,7 @@ namespace ChannelAPI.Repositories
             }
         }
 
-        public async void UpdateAsync(FiosStation obj)
+        public async Task UpdateAsync(FiosStation obj)
         {
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
