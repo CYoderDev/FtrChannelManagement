@@ -47,7 +47,7 @@ namespace ChannelAPI.Controllers
             return File(img, "image/png");
         }
 
-        [Authorize(Roles = "VHE\\FUI-IMG, CORP\\FTW Data Center")]
+        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet("{id}/station")]
         public async Task<IActionResult> GetStations(int id)
         {

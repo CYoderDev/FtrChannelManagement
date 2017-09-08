@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -46,16 +48,19 @@ namespace ChannelAPI
 
             services.Configure<IISOptions>(options =>
             {
-                options.ForwardWindowsAuthentication = true;
+                options.AutomaticAuthentication = true;
             });
-
-            //Add Cors
+            services.AddAuthentication(Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme);
             services.AddCors(options =>
             {
                 options.AddPolicy("ChannelAPICorsPolicy", corsBuilder.Build());
             });
 
-            services.AddAuthorization();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("RequireWindowsGroupMembership", policy => policy.RequireRole(@"CORP\FTW Data Center", @"VHE\FUI-IMG"));
+            });
+
 #if DEBUG
             DapperFactory.ConnectionString = Configuration.GetConnectionString("FIOSAPP_DC_DEBUG");
 #else
@@ -78,7 +83,7 @@ namespace ChannelAPI
             {
                 app.UseExceptionHandler();
             }
-
+            
             app.UseMvc();
         }
     }
