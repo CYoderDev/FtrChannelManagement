@@ -30,7 +30,11 @@ namespace ChannelAPI.Controllers
             this._stationRepo = new StationRepository(config, loggerFactory);
         }
 
-        // GET: api/channellogo
+        /// <summary>
+        /// Get all bitmap id's in the logo repository.
+        /// </summary>
+        /// <returns>int[]</returns>
+        /// <example>GET: api/channelogo</example>
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -47,7 +51,12 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET api/channellogo/5
+        /// <summary>
+        /// Gets the image by bitmap id
+        /// </summary>
+        /// <param name="id">Channel logo bitmap id</param>
+        /// <returns>image/png</returns>
+        /// <example>GET: api/channellogo/2202</example>
         [AllowAnonymous]
         [HttpGet("{id}")]
         public IActionResult Get(int id)
@@ -65,6 +74,13 @@ namespace ChannelAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets all fios station id's that are currently assigned to the provided
+        /// bitmap id.
+        /// </summary>
+        /// <param name="id">Channel logo bitmap id</param>
+        /// <returns>int[]</returns>
+        /// <example>GET: api/channellogo/2202/station</example>
         [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet("{id}/station")]
         public async Task<IActionResult> GetStations(int id)
@@ -84,7 +100,13 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // POST api/channellogo/5
+        /// <summary>
+        /// Inserts new logo image with a new bitmap id.
+        /// </summary>
+        /// <param name="value">Channe logo System.Drawing.Image</param>
+        /// <param name="id">Channel logo bitmap id</param>
+        /// <returns></returns>
+        /// <example>POST: api/channellogo/2202</example>
         [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPost("{id}")]
         public async Task<IActionResult> Post([FromBody]Image value, int id)
@@ -103,33 +125,13 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // PUT api/channellogo/Image/5
-        [Authorize(policy: "RequireWindowsGroupMembership")]
-        [HttpPut("image/{id}")]
-        public async Task<IActionResult> Put([FromBody]Image value, int id)
-        {
-            try
-            {
-                _logger.LogTrace("Begin. params: id={0}", id);
-                int maxVal = int.Parse(this._config.GetValue<string>("FiosChannelData:DefaultLogoId"));
-                if (id <= 0 || id > maxVal)
-                {
-                    _logger.LogWarning("Invalid ID. Must be greater than 0 and less than {0}. Provided value: {1}", maxVal, id);
-                    return BadRequest();
-                }
-                await this._bitmapRepo.UpdateBitmap(value, id.ToString());
-                int retVal = await this._bitmapRepo.UpdateChannelBitmap(id, value);
-                
-                return Ok(retVal);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        }
-
-        // PUT api/channellogo/5
+        /// <summary>
+        /// Updates the datetime fields for this bitmap id in order to
+        /// prompt the STB to download the image.
+        /// </summary>
+        /// <param name="id">Channel logo bitmap id</param>
+        /// <returns></returns>
+        /// <example>PUT: api/channellogo/2202</example>
         [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id)
@@ -154,7 +156,14 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // PUT: api/channellogo/Image/5
+        /// <summary>
+        /// Updates the logo image with a specific bitmap id, and the datetime
+        /// fields in order to prompt the STB to download the new image.
+        /// </summary>
+        /// <param name="id">Logo bitmap id</param>
+        /// <param name="value">System.Drawing.Image from request body</param>
+        /// <returns></returns>
+        /// <example>PUT: api/channellogo/image/2202</example>
         [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut("image/{id}")]
         public async Task<IActionResult> Put (int id, [FromBody]Image value)
@@ -180,6 +189,13 @@ namespace ChannelAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Assigns station to a new channel logo id
+        /// </summary>
+        /// <param name="bitmapid">Fios Channel Logo Id</param>
+        /// <param name="fiosid">Fios Service Id</param>
+        /// <returns></returns>
+        /// <example>PUT: api/channellogo/2202/station/5</example>
         [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut("{bitmapid}/Station/{fiosid}")]
         public async Task<IActionResult> Put (int bitmapid, string fiosid)
@@ -203,11 +219,31 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // DELETE api/values/5
+        /// <summary>
+        /// Deletes a logo image from the channel logo repository.
+        /// </summary>
+        /// <param name="id">Channel logo bitmap id</param>
+        /// <returns></returns>
+        /// <example>DELETE: api/channellogo/2202</example>
         [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            try
+            {
+                this._bitmapRepo.DeleteBitmap(id.ToString());
+                return Ok();
+            }
+            catch (FileNotFoundException ex)
+            {
+                _logger.LogWarning("File not found for bitmap id {0}. {1}{3}{2}", id, ex.Message, ex.StackTrace, System.Environment.NewLine);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }

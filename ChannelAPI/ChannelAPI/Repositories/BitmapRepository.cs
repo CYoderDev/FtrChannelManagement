@@ -76,7 +76,7 @@ namespace ChannelAPI.Repositories
             var imgPath = Path.Combine(this._bitmapDirectory, (id + this._logoFormat));
 
             if (File.Exists(imgPath))
-                throw new ArgumentException(string.Format("File at {0} already exists. Use PUT method.", imgPath));
+                throw new ArgumentException(string.Format("File at {0} already exists. Use PUT method to update existing bitmap id.", imgPath));
 
             await Task.Factory.StartNew(() => 
             {
