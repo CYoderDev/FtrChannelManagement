@@ -17,11 +17,14 @@ namespace ChannelAPI.Controllers
     [Route("api/[controller]")]
     public class ChannelLogoController : Controller
     {
+        #region PrivateFields
         private IConfiguration _config;
         private ILogger<ChannelLogoController> _logger;
         private BitmapRepository _bitmapRepo;
         private StationRepository _stationRepo;
+        #endregion PrivateFields
 
+        #region Constructor
         public ChannelLogoController(IConfiguration config, ILogger<ChannelLogoController> logger, ILoggerFactory loggerFactory)
         {
             this._config = config;
@@ -29,7 +32,9 @@ namespace ChannelAPI.Controllers
             this._bitmapRepo = new BitmapRepository(config, loggerFactory);
             this._stationRepo = new StationRepository(config, loggerFactory);
         }
+        #endregion Constructor
 
+        #region GET
         /// <summary>
         /// Get all bitmap id's in the logo repository.
         /// </summary>
@@ -99,7 +104,9 @@ namespace ChannelAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+        #endregion GET
 
+        #region POST
         /// <summary>
         /// Inserts new logo image with a new bitmap id.
         /// </summary>
@@ -124,7 +131,9 @@ namespace ChannelAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+        #endregion POST
 
+        #region PUT
         /// <summary>
         /// Updates the datetime fields for this bitmap id in order to
         /// prompt the STB to download the image.
@@ -218,7 +227,9 @@ namespace ChannelAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+        #endregion PUT
 
+        #region DELETE
         /// <summary>
         /// Deletes a logo image from the channel logo repository.
         /// </summary>
@@ -245,5 +256,6 @@ namespace ChannelAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+    #endregion DELETE
     }
 }

@@ -20,18 +20,29 @@ namespace ChannelAPI.Controllers
     [Route("api/[controller]")]
     public class ChannelController : Controller
     {
+        #region PrivateFields
         private IConfiguration _config;
         private ILogger<ChannelController> _logger;
         private ChannelRepository _channelRepo;
+        #endregion PrivateFields
 
+
+        #region Constructor
         public ChannelController(IConfiguration config, ILogger<ChannelController> logger)
         {
             this._config = config;
             this._logger = logger;
             this._channelRepo = new ChannelRepository(config);
         }
+        #endregion Constructor
 
-        // GET: api/channel/Region/{regionid}
+        #region GET
+        /// <summary>
+        /// Get all channel information by region id
+        /// </summary>
+        /// <param name="id">FiOS region ID</param>
+        /// <returns>FiOS Channel[]</returns>
+        /// <example>GET: api/channel/region/93636</example>
         [HttpGet("region/{id}")]
         public async Task<IActionResult> GetByRegion(string id)
         {
@@ -52,7 +63,12 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET: api/vho/{id}
+        /// <summary>
+        /// Get all channel information by VHO id
+        /// </summary>
+        /// <param name="id">FiOS VHO ID</param>
+        /// <returns>FiOS Channel[]</returns>
+        /// <example>GET: api/channel/vho/1</example>
         [HttpGet("vho/{id}")]
         public async Task<IActionResult> GetByVHOId(string id)
         {
@@ -73,7 +89,12 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET: api/channel/station/{name}
+        /// <summary>
+        /// Get channel by station name.
+        /// </summary>
+        /// <param name="name">All or part of the FiOS station name</param>
+        /// <returns>FiOS Channel[]</returns>
+        /// <example>GET: api/channel/station/abc</example>
         [HttpGet("station/{name}")]
         public async Task<IActionResult> GetByStationName(string name)
         {
@@ -94,7 +115,12 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET: api/channel/callsign/{name}
+        /// <summary>
+        /// Get channel information by station call sign
+        /// </summary>
+        /// <param name="name">Station call sign</param>
+        /// <returns>Fios Channel[]</returns>
+        /// <example>GET: api/channel/callsign/abchd</example>
         [HttpGet("callsign/{name}")]
         public async Task<IActionResult> GetByCallSign(string name)
         {
@@ -115,7 +141,11 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET: api/channel
+        /// <summary>
+        /// Gets all active FiOS service id's
+        /// </summary>
+        /// <returns>int[]</returns>
+        /// <example>GET: api/channel</example>
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -136,7 +166,12 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET: api/channel/{id}
+        /// <summary>
+        /// Get channel by FiOS service ID
+        /// </summary>
+        /// <param name="id">FiOS service ID</param>
+        /// <returns>FiOS channel</returns>
+        /// <example>GET: api/channel/5</example>
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
@@ -156,5 +191,6 @@ namespace ChannelAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+        #endregion GET
     }
 }
