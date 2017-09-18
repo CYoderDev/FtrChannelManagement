@@ -1,0 +1,57 @@
+<div id="chMgmt-primary" class="panel panel-primary">
+    <div class="panel-heading">
+        Channel Management
+    </div>
+    <div class="panel-body">
+        <div class="wrapper">
+            <div class="alert alert-info" role="alert" *ngIf="indLoading">Loading...</div>
+            <div *ngIf="channels && channels.length==0" class="alert alert-info" role="alert">No channels found!</div>
+            <div *ngIf="showGrid">
+                <ag-grid-angular #agGrid class="ag-fresh" style="width:100%; height: 750px;" id="main-grid"
+                    [gridOptions]="gridOptions"
+                    [columnDefs]="columnDefs"
+
+                    enableColResize
+                    pagination
+                    enableSorting
+                    enableFilter
+                    floatingFilter
+                    rowSelection="single"
+                    rowHeight = "110"
+
+                    (modelUpdated)="onModelUpdated()"
+                    (rowClicked)="onRowClicked($event)"
+                    (gridReady)="onReady($event)"
+                    (rowSelected)="onRowSelected($event)"
+                    (filterModified)="onFilterModified()">
+                </ag-grid-angular>
+            </div>
+            <!--<table class="table table-striped table-hover" *ngIf="channels && channels.length">
+                <thead>
+                    <tr>
+                        <th (click)="onSort('id')">Service ID</th>
+                        <th (click)="onSort('num')">Ch#</th>
+                        <th (click)="onSort('call')">Call Sign</th>
+                        <th (click)="onSort('name')">Name</th>
+                        <th (click)="onSort('region')">Region</th>
+                        <th>Logo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let channel of channelsBrief">
+                        <td>{{channel.id}}</td>
+                        <td>{{channel.num}}</td>
+                        <td>{{channel.call}}</td>
+                        <td>{{channel.name}}</td>
+                        <td>{{channel.region}}</td>
+                        <td class="bg-black3d">
+                            <img [src]="getUri(channel.logoid)" alt="Loading" />
+                            <button type="button" class="btn btn-primary" title="Edit" (click)="editChannel(channel.id)">Edit</button>    
+                        </td>
+                    </tr>
+                </tbody>
+            </table>-->
+            <div class="alert alert-warning" role="alert" *ngIf="msg">{{msg}}</div> 
+        </div>
+    </div>
+</div>

@@ -10,6 +10,7 @@ namespace ChannelAPI.Models
     public class ChannelDTO
     {
         public string strFIOSServiceId { get; set; }
+        public int intChannelPosition { get; set; }
         public string strStationCallSign { get; set; }
         public string strStationName { get; set; }
         public int intBitMapId { get; set; }

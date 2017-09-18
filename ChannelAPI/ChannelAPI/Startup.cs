@@ -77,7 +77,26 @@ namespace ChannelAPI
         {
             //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             //loggerFactory.AddDebug();
-            
+
+            app.UseCors(builder =>
+                builder.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials())
+            .UseStaticFiles()
+            .Use(async (context, next) =>
+            {
+                await next();
+                if (context.Response.StatusCode == 404 &&
+                    !System.IO.Path.HasExtension(context.Request.Path.Value) &&
+                    !context.Request.Path.Value.StartsWith("/api/"))
+                {
+                    context.Request.Path = "/index.html";
+                    await next();
+                }
+            })
+            .UseMvcWithDefaultRoute();
+
 
             loggerFactory.AddNLog();
             app.AddNLogWeb();
@@ -86,15 +105,23 @@ namespace ChannelAPI
 
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseStatusCodePages();
+                app.UseBrowserLink()
+                .UseDeveloperExceptionPage()
+                .UseStatusCodePages();
             }
             else
             {
                 app.UseExceptionHandler();
             }
-            
-            app.UseMvc();
+
+            //app.UseDefaultFiles();
+            //app.UseStaticFiles();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }

@@ -78,9 +78,15 @@ namespace ChannelAPI.Controllers
                 var channelRepo = new ChannelRepository(this._config);
                 var channel = await channelRepo.GetByVHOId(id);
                 if (channel == null)
+                {
+                    _logger.LogDebug("No channels found.");
                     return NoContent();
+                }
                 else
+                {
+                    _logger.LogDebug("{0} channels returned.", channel.Count());
                     return Json(channel);
+                }
             }
             catch (Exception ex)
             {
