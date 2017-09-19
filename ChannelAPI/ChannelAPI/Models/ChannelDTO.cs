@@ -9,6 +9,7 @@ namespace ChannelAPI.Models
     [Table("vChannels")]
     public class ChannelDTO
     {
+        [Key]
         public string strFIOSServiceId { get; set; }
         public int intChannelPosition { get; set; }
         public string strStationCallSign { get; set; }

@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild, ViewContainerRef, AfterViewInit, HostListener } from '@angular/core';
 import { ChannelService } from '../Service/channel.service';
+import { ChannelLogoService } from '../Service/channellogo.service'
 import { ChannelLogoComponent } from './channellogo.component';
+import { EditLogoForm } from './editlogo.component'
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalComponent } from 'ng2-bs3-modal/ng2-bs3-modal';
 import { IChannel } from '../Models/channel';
@@ -28,9 +30,9 @@ import { HeaderComponent } from './header.component';
 
 export class ChannelComponent implements OnInit, AfterViewInit
 {
-    @ViewChild('modal') modal: ModalComponent;
+    @ViewChild(EditLogoForm) editLogoForm: EditLogoForm;
     channels: IChannel[];
-    channel: IChannel[];
+    channel: IChannel;
     channelsBrief: any;
     vho: string;
     region: string;
@@ -45,8 +47,8 @@ export class ChannelComponent implements OnInit, AfterViewInit
     public rowData: any[];
     public showGrid: boolean;
     private columnDefs: any[];
-
-    constructor(private fb: FormBuilder, private _channelService: ChannelService, private _orderBy: OrderBy) {
+    
+    constructor(private fb: FormBuilder, private _channelService: ChannelService, private _channelLogoService: ChannelLogoService) {
         console.log("ChannelComponent constructor called");
         this.gridOptions = <GridOptions>{
  
@@ -155,6 +157,15 @@ export class ChannelComponent implements OnInit, AfterViewInit
 
     private onRowClicked($event) {
         console.log("onRowClicked: " + $event.node.data.name);
+        if ($event.event.target !== undefined) {
+            let data = $event.data;
+            let actionType = $event.event.target.getAttribute("data-action-type");
+
+            switch (actionType) {
+                case "editlogo":
+                    return this.editChannelLogo($event.node.data.id);
+            }
+        }
     }
 
     public onQuickFilterChanged($event) {
@@ -202,45 +213,32 @@ export class ChannelComponent implements OnInit, AfterViewInit
         }
     }
 
-    LoadChannels(): void {
-        console.log("LoadChannels() called");
-        this.indLoading = true;
-
-        try {
-            if (this.region != null && this.region.length > 0 && this.region.toLowerCase() != 'none')
-                this.obsChannels = this._channelService.getBy('api/channel/region/', this.region);
-            else {
-                this.obsChannels = this._channelService.getBy('api/channel/vho/', this.vho);
-            }
-        }
-        catch (ex)
-        {
-            console.error(ex);
-            throw ex;
-        }
-        this.indLoading = false;
-    }
-
     getUri(bitmapId: number) {
         if (!bitmapId)
             return;
         return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
     }
 
-    onSort(val: string, event) {
-        console.log('onSort called. param: ' + val);
-        try {
-            var target = event.target || event.srcElement || event.currentTarget;
-            
-            if (this.channelsBrief == null)
-                return;
-            this._orderBy.transform(this.channelsBrief, [val]);
-        }
-        catch (ex)
-        {
-            console.error(ex);
-            this.msg = ex;
-        }
+    editChannelLogo(fiosid: string) {
+        console.log("editChannelLogo({0})", fiosid);
+        this._channelService.getBy('api/channel/', fiosid).subscribe(x => {
+            this.channel = x;
+        });
+
+        //var stations;
+
+        //this._channelLogoService.getBy('api/channellogo/{0}/stations', this.channel.intBitMapId).subscribe(x => {
+        //    stations = x;
+        //});
+
+        ////Notify user that there are multiple stations assigned to this bitmap id.
+        ////User can either select to assign a new image to all stations, or just the selected station.
+        //if (stations && stations.length > 0)
+        //{
+
+        //}
+
+        this.editLogoForm.showForm = true;
     }
 }
 
@@ -248,14 +246,14 @@ function logoCellRenderer(params) {
     var htmlElements = '<div class="bg-black3d">';
     htmlElements += '<img src="/ChannelLogoRepository/' + params.value + '.png" alt="Loading" />';
     htmlElements += "<div class='editBtnWrapper'>"
-    htmlElements += '<button type="button" class="btn btn-primary btn-xs" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
+    htmlElements += '<button type="button" class="btn btn-primary btn-xs" title="Edit" data-action-type="editlogo">Edit</button>';
     htmlElements += '</div></div>';
 
     return htmlElements;
 }
 
 function actionCellRenderer(params) {
-    var htmlElements = '<button type="button" class="btn btn-primary btn-xs" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
+    var htmlElements = '<button type="button" class="btn btn-primary btn-xs" data-action-type="editlogo" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
     return htmlElements;
 }
 

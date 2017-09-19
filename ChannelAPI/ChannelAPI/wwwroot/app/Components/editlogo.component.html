@@ -1,0 +1,55 @@
+<div *ngIf="isLoading">Loading...</div>
+<modal #modalChLogo>
+    <form novalidate (ngSubmit)="onChLogoSubmit(logoFrm)" *ngIf="channel">
+        <modal-header [show-close]="true">
+            <h4 class="modal-title">Edit Channel Logo</h4>
+        </modal-header>
+        <modal-body>
+            <div class="form-group">
+                <div style="display:inline-block; width:100%">
+                    <div style="float:left">
+                        <img [src]="getUri(channel.intBitMapId)" alt="Loading..." />
+                        <div class="image-label"><label>Current Logo</label></div>
+                    </div>
+                    <div [hidden]="!newImage" style="float:right">
+                        <img id="newImage" alt="None" height="80" width="100" />
+                        <div class="image-label"><label>New Logo</label></div>
+                    </div>
+                </div>
+                <div style="clear:both">
+                    <input type="file" id="logoinput" (change)="newImageChange($event)"/>
+                </div>
+                <br />
+                <div style="padding: 5px">
+                    <select (change)="onActionChange($event)">
+                        <option value="all" selected>Update All</option>
+                        <option value="single">Create New</option>
+                    </select>
+                    <br />
+                    <label style="padding-top:10px" id ="action-desc" class="alert alert-info">Updates the logo for all stations to which this logo is currently assigned (listed below).</label>
+                </div>
+                <div *ngIf="showStations && stations">
+                    <h3>{{stations.length}} Station(s) Affected</h3>
+                    <ul>
+                        <li *ngFor="let station of stations">
+                            <div>
+                                <label class="label-left">Name: </label><div class="div-right">{{station.strStationName}}</div>
+                                <label class="label-left">Call Sign: </label><div class="div-right">{{station.strStationCallSign}}</div>
+                                <label class="label-left">Location: </label><div class="div-right">{{station.strFIOSRegionName}}</div>
+                                <label class="label-left">Ch#: </label><div class="div-right">{{station.intChannelPosition}}</div>
+                                <br />
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </modal-body>
+        <modal-footer>
+            <div *ngIf="errorMsg">{{errorMsg}}</div>
+            <div *ngIf="!errorMsg">
+                <button type="button" class="btn btn-default" data-dismiss="modalChLogo" (click)="modalChLogo.dismiss()">Cancel</button>
+                <button type="button" class="btn btn-primary" [disabled]="!modalForm" (click)="modalChLogo.Save()">Save</button>
+            </div>
+        </modal-footer>
+    </form>
+</modal>

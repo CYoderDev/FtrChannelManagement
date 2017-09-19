@@ -109,6 +109,14 @@ th:hover {
     padding: 0 !important;
 }
 
+.modal-footer {
+    clear: both;
+}
+
+.btn-edit-img {
+    margin-top: 3px;
+}
+
 @media only screen and (max-height: 1000px) {
     ag-grid-angular {
 

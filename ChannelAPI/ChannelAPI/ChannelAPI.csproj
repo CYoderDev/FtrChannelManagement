@@ -19,6 +19,7 @@
     <None Remove="app\Components\channellogo.component.ts" />
     <None Remove="app\Components\header.component.ts" />
     <None Remove="app\Service\channellogo.service.ts" />
+    <None Remove="Components\editlogo.component.ts" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CaptchaGen.NetCore" Version="1.0.2" />
@@ -53,6 +54,7 @@
     <TypeScriptCompile Include="app\Service\channel.service.ts" />
     <TypeScriptCompile Include="app\Service\channellogo.service.ts" />
     <TypeScriptCompile Include="app\order-by.pipe.ts" />
+    <TypeScriptCompile Include="app\Components\editlogo.component.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="nlog.config">

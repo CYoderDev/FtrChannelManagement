@@ -11,13 +11,13 @@ import { IChannel } from '../Models/channel'
 export class ChannelService {
     constructor(private _http: Http) { }
 
-    get(url: string): Observable<IChannel[]> {
+    get(url: string): Observable<any> {
         return this._http.get(url)
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);
     }
 
-    getBy(url: string, id: string): Observable<IChannel[]> {
+    getBy(url: string, id: string): Observable<any> {
         return this._http.get(url + id)
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);

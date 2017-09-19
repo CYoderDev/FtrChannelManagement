@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -22,6 +23,7 @@ namespace ChannelAPI.Repositories
         private string _bitmapDirectory;
         private int _logoHeight;
         private int _logoWidth;
+        private int _maxBitmapId = 10000;
         private string _logoFormat;
         private string _version;
         private ILogger _logger;
@@ -56,13 +58,22 @@ namespace ChannelAPI.Repositories
             return File.OpenRead(bitmapFullPath);
         }
 
-        public async Task<IEnumerable<BitmapStationMapDTO>> GetStationsByBitmapId(int bitmapId)
+        public async Task<IEnumerable<dynamic>> GetStationsByBitmapId(int bitmapId)
         {
-            string query = "SELECT * FROM tFiosBitmapStationMap WHERE intBitMapId = @id AND strFIOSVersionAliasId = @version";
+            StringBuilder query = new StringBuilder();
+            query.AppendLine("SELECT * FROM vChannels");
+            query.AppendLine("WHERE intBitMapId = @id AND strFIOSVersionAliasId = @version");
 
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                return await connection.QueryAsync<BitmapStationMapDTO>(query, new { id = bitmapId, version = this._version });
+                var result = await connection.QueryAsync<dynamic>(query.ToString(), new { id = bitmapId, version = this._version });
+                return result.Select(x => new {
+                    x.strFiosServiceId,
+                    x.strStationName,
+                    x.strStationCallSign,
+                    x.strVHOId,
+                    x.strFIOSRegionName
+                }).Distinct();
             }
         }
 
@@ -162,6 +173,69 @@ namespace ChannelAPI.Repositories
                     return iVal;
                 return 0;
             }).Where(x => x > 0).Distinct();
+        }
+
+        public IEnumerable<int> GetAllDuplicates(string encodedBitmap)
+        {
+            byte[] imgBytes = Convert.FromBase64String(encodedBitmap);
+
+            ConcurrentQueue<int> matchedIds = new ConcurrentQueue<int>();
+
+            using (var ms = new MemoryStream(imgBytes))
+            {
+                ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = 20 };
+                Parallel.ForEach(Directory.EnumerateFiles(this._bitmapDirectory), (file) =>
+                {
+                    using (Image img = new Bitmap(file))
+                    {
+                        using (var msSrc = new MemoryStream())
+                        {
+                            img.Save(msSrc, img.RawFormat);
+
+                            if (imgBytes.SequenceEqual(msSrc.ToArray()))
+                            {
+                                var idToAdd = filePathToBitmapId(file);
+                                if (idToAdd.HasValue)
+                                    matchedIds.Enqueue(idToAdd.Value);
+                            }
+                        }
+                    }
+                });
+            }
+
+            return matchedIds;
+        }
+
+        public int GetNextAvailableId()
+        {
+            for (int i = 1; i < this._maxBitmapId; i++)
+            {
+                string file = Path.Combine(this._bitmapDirectory, i + this._logoFormat);
+
+                if (File.Exists(file))
+                    continue;
+                else
+                    return i;
+            }
+
+            _logger.LogError("No remaining bitmap ids available in the server directory. Please extend range.");
+            throw new ApplicationException("No available bitmap ids. Please contact administrator.");
+        }
+
+        private int? filePathToBitmapId(string path)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(path);
+            int bmId;
+
+            if (int.TryParse(fileName, out bmId))
+            {
+                return bmId;
+            }
+            else
+            {
+                this._logger.LogWarning("Could not map file at {0} to a bitmapid.", path);
+                return null;
+            }
         }
 
         private async Task<int> updateBitmapDTO(IDbConnection connection, int bitmapId, Image logo)

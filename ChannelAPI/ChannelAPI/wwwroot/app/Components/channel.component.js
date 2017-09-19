@@ -11,8 +11,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@angular/core");
 const channel_service_1 = require("../Service/channel.service");
+const channellogo_service_1 = require("../Service/channellogo.service");
+const editlogo_component_1 = require("./editlogo.component");
 const forms_1 = require("@angular/forms");
-const ng2_bs3_modal_1 = require("ng2-bs3-modal/ng2-bs3-modal");
 const order_by_pipe_1 = require("../order-by.pipe");
 require("rxjs/add/operator/distinctUntilChanged");
 require("rxjs/add/operator/distinct");
@@ -26,10 +27,10 @@ require("rxjs/add/operator/toArray");
 const _ = require("lodash");
 const header_component_1 = require("./header.component");
 let ChannelComponent = class ChannelComponent {
-    constructor(fb, _channelService, _orderBy) {
+    constructor(fb, _channelService, _channelLogoService) {
         this.fb = fb;
         this._channelService = _channelService;
-        this._orderBy = _orderBy;
+        this._channelLogoService = _channelLogoService;
         this.indLoading = false;
         this.imgLoading = false;
         console.log("ChannelComponent constructor called");
@@ -127,6 +128,14 @@ let ChannelComponent = class ChannelComponent {
     }
     onRowClicked($event) {
         console.log("onRowClicked: " + $event.node.data.name);
+        if ($event.event.target !== undefined) {
+            let data = $event.data;
+            let actionType = $event.event.target.getAttribute("data-action-type");
+            switch (actionType) {
+                case "editlogo":
+                    return this.editChannelLogo($event.node.data.id);
+            }
+        }
     }
     onQuickFilterChanged($event) {
         this.gridOptions.api.setQuickFilter($event.target.value);
@@ -161,45 +170,23 @@ let ChannelComponent = class ChannelComponent {
             chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
         }
     }
-    LoadChannels() {
-        console.log("LoadChannels() called");
-        this.indLoading = true;
-        try {
-            if (this.region != null && this.region.length > 0 && this.region.toLowerCase() != 'none')
-                this.obsChannels = this._channelService.getBy('api/channel/region/', this.region);
-            else {
-                this.obsChannels = this._channelService.getBy('api/channel/vho/', this.vho);
-            }
-        }
-        catch (ex) {
-            console.error(ex);
-            throw ex;
-        }
-        this.indLoading = false;
-    }
     getUri(bitmapId) {
         if (!bitmapId)
             return;
         return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
     }
-    onSort(val, event) {
-        console.log('onSort called. param: ' + val);
-        try {
-            var target = event.target || event.srcElement || event.currentTarget;
-            if (this.channelsBrief == null)
-                return;
-            this._orderBy.transform(this.channelsBrief, [val]);
-        }
-        catch (ex) {
-            console.error(ex);
-            this.msg = ex;
-        }
+    editChannelLogo(fiosid) {
+        console.log("editChannelLogo({0})", fiosid);
+        this._channelService.getBy('api/channel/', fiosid).subscribe(x => {
+            this.channel = x;
+        });
+        this.editLogoForm.showForm = true;
     }
 };
 __decorate([
-    core_1.ViewChild('modal'),
-    __metadata("design:type", ng2_bs3_modal_1.ModalComponent)
-], ChannelComponent.prototype, "modal", void 0);
+    core_1.ViewChild(editlogo_component_1.EditLogoForm),
+    __metadata("design:type", editlogo_component_1.EditLogoForm)
+], ChannelComponent.prototype, "editLogoForm", void 0);
 __decorate([
     core_1.HostListener('window:resize', ['$event']),
     __metadata("design:type", Function),
@@ -212,19 +199,19 @@ ChannelComponent = __decorate([
         templateUrl: 'app/Components/channel.component.html',
         providers: [order_by_pipe_1.OrderBy]
     }),
-    __metadata("design:paramtypes", [forms_1.FormBuilder, channel_service_1.ChannelService, order_by_pipe_1.OrderBy])
+    __metadata("design:paramtypes", [forms_1.FormBuilder, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService])
 ], ChannelComponent);
 exports.ChannelComponent = ChannelComponent;
 function logoCellRenderer(params) {
     var htmlElements = '<div class="bg-black3d">';
     htmlElements += '<img src="/ChannelLogoRepository/' + params.value + '.png" alt="Loading" />';
     htmlElements += "<div class='editBtnWrapper'>";
-    htmlElements += '<button type="button" class="btn btn-primary btn-xs" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
+    htmlElements += '<button type="button" class="btn btn-primary btn-xs" title="Edit" data-action-type="editlogo">Edit</button>';
     htmlElements += '</div></div>';
     return htmlElements;
 }
 function actionCellRenderer(params) {
-    var htmlElements = '<button type="button" class="btn btn-primary btn-xs" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
+    var htmlElements = '<button type="button" class="btn btn-primary btn-xs" data-action-type="editlogo" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
     return htmlElements;
 }
 function defaultCellRenderer(params) {

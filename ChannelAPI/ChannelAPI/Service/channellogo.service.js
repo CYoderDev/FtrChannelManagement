@@ -19,6 +19,34 @@ let ChannelLogoService = class ChannelLogoService {
     constructor(_http) {
         this._http = _http;
     }
+    get(url) {
+        return this._http.get(url)
+            .map((response) => response.json())
+            .catch(this.handleError);
+    }
+    getBy(url, id) {
+        url = url.replace('{0}', id.toString());
+        return this._http.get(url)
+            .map((response) => response.json())
+            .catch(this.handleError);
+    }
+    getByBody(url, body) {
+        return this._http.get(url, new http_1.RequestOptions({
+            body: body
+        }))
+            .map((response) => response.json())
+            .catch(this.handleError);
+    }
+    convertToBase64(inputValue) {
+        var file = inputValue.files[0];
+        var reader = new FileReader();
+        var image;
+        reader.onloadend = (e) => {
+            image = reader.result;
+        };
+        reader.readAsDataURL(file);
+        return image;
+    }
     handleError(error) {
         console.error(error);
         return Observable_1.Observable.throw(error.json().error || 'Server error');

@@ -104,6 +104,43 @@ namespace ChannelAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+
+        /// <summary>
+        /// Gets all duplicates of the provided image and returns their bitmap ids
+        /// </summary>
+        /// <param name="base64img">Base64 encoded image string from request body</param>
+        /// <returns>int[]</returns>
+        /// <example>GET: api/channellogo/image/duplicate</example>
+        [HttpGet("image/duplicate")]
+        public IActionResult GetDuplicates([FromBody]string base64img)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(base64img))
+                    return BadRequest();
+                
+                return Json(this._bitmapRepo.GetAllDuplicates(base64img));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet("nextid")]
+        public IActionResult GetNextId()
+        {
+            try
+            {
+                return Json(this._bitmapRepo.GetNextAvailableId());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
         #endregion GET
 
         #region POST
