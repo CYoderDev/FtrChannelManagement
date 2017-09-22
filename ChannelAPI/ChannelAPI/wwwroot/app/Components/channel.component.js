@@ -33,6 +33,7 @@ let ChannelComponent = class ChannelComponent {
         this._channelLogoService = _channelLogoService;
         this.indLoading = false;
         this.imgLoading = false;
+        this.showChannelInfo = true;
         console.log("ChannelComponent constructor called");
         this.gridOptions = {};
         this.showGrid = true;
@@ -128,14 +129,20 @@ let ChannelComponent = class ChannelComponent {
     }
     onRowClicked($event) {
         console.log("onRowClicked: " + $event.node.data.name);
+        this.loadChannel($event.node.data.id, $event.node.data.region);
         if ($event.event.target !== undefined) {
             let data = $event.data;
             let actionType = $event.event.target.getAttribute("data-action-type");
             switch (actionType) {
                 case "editlogo":
-                    return this.editChannelLogo($event.node.data.id);
+                    return this.editLogoForm.showForm = true;
+                default:
+                    return this.editLogoForm.showForm = false;
             }
         }
+    }
+    toggleChannelInfo($event) {
+        this.showChannelInfo = !this.showChannelInfo;
     }
     onQuickFilterChanged($event) {
         this.gridOptions.api.setQuickFilter($event.target.value);
@@ -175,12 +182,11 @@ let ChannelComponent = class ChannelComponent {
             return;
         return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
     }
-    editChannelLogo(fiosid) {
-        console.log("editChannelLogo({0})", fiosid);
-        this._channelService.getBy('api/channel/', fiosid).subscribe(x => {
-            this.channel = x;
+    loadChannel(fiosid, region) {
+        console.log("loadChannel", fiosid);
+        this._channelService.getBy('api/channel/', fiosid).subscribe((x) => {
+            this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
         });
-        this.editLogoForm.showForm = true;
     }
 };
 __decorate([
@@ -211,7 +217,7 @@ function logoCellRenderer(params) {
     return htmlElements;
 }
 function actionCellRenderer(params) {
-    var htmlElements = '<button type="button" class="btn btn-primary btn-xs" data-action-type="editlogo" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
+    var htmlElements = '<button type="button" class="btn btn-primary btn-xs btn-edit-img" data-action-type="editlogo" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
     return htmlElements;
 }
 function defaultCellRenderer(params) {

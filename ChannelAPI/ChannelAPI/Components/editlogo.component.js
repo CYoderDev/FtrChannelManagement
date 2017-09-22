@@ -38,12 +38,11 @@ let EditLogoForm = class EditLogoForm {
         this.action = editLogoAction.all;
     }
     set channel(value) {
-        console.log("set channel called");
-        if (value && value != this.channel && this.action == editLogoAction.all) {
+        if (value && value != this.channel && this.action == editLogoAction.all && this.showForm) {
+            console.log("set channel called");
+            console.log('opening modal');
             this._channel = value;
             this.loadStations();
-            this.showForm = true;
-            console.log('opening modal');
             this.modalChLogo.open();
         }
     }

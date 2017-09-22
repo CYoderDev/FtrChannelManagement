@@ -15,7 +15,7 @@ namespace ChannelAPI.Models
         public DateTime dtCreateDate { get; set; }
         public DateTime dtLastUpdateDate { get; set; }
         public int iPriority { get; set; }
-        public bool IsHD { get; set; }
+        public string IsHD { get; set; }
         public int iEquivelentGenre { get; set; }
     }
 }

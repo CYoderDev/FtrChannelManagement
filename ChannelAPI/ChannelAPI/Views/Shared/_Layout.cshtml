@@ -7,10 +7,10 @@
     <title>@ViewData["Title"] - ChannelManager</title>
 
     <environment names="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        @*<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />*@
         <link rel="stylesheet" href="~/css/site.css" />
         <link rel="stylesheet" href="~/lib/ag-grid/dist/styles/ag-grid.css" />
-        <link rel="stylesheet" href="~/lib/ag-grid//dist//styles/theme-fresh.css" />
+        <link rel="stylesheet" href="~/lib/ag-grid/dist/styles/theme-fresh.css" />
         <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.min.css" />
     </environment>
     <environment names="Staging,Production">
@@ -19,14 +19,14 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    @*<script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
     <script src="~/lib/core-js/client/shim.min.js"></script>
     <script src="~/lib/zone.js/dist/zone.js"></script>
     <script src="~/lib/systemjs/dist/system.src.js"></script>
-    <script src="~/lib/systemjs/dist/system.src.js"></script>
-
     <script src="~/js/systemjs.config.js"></script>
     <script>
         System.import('app').catch(function (err) { console.error(err); });

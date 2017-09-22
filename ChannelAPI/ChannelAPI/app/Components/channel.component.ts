@@ -17,7 +17,6 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/operator/toArray';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import * as _ from 'lodash';
 import { GridOptions } from 'ag-grid/main';
 import { HeaderComponent } from './header.component';
@@ -39,6 +38,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
     channelFrm: FormGroup;
     indLoading: boolean = false;
     imgLoading: boolean = false;
+    showChannelInfo: boolean = true;
     msg: string;
     logo: any
 
@@ -53,7 +53,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
         this.gridOptions = <GridOptions>{
  
         };
-
+        
         this.showGrid = true;
         this.gridOptions.defaultColDef = {
             headerComponentFramework: <{ new (): HeaderComponent }>HeaderComponent,
@@ -157,15 +157,24 @@ export class ChannelComponent implements OnInit, AfterViewInit
 
     private onRowClicked($event) {
         console.log("onRowClicked: " + $event.node.data.name);
+
+        this.loadChannel($event.node.data.id, $event.node.data.region);
+
         if ($event.event.target !== undefined) {
             let data = $event.data;
             let actionType = $event.event.target.getAttribute("data-action-type");
-
+            
             switch (actionType) {
                 case "editlogo":
-                    return this.editChannelLogo($event.node.data.id);
+                    return this.editLogoForm.showForm = true;
+                default:
+                    return this.editLogoForm.showForm = false;
             }
         }
+    }
+
+    private toggleChannelInfo($event) {
+        this.showChannelInfo = !this.showChannelInfo;
     }
 
     public onQuickFilterChanged($event) {
@@ -219,26 +228,11 @@ export class ChannelComponent implements OnInit, AfterViewInit
         return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
     }
 
-    editChannelLogo(fiosid: string) {
-        console.log("editChannelLogo({0})", fiosid);
-        this._channelService.getBy('api/channel/', fiosid).subscribe(x => {
-            this.channel = x;
+    loadChannel(fiosid: string, region: string) {
+        console.log("loadChannel", fiosid);
+        this._channelService.getBy('api/channel/', fiosid).subscribe((x: IChannel[]) => {
+            this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
         });
-
-        //var stations;
-
-        //this._channelLogoService.getBy('api/channellogo/{0}/stations', this.channel.intBitMapId).subscribe(x => {
-        //    stations = x;
-        //});
-
-        ////Notify user that there are multiple stations assigned to this bitmap id.
-        ////User can either select to assign a new image to all stations, or just the selected station.
-        //if (stations && stations.length > 0)
-        //{
-
-        //}
-
-        this.editLogoForm.showForm = true;
     }
 }
 

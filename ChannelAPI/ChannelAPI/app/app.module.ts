@@ -12,6 +12,7 @@ import { ChannelService } from './Service/channel.service';
 import { ChannelComponent } from './Components/channel.component';
 import { ChannelLogoComponent } from './Components/channellogo.component';
 import { EditLogoForm } from './Components/editlogo.component';
+import { ChannelInfoComponent } from './Components/channelinfo.component';
 import { ChannelLogoService } from './Service/channellogo.service';
 import { HeaderComponent } from './Components/header.component';
 import { OrderBy } from './order-by.pipe';
@@ -22,7 +23,7 @@ import { OrderBy } from './order-by.pipe';
             HeaderComponent
         ]
     )],
-    declarations: [AppComponent, ChannelComponent, ChannelLogoComponent, OrderBy, HeaderComponent, EditLogoForm],
+    declarations: [AppComponent, ChannelComponent, ChannelLogoComponent, OrderBy, HeaderComponent, EditLogoForm, ChannelInfoComponent],
     providers: [{ provide: APP_BASE_HREF, useValue: '/' }, ChannelService, ChannelLogoService],
     bootstrap: [AppComponent]
 })

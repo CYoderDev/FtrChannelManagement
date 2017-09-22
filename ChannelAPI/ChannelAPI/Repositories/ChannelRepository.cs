@@ -43,9 +43,16 @@ namespace ChannelAPI.Repositories
 
         public async Task<ChannelDTO> FindByIDAsync(string id)
         {
+            throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<ChannelDTO>> FindAllByIDAsync(string id)
+        {
+            var query = getQuery(this._version);
+            query.AppendFormat("AND a.strFIOSServiceId = {0}", id);
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                return await connection.GetAsync<ChannelDTO>(id);
+                return await connection.QueryAsync<ChannelDTO>(query.ToString());
             }
         }
 
@@ -119,6 +126,14 @@ namespace ChannelAPI.Repositories
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
                 return await connection.QueryAsync<ChannelDTO>(query.ToString());
+            }
+        }
+
+        public async Task<FiosStationGenre> GetByGenreId(int id)
+        {
+            using (var connection = await DapperFactory.GetOpenConnectionAsync())
+            {
+                return await connection.GetAsync<FiosStationGenre>(id);
             }
         }
 

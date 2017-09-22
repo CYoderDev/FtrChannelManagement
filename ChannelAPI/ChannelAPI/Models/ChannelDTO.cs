@@ -25,6 +25,7 @@ namespace ChannelAPI.Models
         public int iStationGenreID { get; set; }
         public string strStationFlagId { get; set; }
         public string strStationFlagValue { get; set; }
+        public string strStationGenre { get; set; }
         public string TMSId { get; set; }
     }
 }

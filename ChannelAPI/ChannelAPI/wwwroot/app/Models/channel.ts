@@ -11,8 +11,9 @@ export interface IChannel {
     strFIOSRegionName: string,
     strStationDescription: string,
     strDataProviderStationName: string,
-    iStationGenreId: number,
+    iStationGenreID: number,
     strStationFlagId: string,
     strStationFlagValue: string,
+    strStationGenre: string,
     TMSId: string
 }

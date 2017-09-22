@@ -26,12 +26,12 @@ export class EditLogoForm implements OnInit
 {
     @ViewChild('modalChLogo') modalChLogo: ModalComponent;
     @Input() set channel(value: IChannel) {
-        console.log("set channel called");
-        if (value && value != this.channel && this.action == editLogoAction.all) {
+        
+        if (value && value != this.channel && this.action == editLogoAction.all && this.showForm) {
+            console.log("set channel called");
+            console.log('opening modal');
             this._channel = value;
             this.loadStations();
-            this.showForm = true;
-            console.log('opening modal');
             this.modalChLogo.open();
         }
     };

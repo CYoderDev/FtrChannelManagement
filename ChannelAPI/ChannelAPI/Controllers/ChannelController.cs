@@ -63,6 +63,22 @@ namespace ChannelAPI.Controllers
             }
         }
 
+        [HttpGet("genre/{id}")]
+        public async Task<IActionResult> GetByGenre(int id)
+        {
+            try
+            {
+                _logger.LogTrace("Begin. params: {0}", id);
+                var genre = await this._channelRepo.GetByGenreId(id);
+                return Json(genre);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
         /// <summary>
         /// Get all channel information by VHO id
         /// </summary>
@@ -185,11 +201,11 @@ namespace ChannelAPI.Controllers
             {
                 _logger.LogTrace("Begin. params: {0}", id);
                 var channelRepo = new ChannelRepository(this._config);
-                var channel = await channelRepo.FindByIDAsync(id);
-                if (channel == null)
+                var channels = await channelRepo.FindAllByIDAsync(id);
+                if (!channels.Any())
                     return NotFound();
                 else
-                    return Json(channel);
+                    return Json(channels);
             }
             catch(Exception ex)
             {
