@@ -18,6 +18,7 @@ namespace ChannelAPI.Repositories
         private string _version;
         private ILogger _logger;
         private IEnumerable<string> _vhos;
+        private const string TABLENAME = "tFIOSRegion";
 
         public RegionRepository(IConfiguration config, ILoggerFactory loggerFactory)
         {
@@ -37,17 +38,16 @@ namespace ChannelAPI.Repositories
 
         public async Task<IEnumerable<string>> GetActiveVHOs()
         {
-            var query = new StringBuilder();
-            query.AppendLine("SELECT strVHOId FROM tFiosRegion WHERE strVHOId IN (@vhos)");
+            var query = string.Format("SELECT DISTINCT strVHOId FROM {0} WHERE strVHOId IN ({1})", TABLENAME, string.Join(',', this._vhos.Select(x => '\'' + x + '\'')));
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {
-                return await connection.QueryAsync<string>(query.ToString(), new { vhos = string.Join(',', this._vhos) });
+                return await connection.QueryAsync<string>(query);
             }
         }
 
         public async Task<IEnumerable<string>> GetActiveRegions()
         {
-            var query = "SELECT strFIOSRegionName FROM tFiosRegion WHERE strVHOId IN (@vhos)";
+            var query = string.Format("SELECT DISTINCT strFIOSRegionName FROM {0} WHERE strVHOId IN ({1})", TABLENAME, string.Join(',', this._vhos.Select(x => '\'' + x + '\'')));
 
             using (var connection = await DapperFactory.GetOpenConnectionAsync())
             {

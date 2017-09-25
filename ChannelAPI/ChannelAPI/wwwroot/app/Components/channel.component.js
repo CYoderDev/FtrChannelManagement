@@ -14,7 +14,6 @@ const channel_service_1 = require("../Service/channel.service");
 const channellogo_service_1 = require("../Service/channellogo.service");
 const editlogo_component_1 = require("./editlogo.component");
 const forms_1 = require("@angular/forms");
-const order_by_pipe_1 = require("../order-by.pipe");
 require("rxjs/add/operator/distinctUntilChanged");
 require("rxjs/add/operator/distinct");
 require("rxjs/add/operator/map");
@@ -24,6 +23,7 @@ require("rxjs/add/operator/catch");
 require("rxjs/add/observable/of");
 require("rxjs/add/observable/from");
 require("rxjs/add/operator/toArray");
+require("rxjs/add/operator/finally");
 const _ = require("lodash");
 const header_component_1 = require("./header.component");
 let ChannelComponent = class ChannelComponent {
@@ -52,7 +52,7 @@ let ChannelComponent = class ChannelComponent {
             StationName: [''],
             BitMapId: ['10000']
         });
-        this.vho = '1';
+        this.loadVhos();
     }
     ngAfterViewInit() {
         console.log("ngAfterViewInit called");
@@ -63,7 +63,8 @@ let ChannelComponent = class ChannelComponent {
             return { id: ch.strFIOSServiceId, call: ch.strStationCallSign, name: ch.strStationName, num: ch.intChannelPosition, region: ch.strFIOSRegionName, logoid: ch.intBitMapId };
         }))
             .subscribe(chb => {
-            this.gridOptions.api.setRowData(_.uniqBy(chb, 'num'));
+            this.gridOptions.api.setRowData(_.uniqBy(chb, function (ch) { return [ch.num, ch.region].join(); }));
+            this.gridOptions.api.hideOverlay();
         }, error => this.msg = error);
     }
     createColumnDefs() {
@@ -116,7 +117,7 @@ let ChannelComponent = class ChannelComponent {
     }
     onReady() {
         console.log('onReady');
-        this.createRowData();
+        this.gridOptions.api.showLoadingOverlay();
         this.createColumnDefs();
         this.gridOptions.columnApi.autoSizeAllColumns();
         this.gridOptions.onGridSizeChanged = this.onGridSizeChanged;
@@ -159,6 +160,21 @@ let ChannelComponent = class ChannelComponent {
             $event.api.sizeColumnsToFit();
         }
     }
+    onVhoSelect($event) {
+        this.gridOptions.api.showLoadingOverlay();
+        if (this.channel)
+            this.channel = undefined;
+        this.vhoSelect($event.target.value);
+    }
+    vhoSelect(vhoName) {
+        var vho = vhoName.toLowerCase().startsWith('vho') ? vhoName.toLowerCase().replace('vho', '') : vhoName;
+        if (this.vho != vho)
+            if (this.vho != vho) {
+                this.vho = vho;
+                this.createRowData();
+                this.gridOptions.api.redrawRows();
+            }
+    }
     columnResize() {
         console.log("columnResize");
         if (this.gridOptions.api && this.columnDefs) {
@@ -171,11 +187,7 @@ let ChannelComponent = class ChannelComponent {
         var chMgmtPrimary = document.getElementById("main-grid");
         var navbarHeight = document.getElementById("main-navbar").offsetHeight;
         var footerHeight = document.getElementById("footer").offsetHeight;
-        if (this.channel) {
-        }
-        else {
-            chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
-        }
+        chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
     }
     getUri(bitmapId) {
         if (!bitmapId)
@@ -187,6 +199,18 @@ let ChannelComponent = class ChannelComponent {
         this._channelService.getBy('api/channel/', fiosid).subscribe((x) => {
             this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
         });
+    }
+    loadVhos() {
+        console.log("loadVhos");
+        this._channelService.get('api/region/vho')
+            .finally(() => {
+            console.log("loadVhos => finally");
+            if (!this.vho && this.vhos)
+                this.vhoSelect(this.vhos[0]);
+        })
+            .subscribe((x) => {
+            this.vhos = x;
+        }, error => this.msg = error);
     }
 };
 __decorate([
@@ -203,7 +227,6 @@ ChannelComponent = __decorate([
     core_1.Component({
         selector: 'home',
         templateUrl: 'app/Components/channel.component.html',
-        providers: [order_by_pipe_1.OrderBy]
     }),
     __metadata("design:paramtypes", [forms_1.FormBuilder, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService])
 ], ChannelComponent);

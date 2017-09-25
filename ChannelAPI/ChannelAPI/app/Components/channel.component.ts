@@ -6,7 +6,6 @@ import { EditLogoForm } from './editlogo.component'
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalComponent } from 'ng2-bs3-modal/ng2-bs3-modal';
 import { IChannel } from '../Models/channel';
-import { OrderBy } from '../order-by.pipe';
 import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/distinct';
 import { Observable } from 'rxjs/Observable';
@@ -17,6 +16,7 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/operator/toArray';
+import 'rxjs/add/operator/finally';
 import * as _ from 'lodash';
 import { GridOptions } from 'ag-grid/main';
 import { HeaderComponent } from './header.component';
@@ -24,7 +24,6 @@ import { HeaderComponent } from './header.component';
 @Component({
     selector: 'home',
     templateUrl: 'app/Components/channel.component.html',
-    providers: [OrderBy]
 })
 
 export class ChannelComponent implements OnInit, AfterViewInit
@@ -33,8 +32,8 @@ export class ChannelComponent implements OnInit, AfterViewInit
     channels: IChannel[];
     channel: IChannel;
     channelsBrief: any;
+    vhos: {};
     vho: string;
-    region: string;
     channelFrm: FormGroup;
     indLoading: boolean = false;
     imgLoading: boolean = false;
@@ -71,7 +70,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
             StationName: [''],
             BitMapId: ['10000']
         });
-        this.vho = '1';
+        this.loadVhos();
     }
 
     ngAfterViewInit(): void {
@@ -85,7 +84,8 @@ export class ChannelComponent implements OnInit, AfterViewInit
             return { id: ch.strFIOSServiceId, call: ch.strStationCallSign, name: ch.strStationName, num: ch.intChannelPosition, region: ch.strFIOSRegionName, logoid: ch.intBitMapId };
         }))
             .subscribe(chb => {
-                this.gridOptions.api.setRowData(_.uniqBy(chb, 'num'));
+                this.gridOptions.api.setRowData(_.uniqBy(chb, function (ch: any) { return [ch.num, ch.region].join()}));
+                this.gridOptions.api.hideOverlay();
             }, error => this.msg = <any>error);
         
     }
@@ -141,7 +141,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
 
     private onReady() {
         console.log('onReady');
-        this.createRowData();
+        this.gridOptions.api.showLoadingOverlay();
         this.createColumnDefs();
         this.gridOptions.columnApi.autoSizeAllColumns();
         this.gridOptions.onGridSizeChanged = this.onGridSizeChanged;
@@ -196,6 +196,24 @@ export class ChannelComponent implements OnInit, AfterViewInit
         }
     }
 
+    private onVhoSelect($event) {
+        this.gridOptions.api.showLoadingOverlay();
+        if (this.channel)
+            this.channel = undefined;
+        this.vhoSelect($event.target.value);
+    }
+
+    private vhoSelect(vhoName: string)
+    {
+        var vho = vhoName.toLowerCase().startsWith('vho') ? vhoName.toLowerCase().replace('vho', '') : vhoName;
+        if (this.vho != vho)
+            if (this.vho != vho) {
+                this.vho = vho;
+                this.createRowData();
+                this.gridOptions.api.redrawRows();
+            }
+    }
+
     private columnResize() {
         console.log("columnResize");
         if (this.gridOptions.api && this.columnDefs) {
@@ -212,14 +230,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
         var navbarHeight = document.getElementById("main-navbar").offsetHeight;
         var footerHeight = document.getElementById("footer").offsetHeight;
 
-        if (this.channel)
-        {
-
-        }
-        else
-        {
-            chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
-        }
+        chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
     }
 
     getUri(bitmapId: number) {
@@ -233,6 +244,19 @@ export class ChannelComponent implements OnInit, AfterViewInit
         this._channelService.getBy('api/channel/', fiosid).subscribe((x: IChannel[]) => {
             this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
         });
+    }
+
+    loadVhos() {
+        console.log("loadVhos");
+        this._channelService.get('api/region/vho')
+            .finally(() => {
+                console.log("loadVhos => finally");
+                if (!this.vho && this.vhos)
+                    this.vhoSelect(this.vhos[0]);
+            })
+            .subscribe((x: string) => {
+                this.vhos = x;
+            }, error => this.msg = <any>error);
     }
 }
 

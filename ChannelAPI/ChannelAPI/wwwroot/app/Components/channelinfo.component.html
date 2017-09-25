@@ -5,26 +5,42 @@
     <div class="row">
         <div class="col-lg-6 col-md-6 col-sm-5 col-xs-6">
             <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3">
                     <label>Name:</label>
                 </div>
-                <div class="col-lg-9 col-md-9 col-sm-9 col-xs-9">
+                <div class="col-lg-8 col-md-8 col-sm-9 col-xs-9">
                     <span>{{channel.strStationName}}</span>
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3">
                     <label>Call Sign:</label>
                 </div>
-                <div class="col-lg-9 col-md-9 col-sm-9 col-xs-9">
+                <div class="col-lg-8 col-md-8 col-sm-9 col-xs-9">
                     <span>{{channel.strStationCallSign}}</span>
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3">
+                    <label>Provider ID:</label>
+                </div>
+                <div class="col-lg-8 col-md-8 col-sm-7 col-xs-9">
+                    <span>{{channel.tmsId}}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3">
+                    <label>Logo Last Updated:</label>
+                </div>
+                <div class="col-lg-8 col-md-8 col-sm-7 col-xs-9">
+                    <span>{{channel.dtCreateDate | date: 'M/d/yy h:mm a Z'}}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-3 col-xs-3">
                     <label>Description:</label>
                 </div>
-                <div class="col-lg-9 col-md-3 col-sm-9 col-xs-9">
+                <div class="col-lg-8 col-md-8 col-sm-9 col-xs-9">
                     <span>{{channel.strStationDescription}}</span>
                 </div>
             </div>

@@ -10,6 +10,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@angular/core");
+require("rxjs/add/operator/filter");
+require("rxjs/add/operator/finally");
 const channel_service_1 = require("../Service/channel.service");
 let ChannelInfoComponent = class ChannelInfoComponent {
     constructor(_channelService) {
@@ -17,20 +19,35 @@ let ChannelInfoComponent = class ChannelInfoComponent {
     }
     set channel(value) {
         this._channel = value;
-        this.loadRegions();
+        if (this._activeRegions)
+            this.loadRegions();
     }
     get channel() { return this._channel; }
     ;
     ngOnInit() {
+        this.getActiveRegions();
+    }
+    getActiveRegions() {
+        console.log('getActiveRegions called');
+        this._channelService.get('/api/region/active')
+            .finally(() => {
+            this.loadRegions();
+        })
+            .subscribe(x => {
+            this._activeRegions = x;
+        });
     }
     loadRegions() {
         console.log('loadRegions called');
         if (!this._channel) {
             return;
         }
-        let channels;
         this._channelService.getBy('/api/channel/', this._channel.strFIOSServiceId)
-            .map(arr => arr.map((ch) => {
+            .map(arr => arr
+            .filter(ch => {
+            return this._activeRegions.includes(ch.strFIOSRegionName);
+        })
+            .map((ch) => {
             return { name: ch.strFIOSRegionName, channel: ch.intChannelPosition, genre: ch.strStationGenre };
         }))
             .subscribe(x => {

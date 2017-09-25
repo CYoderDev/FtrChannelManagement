@@ -15,5 +15,5 @@ export interface IChannel {
     strStationFlagId: string,
     strStationFlagValue: string,
     strStationGenre: string,
-    TMSId: string
+    tmsId: string
 }

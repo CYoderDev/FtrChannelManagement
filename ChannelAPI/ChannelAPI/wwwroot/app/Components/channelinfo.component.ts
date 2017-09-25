@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import * as _ from 'lodash';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/finally'
 import { ChannelService } from '../Service/channel.service';
 import { IChannel } from '../Models/channel';
 
@@ -13,9 +15,11 @@ export class ChannelInfoComponent implements OnInit {
 
     @Input() set channel (value: IChannel){
         this._channel = value;
-        this.loadRegions();
+        if (this._activeRegions)
+            this.loadRegions();
     } get channel(){ return this._channel; };
     _channel: IChannel;
+    _activeRegions: string[];
     regions: {};
     
     constructor(private _channelService: ChannelService)
@@ -24,19 +28,34 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.getActiveRegions();
+    }
 
+    getActiveRegions() {
+        console.log('getActiveRegions called');
+
+        this._channelService.get('/api/region/active')
+            .finally(() => { 
+                this.loadRegions();
+            })
+            .subscribe(x => {
+                this._activeRegions = x;
+            });
     }
 
     loadRegions() {
         console.log('loadRegions called');
         if (!this._channel) { return; }
 
-        let channels: IChannel[];
         this._channelService.getBy('/api/channel/', this._channel.strFIOSServiceId)
-            .map(arr => arr.map((ch: IChannel) =>
-            {
-                return { name: ch.strFIOSRegionName, channel: ch.intChannelPosition, genre: ch.strStationGenre };
-            }))
+            .map(arr => arr
+                .filter(ch => {
+                    return this._activeRegions.includes(ch.strFIOSRegionName);
+                })
+                .map((ch: IChannel) => {
+                    return { name: ch.strFIOSRegionName, channel: ch.intChannelPosition, genre: ch.strStationGenre };
+                })
+            )
             .subscribe(x => {
                 this.regions = x;
             });

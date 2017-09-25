@@ -83,8 +83,13 @@ namespace ChannelAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Get all active regions based on the application configuration
+        /// </summary>
+        /// <returns>string values in json format</returns>
+        /// <example>/api/region/active</example>
         [AllowAnonymous]
-        [HttpGet("region/active")]
+        [HttpGet("active")]
         public async Task<IActionResult> GetActiveRegions()
         {
             try
@@ -102,29 +107,28 @@ namespace ChannelAPI.Controllers
             }
         }
 
-        // GET api/values/5
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
             return NotFound();
         }
 
-        // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        public IActionResult Post([FromBody]string value)
         {
+            return NotFound();
         }
 
-        // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public IActionResult Put(int id, [FromBody]string value)
         {
+            return NotFound();
         }
 
-        // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            return NotFound();
         }
     }
 }

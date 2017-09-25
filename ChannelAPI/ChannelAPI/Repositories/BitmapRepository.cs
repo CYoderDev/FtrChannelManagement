@@ -68,11 +68,12 @@ namespace ChannelAPI.Repositories
             {
                 var result = await connection.QueryAsync<dynamic>(query.ToString(), new { id = bitmapId, version = this._version });
                 return result.Select(x => new {
-                    x.strFiosServiceId,
+                    x.strFIOSServiceId,
                     x.strStationName,
                     x.strStationCallSign,
                     x.strVHOId,
-                    x.strFIOSRegionName
+                    x.strFIOSRegionName,
+                    x.intChannelPosition
                 }).Distinct();
             }
         }

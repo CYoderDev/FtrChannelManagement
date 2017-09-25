@@ -47,3 +47,7 @@ h4 {
     background-color: black;
     margin: 0 0 10px 0;
 }
+
+.row {
+    margin-right: 0 !important;
+}
