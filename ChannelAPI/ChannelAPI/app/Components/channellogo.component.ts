@@ -1,7 +1,6 @@
 ﻿import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { ChannelLogoService } from '../Service/channellogo.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ModalComponent } from 'ng2-bs3-modal/ng2-bs3-modal';
 import { Observable } from 'rxjs/Rx';
 
 @Component({

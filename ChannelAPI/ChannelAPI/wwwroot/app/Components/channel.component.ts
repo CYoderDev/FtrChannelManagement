@@ -1,28 +1,20 @@
 import { Component, OnInit, ViewChild, ViewContainerRef, AfterViewInit, HostListener } from '@angular/core';
 import { ChannelService } from '../Service/channel.service';
 import { ChannelLogoService } from '../Service/channellogo.service'
-import { ChannelLogoComponent } from './channellogo.component';
 import { EditLogoForm } from './editlogo.component'
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ModalComponent } from 'ng2-bs3-modal/ng2-bs3-modal';
 import { IChannel } from '../Models/channel';
-import 'rxjs/add/operator/distinctUntilChanged';
-import 'rxjs/add/operator/distinct';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/observable/from';
-import 'rxjs/add/operator/toArray';
 import 'rxjs/add/operator/finally';
 import * as _ from 'lodash';
 import { GridOptions } from 'ag-grid/main';
 import { HeaderComponent } from './header.component';
+import { ImageCellRendererComponent } from './imagecellrender.component';
 
 @Component({
-    selector: 'home',
+    selector: 'channel-manager',
     templateUrl: 'app/Components/channel.component.html',
 })
 
@@ -34,9 +26,9 @@ export class ChannelComponent implements OnInit, AfterViewInit
     channelsBrief: any;
     vhos: {};
     vho: string;
-    channelFrm: FormGroup;
     indLoading: boolean = false;
     imgLoading: boolean = false;
+    private updateChannel: boolean = false;
     showChannelInfo: boolean = true;
     msg: string;
     logo: any
@@ -47,10 +39,10 @@ export class ChannelComponent implements OnInit, AfterViewInit
     public showGrid: boolean;
     private columnDefs: any[];
     
-    constructor(private fb: FormBuilder, private _channelService: ChannelService, private _channelLogoService: ChannelLogoService) {
+    constructor(private _channelService: ChannelService, private _channelLogoService: ChannelLogoService) {
         console.log("ChannelComponent constructor called");
         this.gridOptions = <GridOptions>{
- 
+            getRowNodeId: function (data) { return data.id + data.region + data.num }
         };
         
         this.showGrid = true;
@@ -64,12 +56,6 @@ export class ChannelComponent implements OnInit, AfterViewInit
 
     ngOnInit(): void {
         console.log("channelcomponent: ngOnInit() called");
-        this.channelFrm = this.fb.group({
-            Id: [''],
-            CallSign: [''],
-            StationName: [''],
-            BitMapId: ['10000']
-        });
         this.loadVhos();
     }
 
@@ -96,13 +82,15 @@ export class ChannelComponent implements OnInit, AfterViewInit
             {
                 headerName: 'Service ID',
                 field: 'id',
+                minWidth: 115,
                 unSortIcon: false,
                 cellClass: function (params) { return (params.value = 'center-cell') },
-                cellRenderer: defaultCellRenderer
+                cellRenderer: defaultCellRenderer,
             },
             {
                 headerName: 'Channel #',
                 field: 'num',
+                minWidth: 112,
                 sort: 'asc',
                 unSortIcon: false,
                 cellClass: function (params) { return (params.value = 'center-cell') },
@@ -111,6 +99,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
             {
                 headerName: 'Call Sign',
                 field: 'call',
+                minWidth: 105,
                 unSortIcon: false,
                 cellClass: function (params) { return (params.value = 'center-cell') },
                 cellRenderer: defaultCellRenderer
@@ -119,20 +108,24 @@ export class ChannelComponent implements OnInit, AfterViewInit
                 headerName: 'Station Name',
                 field: 'name',
                 unSortIcon: false,
+                minWidth: 135,
                 cellClass: function (params) { return (params.value = 'center-cell') },
                 cellRenderer: defaultCellRenderer
             },
             {
                 headerName: 'Region',
                 field: 'region',
+                minWidth: 95,
                 unSortIcon: false,
                 cellClass: function (params) { return (params.value = 'center-cell') },
                 cellRenderer: defaultCellRenderer
             },
             {
                 headerName: 'Logo',
-                cellRenderer: logoCellRenderer,
+                cellRendererFramework: ImageCellRendererComponent,
                 field: 'logoid',
+                minWidth: 90,
+                colId: 'logo',
                 suppressFilter: true,
                 suppressSorting: true,
             }
@@ -145,6 +138,8 @@ export class ChannelComponent implements OnInit, AfterViewInit
         this.createColumnDefs();
         this.gridOptions.columnApi.autoSizeAllColumns();
         this.gridOptions.onGridSizeChanged = this.onGridSizeChanged;
+        this.flexWidth(window.innerWidth);
+        this.fitGridHeight(window.innerHeight);
     }
 
     private onRowSelected($event) {
@@ -157,20 +152,22 @@ export class ChannelComponent implements OnInit, AfterViewInit
 
     private onRowClicked($event) {
         console.log("onRowClicked: " + $event.node.data.name);
-
-        this.loadChannel($event.node.data.id, $event.node.data.region);
-
+        $event.node.setSelected(true, true);
         if ($event.event.target !== undefined) {
             let data = $event.data;
             let actionType = $event.event.target.getAttribute("data-action-type");
-            
+
             switch (actionType) {
                 case "editlogo":
-                    return this.editLogoForm.showForm = true;
+                    this.editLogoForm.OpenForm();
+                    this.editLogoForm.showForm = true;
+                    break;
                 default:
-                    return this.editLogoForm.showForm = false;
+                    this.editLogoForm.showForm = false;
             }
         }
+
+        this.loadChannel($event.node.data.id, $event.node.data.region);
     }
 
     private toggleChannelInfo($event) {
@@ -221,16 +218,64 @@ export class ChannelComponent implements OnInit, AfterViewInit
         }
     }
 
+    updateRow($event) {
+        console.log("updateRow called", $event);
+        this.updateChannel = true;
+        this.loadChannel($event, this.channel.strFIOSRegionName);
+    }
+
     @HostListener('window:resize', ['$event'])
     onWindowResize(event)
     {
         console.log("onWindowsResize");
         let windowHeight = event.target.innerHeight;
+        this.flexWidth(window.innerWidth);
+        this.fitGridHeight(windowHeight);
+        //var chMgmtPrimary = document.getElementById("main-grid");
+        //var navbarHeight = document.getElementById("main-navbar").offsetHeight;
+        //var footerHeight = document.getElementById("footer").offsetHeight;
+
+        //chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
+    }
+
+    private flexWidth(width: number) {
+        console.log("flexWidth", width);
+        var rowHeight = this.gridOptions.rowHeight;
+        if (width <= 500) {
+            this.gridOptions.rowHeight = 70;
+            this.gridOptions.floatingFilter = false;
+        }
+        else if (width <= 768) {
+            this.gridOptions.rowHeight = 78;
+            this.gridOptions.floatingFilter = false;
+        }
+        else if (width <= 992) {
+            this.gridOptions.rowHeight = 100;
+            this.gridOptions.floatingFilter = true;
+        }
+        else {
+            this.gridOptions.rowHeight = 110;
+            this.gridOptions.floatingFilter = true;
+        }
+        if (rowHeight != this.gridOptions.rowHeight)
+            this.gridOptions.api.resetRowHeights();
+    }
+
+    private fitGridHeight(height?: number) {
+        console.log("fitGridHeight", height);
+
+        if (height == null)
+            height = window.innerHeight;
+
         var chMgmtPrimary = document.getElementById("main-grid");
         var navbarHeight = document.getElementById("main-navbar").offsetHeight;
         var footerHeight = document.getElementById("footer").offsetHeight;
+        var chDetailHeight = this.channel ? chDetailHeight = document.getElementById("chan-detail").offsetHeight : 0;
 
-        chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
+        if (chDetailHeight > (height * .2))
+            chDetailHeight = height * .2;
+        
+        chMgmtPrimary.style.height = (height * .81 - footerHeight - navbarHeight - (chDetailHeight) ).toString() + "px";
     }
 
     getUri(bitmapId: number) {
@@ -241,9 +286,37 @@ export class ChannelComponent implements OnInit, AfterViewInit
 
     loadChannel(fiosid: string, region: string) {
         console.log("loadChannel", fiosid);
-        this._channelService.getBy('api/channel/', fiosid).subscribe((x: IChannel[]) => {
-            this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
-        });
+
+        this._channelService.getBy('api/channel/', fiosid)
+            .finally(() => {
+                if (this.updateChannel) {
+                    console.log('Row updated for fios id.', fiosid);
+                    var rowNodes = this.gridOptions.api.getSelectedNodes();
+                    if (!rowNodes || rowNodes.length < 1) {
+                        this.updateChannel = false;
+                        return;
+                    }
+
+                    var rowNode = rowNodes[0];
+                    rowNode.updateData(
+                        {
+                            id: this.channel.strFIOSServiceId,
+                            call: this.channel.strStationCallSign,
+                            name: this.channel.strStationName,
+                            num: this.channel.intChannelPosition,
+                            region: this.channel.strFIOSRegionName,
+                            logoid: this.channel.intBitMapId
+                        });
+                    if (this.editLogoForm.isSuccess)
+                        this.gridOptions.api.redrawRows({ rowNodes: rowNodes });
+                    this.updateChannel = false;
+                }
+            })
+            .subscribe((x: IChannel[]) =>
+            {
+                //Assign channel to the first channel that belongs to the selected region
+                this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
+            });
     }
 
     loadVhos() {
@@ -258,16 +331,47 @@ export class ChannelComponent implements OnInit, AfterViewInit
                 this.vhos = x;
             }, error => this.msg = <any>error);
     }
-}
 
-function logoCellRenderer(params) {
-    var htmlElements = '<div class="bg-black3d">';
-    htmlElements += '<img src="/ChannelLogoRepository/' + params.value + '.png" alt="Loading" />';
-    htmlElements += "<div class='editBtnWrapper'>"
-    htmlElements += '<button type="button" class="btn btn-primary btn-xs" title="Edit" data-action-type="editlogo">Edit</button>';
-    htmlElements += '</div></div>';
+    updateLogoCell($id) {
+        var rowNode = this.gridOptions.api.getRowNode($id);
+        this.gridOptions.api.forEachNodeAfterFilterAndSort((node) => {
+            var fiosid = this.gridOptions.api.getValue('id', node);
+            
+            if (fiosid != $id)
+                return;
 
-    return htmlElements;
+            var regionName = this.gridOptions.api.getValue('region', node);
+
+            this._channelService.getBriefBy($id)
+                .subscribe((ch) => {
+                    node.setData(ch);
+                }, (error) => this.msg = error, () => {
+                    this.gridOptions.api.refreshCells({ rowNodes: [node], columns: ['logo'], force: true, volatile: false });
+                    if (node.isSelected()) {
+                        this._channelLogoService.openLocalImage(this.editLogoForm.newImage, (img) => {
+                            this.editLogoForm.imgSource = img;
+                            this.editLogoForm.newImage = undefined;
+                        });
+                    }
+                    this.loadChannel($id, regionName);
+                })
+        })
+        //if (rowNode) {
+        //    this._channelService.getBriefBy($id)
+        //        .subscribe((ch) => {
+        //            rowNode.setData(ch);
+        //        }, (error) => this.msg = error, () => {
+        //            this.gridOptions.api.refreshCells({ rowNodes: [rowNode], columns: ['logo'], force: true, volatile: false });
+        //            if (rowNode.isSelected()) {
+        //                this._channelLogoService.openLocalImage(this.editLogoForm.newImage, (img) => {
+        //                    this.editLogoForm.imgSource = img;
+        //                    this.editLogoForm.newImage = undefined;
+        //                });
+        //                this.loadChannel($id, this.channel.strFIOSRegionName);
+        //            }
+        //        })
+        //}
+    }
 }
 
 function actionCellRenderer(params) {

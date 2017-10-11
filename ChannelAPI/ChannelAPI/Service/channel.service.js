@@ -16,6 +16,8 @@ require("rxjs/add/operator/map");
 require("rxjs/add/operator/do");
 require("rxjs/add/operator/catch");
 require("rxjs/add/observable/from");
+require("rxjs/add/observable/throw");
+require("rxjs/add/observable/empty");
 let ChannelService = class ChannelService {
     constructor(_http) {
         this._http = _http;
@@ -30,14 +32,27 @@ let ChannelService = class ChannelService {
             .map((response) => response.json())
             .catch(this.handleError);
     }
-    getBriefBy(url, id) {
-        return Observable_1.Observable.from(this._http.get(url + id)
+    getBriefBy(id) {
+        return this._http.get('api/channel/' + id)
             .map((response) => response.json())
             .map((x) => {
-            return new Set(x.map(y => {
-                return { id: y.strFIOSServiceId, num: y.intChannelPosition, name: y.strStationName, call: y.strStationCallSign, logoid: y.intBitMapId };
-            }));
-        })).catch(this.handleError);
+            return x.map(y => {
+                return { id: y.strFIOSServiceId, num: y.intChannelPosition, name: y.strStationName, region: y.strFIOSRegionName, call: y.strStationCallSign, logoid: y.intBitMapId };
+            }).pop();
+        }).catch(this.handleError);
+    }
+    put(url, obj) {
+        let body = JSON.stringify(obj);
+        let headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+        let options = new http_1.RequestOptions({ headers: headers });
+        return this._http.put(url, body, options)
+            .map((response) => {
+            if (response.ok)
+                return Observable_1.Observable.empty();
+            else
+                throw new Error('Http request has failed. Status: ' + response.status + ' - ' + response.statusText);
+        })
+            .catch(this.handleError);
     }
     handleError(error) {
         console.error(error);

@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="max-age=0" />
     <title>@ViewData["Title"] - ChannelManager</title>
 
     <environment names="Development">
@@ -33,15 +34,13 @@
     </script>
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
-<body>
-    <div class="container body-content" id="main-container">
+<body id="main-container">
+    <div>
         @RenderBody()
-        <hr />
-        <footer id="footer">
-            <p>&copy; @DateTime.Now.Year - ChannelManager</p>
-        </footer>
     </div>
-
+    <footer id="footer" class="flex-row bg-black3d">
+        <p>&copy; @DateTime.Now.Year - ChannelManager</p>
+    </footer>
     <environment names="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>

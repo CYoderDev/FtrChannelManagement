@@ -27,6 +27,7 @@ module.exports = function () {
         reflectjs: base.node_modules + "reflect-metadata/Reflect*.js",
         systemjs: base.node_modules + "systemjs/dist/*.js",
         rxjs: base.node_modules + "rxjs/**/*.js",
+        rxjsMap: base.node_modules + "rxjs/**/*.map",
         jasminejs: base.node_modules + "jasmine-core/lib/jasmine-core/*.*",
         lodashjs: base.node_modules + "lodash/*.js",
         lodashdest: base.webroot + "lib/@types/lodash",

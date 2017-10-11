@@ -5,11 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using ChannelAPI.Models;
 using ChannelAPI.Repositories;
 
 namespace ChannelAPI.Controllers
@@ -25,11 +27,11 @@ namespace ChannelAPI.Controllers
         #endregion PrivateFields
 
         #region Constructor
-        public ChannelLogoController(IConfiguration config, ILogger<ChannelLogoController> logger, ILoggerFactory loggerFactory)
+        public ChannelLogoController(IConfiguration config, ILogger<ChannelLogoController> logger, ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
         {
             this._config = config;
             this._logger = logger;
-            this._bitmapRepo = new BitmapRepository(config, loggerFactory);
+            this._bitmapRepo = new BitmapRepository(config, loggerFactory, hostingEnvironment);
             this._stationRepo = new StationRepository(config, loggerFactory);
         }
         #endregion Constructor
@@ -111,15 +113,16 @@ namespace ChannelAPI.Controllers
         /// <param name="base64img">Base64 encoded image string from request body</param>
         /// <returns>int[]</returns>
         /// <example>GET: api/channellogo/image/duplicate</example>
-        [HttpGet("image/duplicate")]
-        public IActionResult GetDuplicates([FromBody]string base64img)
+        [AllowAnonymous]
+        [HttpPut("image/duplicate")]
+        public IActionResult GetDuplicates([FromBody]Image img)
         {
             try
             {
-                if (string.IsNullOrEmpty(base64img))
-                    return BadRequest();
-                
-                return Json(this._bitmapRepo.GetAllDuplicates(base64img));
+                var duplicate = this._bitmapRepo.GetDuplicates(img);
+                if (duplicate.HasValue)
+                    return Json(duplicate);
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -128,6 +131,7 @@ namespace ChannelAPI.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("nextid")]
         public IActionResult GetNextId()
         {
@@ -243,7 +247,7 @@ namespace ChannelAPI.Controllers
         /// <returns></returns>
         /// <example>PUT: api/channellogo/2202/station/5</example>
         [Authorize(policy: "RequireWindowsGroupMembership")]
-        [HttpPut("{bitmapid}/Station/{fiosid}")]
+        [HttpPut("{bitmapid}/station/{fiosid}")]
         public async Task<IActionResult> Put (int bitmapid, string fiosid)
         {
             try
@@ -256,6 +260,81 @@ namespace ChannelAPI.Controllers
                     return BadRequest();
                 }
                 var retVal = await _stationRepo.UpdateBitmap(fiosid, bitmapid);
+                retVal += await _bitmapRepo.UpdateChannelBitmap(bitmapid);
+                return Ok(retVal);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [Authorize(policy: "RequireWindowsGroupMembership")]
+        [HttpPut("{bitmapid}/station")]
+        public async Task<IActionResult> PutStationsForm(int bitmapid)
+        {
+            try
+            {
+                _logger.LogTrace("Begin.");
+                IFormCollection form = await this.Request.ReadFormAsync();
+                var stations = form["stations"];
+                if (stations.Count == 0)
+                    return Ok(0);
+                var imageFile = form.Files.GetFile("logo");
+                int retVal = 0;
+                int maxVal = int.Parse(this._config.GetValue<string>("FiosChannelData:DefaultLogoId"));
+                using (var imgStream = imageFile.OpenReadStream())
+                {
+                    var image = Image.FromStream(imgStream);
+
+                    int? nextId = this._bitmapRepo.GetDuplicates(image);
+                    bool isDuplicate = nextId.HasValue;
+
+                    if (!isDuplicate)
+                    {
+                        nextId = this._bitmapRepo.GetNextAvailableId();
+                    }
+
+                    if (!nextId.HasValue)
+                    {
+                        _logger.LogError("Unable to find next available bitmap id.");
+                        return StatusCode(StatusCodes.Status507InsufficientStorage);
+                    }
+                    else if (nextId.Value <= 0 || nextId.Value > maxVal)
+                    {
+                        _logger.LogWarning("Invalid ID. Must be greater than 0 and less than {0}. Provided value: {1}", maxVal, nextId.Value);
+                        return BadRequest();
+                    }
+
+                    if (stations.Count > 1 && !isDuplicate)
+                    {
+                        //Update all and there is a duplicate, assign all stations to duplicate bitmap id
+                        //and update timestamps on duplicate bitmap id
+                        if (isDuplicate)
+                        {
+                            
+                        }
+                        //Update all and no duplicate, update image file for old bitmap id and update timestamps
+                        else
+                        {
+                            await this._bitmapRepo.UpdateBitmap(image, bitmapid.ToString());
+                            await this._bitmapRepo.UpdateChannelBitmap(bitmapid, image);
+                        }
+                    }
+                    else
+                    {
+                        if (isDuplicate)
+                        {
+                            for (int i = 0; i < stations.Count; i++)
+                            {
+                                retVal += await this._stationRepo.UpdateBitmap(stations[i], nextId.Value);
+                            }
+                            await this._bitmapRepo.UpdateChannelBitmap(nextId.Value);
+                        }
+                    }
+                }
+
                 return Ok(retVal);
             }
             catch (Exception ex)

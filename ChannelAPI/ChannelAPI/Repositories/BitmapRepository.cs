@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Dapper;
@@ -28,10 +29,11 @@ namespace ChannelAPI.Repositories
         private string _version;
         private ILogger _logger;
 
-        public BitmapRepository(IConfiguration config, ILoggerFactory loggerFactory)
+        public BitmapRepository(IConfiguration config, ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
         {
 #if DEBUG
-            this._bitmapDirectory = config.GetValue<string>("FiosChannelData:LogoRepository_DEBUG");
+            this._bitmapDirectory = Path.Combine(hostingEnvironment.WebRootPath, "ChannelLogoRepository");
+            //this._bitmapDirectory = config.GetValue<string>("FiosChannelData:LogoRepository_DEBUG");
 #else
             this._bitmapDirectory = config.GetValue<string>("FiosChannelData:LogoRepository");
 #endif
@@ -140,8 +142,8 @@ namespace ChannelAPI.Repositories
             {
                 try
                 {
-                    retVal += await updateBitmapDTO(connection, newBitmapId, logo);
-                    retVal += await updateBitmapVersionDTO(connection, newBitmapId, logo);
+                    retVal += await updateBitmapDTO(connection, trans, newBitmapId, logo);
+                    retVal += await updateBitmapVersionDTO(connection, trans, newBitmapId, logo);
                 }
                 catch(Exception ex)
                 {
@@ -176,35 +178,45 @@ namespace ChannelAPI.Repositories
             }).Where(x => x > 0).Distinct();
         }
 
-        public IEnumerable<int> GetAllDuplicates(string encodedBitmap)
+        public int? GetDuplicates(Image originalImg)
         {
-            byte[] imgBytes = Convert.FromBase64String(encodedBitmap);
-
-            ConcurrentQueue<int> matchedIds = new ConcurrentQueue<int>();
-
-            using (var ms = new MemoryStream(imgBytes))
+            int? matchedId = null;
+            if (originalImg.Height != this._logoHeight ||
+                originalImg.Width != this._logoWidth)
             {
+                resizeImage(ref originalImg);
+            }
+            using (var ms = new MemoryStream())
+            {
+                originalImg.Save(ms, this.getImageFormat());
+                var imgBytes = ms.ToArray();
                 ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = 20 };
                 Parallel.ForEach(Directory.EnumerateFiles(this._bitmapDirectory), (file) =>
                 {
+                    if (matchedId.HasValue)
+                        return;
                     using (Image img = new Bitmap(file))
                     {
                         using (var msSrc = new MemoryStream())
                         {
                             img.Save(msSrc, img.RawFormat);
-
-                            if (imgBytes.SequenceEqual(msSrc.ToArray()))
+                            var srcBytes = msSrc.ToArray();
+                            if (imgBytes.Count() != srcBytes.Count())
+                                return;
+                            //If bytes are equal, or the number of differences are less than 10
+                            if (imgBytes.SequenceEqual(srcBytes) ||
+                                imgBytes.Where((x, i) => x != srcBytes[i]).Count() < 10)
                             {
                                 var idToAdd = filePathToBitmapId(file);
                                 if (idToAdd.HasValue)
-                                    matchedIds.Enqueue(idToAdd.Value);
+                                    matchedId = idToAdd.Value;
                             }
                         }
                     }
                 });
             }
 
-            return matchedIds;
+            return matchedId;
         }
 
         public int GetNextAvailableId()
@@ -239,19 +251,19 @@ namespace ChannelAPI.Repositories
             }
         }
 
-        private async Task<int> updateBitmapDTO(IDbConnection connection, int bitmapId, Image logo)
+        private async Task<int> updateBitmapDTO(IDbConnection connection, IDbTransaction transaction, int bitmapId, Image logo)
         {
-            var bmDTO = await connection.GetAsync<FiosBitmap>(bitmapId);
+            var bmDTO = await connection.GetAsync<FiosBitmap>(bitmapId, transaction: transaction);
             if (bmDTO.intBitmapId == 0)
             {
                 bmDTO = new FiosBitmap();
                 bmDTO.intBitmapId = bitmapId;
                 bmDTO.strBitMapFileName = Path.Combine(this._bitmapDirectory, bitmapId + this._logoFormat);
                 bmDTO.strBitMapName = bitmapId + this._logoFormat;
-                bmDTO.strBitMapMD5Digest = getMD5(logo);
+                bmDTO.strBitMapMD5Digest = logo == null ? bmDTO.strBitMapMD5Digest : getMD5(logo);
                 bmDTO.dtCreateDate = DateTime.Now;
                 bmDTO.dtLastUpdateDate = DateTime.Now;
-                return await connection.InsertAsync<FiosBitmap>(bmDTO);
+                return await connection.InsertAsync<FiosBitmap>(bmDTO, transaction: transaction);
             }
             else
             {
@@ -259,21 +271,22 @@ namespace ChannelAPI.Repositories
                 bmDTO.strBitMapMD5Digest = getMD5(logo);
                 bmDTO.dtCreateDate = DateTime.Now;
                 bmDTO.dtLastUpdateDate = DateTime.Now;
-                if (await connection.UpdateAsync<FiosBitmap>(bmDTO)) { return 1; }
+                if (await connection.UpdateAsync<FiosBitmap>(bmDTO, transaction)) { return 1; }
             }
+                
             return 0;
         }
 
-        private async Task<int> updateBitmapVersionDTO(IDbConnection connection, int bitmapId, Image logo)
+        private async Task<int> updateBitmapVersionDTO(IDbConnection connection, IDbTransaction transaction, int bitmapId, Image logo)
         {
             string query = "SELECT * FROM tFIOSBitmapVersion a WHERE a.intBitMapId = @bmId AND a.strFIOSVersionAliasId = @version";
-            var bmDTO = await connection.QueryFirstOrDefaultAsync<BitmapVersionDTO>(query, new { bmId = bitmapId, version = this._version });
+            var bmDTO = await connection.QueryFirstOrDefaultAsync<BitmapVersionDTO>(query, param: new { bmId = bitmapId, version = this._version }, transaction: transaction);
 
             if (bmDTO.intBitmapId == 0)
             {
                 bmDTO = new BitmapVersionDTO();
                 bmDTO.intBitmapId = bitmapId;
-                bmDTO.strBitmapMD5Digest = getMD5(logo);
+                bmDTO.strBitmapMD5Digest = logo == null ? bmDTO.strBitmapMD5Digest : getMD5(logo);
                 bmDTO.strFIOSVersionAliasId = _version;
                 bmDTO.dtLastUpdateDate = DateTime.Now;
                 bmDTO.dtCreateDate = DateTime.Now;
@@ -286,7 +299,7 @@ namespace ChannelAPI.Repositories
             {
                 //Update timestamp on all versions, not just the provided version
                 query = "UPDATE tFIOSBitmapVersion SET dtCreateDate = @newDate, dtLastUpdateDate = @newDate WHERE intBitMapId = @bmId";
-                return await connection.ExecuteAsync(query, new { newDate = DateTime.Now, bmId = bitmapId });
+                return await connection.ExecuteAsync(query, new { newDate = DateTime.Now, bmId = bitmapId }, transaction: transaction);
             }
         }
 

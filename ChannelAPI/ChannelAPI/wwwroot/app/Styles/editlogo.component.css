@@ -26,3 +26,25 @@ ul li:nth-child(2n+1) {
     text-align: center;
     padding-top: 10px;
 }
+
+.image-label label {
+    border: 2px outset gray;
+    padding: 2px;
+}
+
+#img-row-wrapper {
+    display: inline-block;
+    width: 100%;
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+img {
+    border: 1px ridge darkgray;
+}
+
+#submit-wrapper {
+    font-size: 2em;
+    text-align: center;
+}

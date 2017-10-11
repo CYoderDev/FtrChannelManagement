@@ -19,6 +19,7 @@
     <None Remove="app\Components\channelinfo.component.ts" />
     <None Remove="app\Components\channellogo.component.ts" />
     <None Remove="app\Components\header.component.ts" />
+    <None Remove="app\Components\imagecellrender.component.ts" />
     <None Remove="app\Service\channellogo.service.ts" />
     <None Remove="Components\editlogo.component.ts" />
   </ItemGroup>
@@ -51,6 +52,7 @@
     <TypeScriptCompile Include="app\Components\channellogo.component.ts" />
     <TypeScriptCompile Include="app\Components\header.component.ts" />
     <TypeScriptCompile Include="app\Components\home.component.ts" />
+    <TypeScriptCompile Include="app\Components\imagecellrender.component.ts" />
     <TypeScriptCompile Include="app\main.ts" />
     <TypeScriptCompile Include="app\Models\channel.ts" />
     <TypeScriptCompile Include="app\Service\channel.service.ts" />

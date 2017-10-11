@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -24,12 +25,12 @@ namespace ChannelAPI.Controllers
         #endregion PrivateFields
 
         #region Constructor
-        public StationController(IConfiguration config, ILogger<StationController> logger, ILoggerFactory loggerFactory)
+        public StationController(IConfiguration config, ILogger<StationController> logger, ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
         {
             this._config = config;
             this._logger = logger;
             this._stationRepo = new StationRepository(config, loggerFactory);
-            this._bitmapRepo = new BitmapRepository(config, loggerFactory);
+            this._bitmapRepo = new BitmapRepository(config, loggerFactory, hostingEnvironment);
         }
         #endregion Constructor
 
@@ -107,7 +108,7 @@ namespace ChannelAPI.Controllers
                     _logger.LogError("Model State is not valid. Bad request.");
                     return StatusCode(StatusCodes.Status400BadRequest);
                 }
-
+                station.dtLastUpdateDate = DateTime.Now;
                 await _stationRepo.UpdateAsync(station);
                 return Ok();
             }

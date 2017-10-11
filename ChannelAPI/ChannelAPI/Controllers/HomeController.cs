@@ -10,6 +10,7 @@ namespace ChannelManager.Controllers
     {
         public IActionResult Index()
         {
+            this.Response.Headers.Add("Cache-Control", "max-age=0, must-revalidate");
             return View();
         }
 

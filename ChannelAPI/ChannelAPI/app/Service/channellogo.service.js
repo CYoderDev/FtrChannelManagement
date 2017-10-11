@@ -18,6 +18,13 @@ require("rxjs/add/operator/catch");
 let ChannelLogoService = class ChannelLogoService {
     constructor(_http) {
         this._http = _http;
+        this.openLocalImage = function (file, callback) {
+            var fileReader = new FileReader();
+            fileReader.onloadend = function (e) {
+                return callback(fileReader.result);
+            };
+            fileReader.readAsDataURL(file);
+        };
     }
     get(url) {
         return this._http.get(url)
@@ -31,21 +38,93 @@ let ChannelLogoService = class ChannelLogoService {
             .catch(this.handleError);
     }
     getByBody(url, body) {
-        return this._http.get(url, new http_1.RequestOptions({
-            body: body
-        }))
-            .map((response) => response.json())
+        var ret = this.openLocalImage(body, (val) => {
+            return this._http.get(url, new http_1.RequestOptions({
+                body: val,
+                headers: new http_1.Headers({ 'Content-Type': 'image/png' })
+            }))
+                .map((response) => response.json())
+                .catch(this.handleError);
+        });
+        return ret.readAsDataURL(body);
+    }
+    putBody(url, obj) {
+        let headers = new http_1.Headers({ 'Content-Type': 'image/png' });
+        var ret = this.openLocalImage(obj, (val) => {
+            this._http.put(url, val, new http_1.RequestOptions({ headers: headers, withCredentials: true }))
+                .map((response) => {
+                if (response.ok)
+                    return Observable_1.Observable.empty;
+                else
+                    throw new Error('Http PUT request failed. Status: ' + response.status + ' - ' + response.statusText);
+            })
+                .catch(this.handleError);
+        });
+        return ret.readAsDataURL(obj);
+    }
+    put(url) {
+        return this._http.put(url, null, new http_1.RequestOptions({ withCredentials: true }))
+            .map((response) => {
+            if (response.ok)
+                return Observable_1.Observable.empty;
+            else
+                throw new Error('Http PUT request failed. Status: ' + response.status + ' - ' + response.statusText);
+        })
             .catch(this.handleError);
     }
+    post(url, obj) {
+        let headers = new http_1.Headers({ 'Content-Type': 'image/png' });
+        return this._http.post(url, obj, new http_1.RequestOptions({ headers: headers, withCredentials: true }))
+            .map((response) => {
+            if (response.ok)
+                return Observable_1.Observable.empty;
+            else
+                throw new Error('Http POST request failed. Status: ' + response.status + ' - ' + response.statusText);
+        });
+    }
+    performRequest(endPoint, method, body = null, contentType, uploadContentType = null) {
+        var headers = new http_1.Headers({ 'Content-Type': contentType });
+        let options = new http_1.RequestOptions({ headers: headers });
+        if (body)
+            options.body = body;
+        if (uploadContentType)
+            headers.append('Upload-Content-Type', uploadContentType);
+        if (method == 'GET') {
+            headers.append('Cache-Control', 'no-cache,no-store');
+            return this._http.get(endPoint, options)
+                .map(this.extractData)
+                .catch(this.handleError);
+        }
+        else if (method == 'PUT') {
+            options.withCredentials = true;
+            return this._http.put(endPoint, body, options)
+                .map(this.extractData)
+                .catch(this.handleError);
+        }
+        else {
+            options.withCredentials = true;
+            return this._http.post(endPoint, body, options)
+                .map(this.extractData)
+                .catch(this.handleError);
+        }
+    }
     convertToBase64(inputValue) {
-        var file = inputValue.files[0];
+        var file = inputValue;
         var reader = new FileReader();
         var image;
         reader.onloadend = (e) => {
-            image = reader.result;
+            e.target["result"];
+            return reader.result;
         };
         reader.readAsDataURL(file);
-        return image;
+    }
+    extractData(response) {
+        var contentType = response.headers.get('Content-Type');
+        if (contentType) {
+            if (contentType.startsWith('image'))
+                return response.text();
+        }
+        return response.json();
     }
     handleError(error) {
         console.error(error);

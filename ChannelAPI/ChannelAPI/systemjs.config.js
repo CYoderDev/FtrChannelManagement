@@ -8,6 +8,7 @@
             // paths serve as alias
             'npm:': 'lib/'
         },
+        defaultJSExtensions: true,
         // map tells the System loader where to look for things
         map: {
             // our app is within the app folder
@@ -38,16 +39,17 @@
                 main: './main.js', defaultExtension: 'js'
             },
             rxjs: {
+                main: '/bundles/Rx.min.js',
                 defaultExtension: 'js'
             },
             'ng2-bs3-modal':
-            { main: '/bundles/ng2-bs3-modal.js', defaultExtension: 'js' },
+            { main: '/bundles/ng2-bs3-modal.umd.js', defaultExtension: 'js' },
             lodash: {
                 main: 'index.js',
                 defaultExtension: 'js'
             },
             'ag-grid': {
-                main: 'main.js'
+                main: 'dist/ag-grid.min.js'
             },
             'ag-grid-angular': {
                 main: 'main.js'

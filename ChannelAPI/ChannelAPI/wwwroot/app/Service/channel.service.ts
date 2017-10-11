@@ -5,6 +5,8 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/from';
+import 'rxjs/add/observable/throw';
+import 'rxjs/add/observable/empty';
 import { IChannel } from '../Models/channel'
 
 @Injectable()
@@ -24,14 +26,29 @@ export class ChannelService {
 
     }
 
-    getBriefBy(url: string, id: string): Observable<any> {
-        return Observable.from(this._http.get(url + id)
+    getBriefBy(id: string): Observable<any> {
+        return this._http.get('api/channel/' + id)
             .map((response: Response) => <any>response.json())
             .map((x: IChannel[]) => {
-                return new Set(x.map(y => {
-                    return { id: y.strFIOSServiceId, num: y.intChannelPosition, name: y.strStationName, call: y.strStationCallSign, logoid: y.intBitMapId };
-                }))
-            })).catch(this.handleError);
+                return x.map(y => {
+                    return { id: y.strFIOSServiceId, num: y.intChannelPosition, name: y.strStationName, region: y.strFIOSRegionName, call: y.strStationCallSign, logoid: y.intBitMapId };
+                }).pop();
+            }).catch(this.handleError);
+    }
+
+    put(url: string, obj: any): Observable<any> {
+        let body = JSON.stringify(obj);
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        let options = new RequestOptions({ headers: headers });
+
+        return this._http.put(url, body, options)
+            .map((response: Response) => {
+                if (response.ok)
+                    return Observable.empty();
+                else
+                    throw new Error('Http request has failed. Status: ' + response.status + ' - ' + response.statusText);
+            })
+            .catch(this.handleError);
     }
 
     private handleError(error: Response) {

@@ -1,91 +1,111 @@
 {
   "_args": [
     [
-      "ng2-bs3-modal@0.10.4",
+      "ng2-bs3-modal@0.12.1",
       "C:\\Users\\cyy132\\Documents\\Repos\\FrontierVOps\\ChannelAPI\\ChannelAPI"
     ]
   ],
-  "_from": "ng2-bs3-modal@0.10.4",
-  "_id": "ng2-bs3-modal@0.10.4",
+  "_from": "ng2-bs3-modal@0.12.1",
+  "_id": "ng2-bs3-modal@0.12.1",
   "_inCache": true,
   "_location": "/ng2-bs3-modal",
-  "_nodeVersion": "6.7.0",
+  "_nodeVersion": "8.6.0",
   "_npmOperationalInternal": {
-    "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/ng2-bs3-modal-0.10.4.tgz_1475253459169_0.7817040979862213"
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/ng2-bs3-modal-0.12.1.tgz_1506978914388_0.7371057793498039"
   },
   "_npmUser": {
     "email": "doug.ludlow@gmail.com",
     "name": "dougludlow"
   },
-  "_npmVersion": "3.10.8",
+  "_npmVersion": "5.4.2",
   "_phantomChildren": {},
   "_requested": {
     "name": "ng2-bs3-modal",
-    "raw": "ng2-bs3-modal@0.10.4",
-    "rawSpec": "0.10.4",
+    "raw": "ng2-bs3-modal@0.12.1",
+    "rawSpec": "0.12.1",
     "scope": null,
-    "spec": "0.10.4",
+    "spec": "0.12.1",
     "type": "version"
   },
   "_requiredBy": [
-    "#DEV:/"
+    "/"
   ],
-  "_resolved": "https://registry.npmjs.org/ng2-bs3-modal/-/ng2-bs3-modal-0.10.4.tgz",
-  "_shasum": "80f350cd3f7346193c8f9324c899d58db1714581",
+  "_resolved": "https://registry.npmjs.org/ng2-bs3-modal/-/ng2-bs3-modal-0.12.1.tgz",
+  "_shasum": "33cc3242a32a8fe4ff246112c0c6cae5631cc822",
   "_shrinkwrap": null,
-  "_spec": "ng2-bs3-modal@0.10.4",
+  "_spec": "ng2-bs3-modal@0.12.1",
   "_where": "C:\\Users\\cyy132\\Documents\\Repos\\FrontierVOps\\ChannelAPI\\ChannelAPI",
-  "author": {
-    "email": "doug.ludlow@gmail.com",
-    "name": "Douglas Ludlow"
-  },
   "bugs": {
     "url": "https://github.com/dougludlow/ng2-bs3-modal/issues"
   },
   "dependencies": {},
-  "description": "Angular2 Boostrap3 Modal Component",
+  "description": "Angular Boostrap 3 Modal Component",
   "devDependencies": {
-    "@angular/common": "^2.0.0",
-    "@angular/compiler": "^2.0.0",
-    "@angular/compiler-cli": "^0.6.3",
-    "@angular/core": "^2.0.0",
-    "@angular/forms": "^2.0.0",
-    "@angular/platform-browser": "^2.0.0",
-    "@angular/platform-browser-dynamic": "^2.0.0",
-    "@angular/platform-server": "^2.0.1",
-    "@angular/router": "^3.0.0",
-    "bootstrap": "^3.3.6",
+    "@angular/cli": "^1.4.3",
+    "@angular/common": "^4.0.0",
+    "@angular/compiler": "^4.0.0",
+    "@angular/compiler-cli": "^4.0.0",
+    "@angular/core": "^4.0.0",
+    "@angular/forms": "^4.0.0",
+    "@angular/http": "^4.0.0",
+    "@angular/platform-browser": "^4.0.0",
+    "@angular/platform-browser-dynamic": "^4.0.0",
+    "@angular/router": "^4.0.0",
+    "@types/jasmine": "^2.5.46",
+    "@types/jquery": "^3.2.12",
+    "@types/node": "^8.0.31",
+    "angular-cli-ghpages": "^0.5.1",
+    "bootstrap": "^3.3.7",
+    "codelyzer": "^3.0.0-beta.4",
     "core-js": "^2.4.1",
-    "es6-shim": "^0.35.0",
-    "jasmine": "^2.4.1",
-    "jasmine-jquery-matchers": "^1.1.1",
-    "jquery": "^2.2.1",
-    "karma": "^0.13.21",
-    "karma-chrome-launcher": "^0.2.2",
-    "karma-jasmine": "^0.3.7",
-    "karma-phantomjs-launcher": "^1.0.2",
-    "karma-spec-reporter": "0.0.24",
-    "node-static": "^0.7.8",
-    "phantomjs-prebuilt": "^2.1.7",
-    "reflect-metadata": "^0.1.3",
-    "rimraf": "^2.5.1",
-    "rxjs": "^5.0.0-beta.12",
-    "systemjs": "^0.19.38",
-    "tslint": "^3.15.1",
-    "typescript": "^2.0.3",
-    "typings": "^1.3.3",
-    "uglify-js": "^2.6.2",
-    "zone.js": "^0.6.21"
+    "jasmine": "^2.5.3",
+    "jasmine-core": "^2.5.2",
+    "jquery": "^3.2.1",
+    "karma": "^1.5.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-cli": "~1.0.1",
+    "karma-coverage-istanbul-reporter": "^1.0.0",
+    "karma-jasmine": "~1.1.0",
+    "karma-spec-reporter": "^0.0.31",
+    "protractor": "~5.1.0",
+    "puppeteer": "^0.11.0",
+    "rimraf": "^2.6.1",
+    "rollup": "^0.50.0",
+    "rollup-plugin-commonjs": "^8.2.1",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rxjs": "^5.1.0",
+    "ts-node": "^3.0.2",
+    "tslint": "^5.7.0",
+    "typescript": "~2.3.0",
+    "uglify-js": "^3.1.1",
+    "zone.js": "^0.8.4"
   },
   "directories": {},
   "dist": {
-    "shasum": "80f350cd3f7346193c8f9324c899d58db1714581",
-    "tarball": "https://registry.npmjs.org/ng2-bs3-modal/-/ng2-bs3-modal-0.10.4.tgz"
+    "integrity": "sha512-IjpV0awyXL5WB5wkCax59aWVyXgsZ1mRX7S2YvBnSvr7jTvFCGxSde2y2IrQ2xInFkyiRDgL+ZCHCR71eOz/dw==",
+    "shasum": "33cc3242a32a8fe4ff246112c0c6cae5631cc822",
+    "tarball": "https://registry.npmjs.org/ng2-bs3-modal/-/ng2-bs3-modal-0.12.1.tgz"
   },
-  "gitHead": "68ec803b9a682bff889f63e777a10243504fb550",
+  "es2015": "ng2-bs3-modal.js",
+  "gitHead": "c45198ba0723686494c8a000c66b0a86a108666f",
   "homepage": "https://github.com/dougludlow/ng2-bs3-modal#readme",
   "installable": true,
+  "jspm": {
+    "deps": [
+      "bootstrap",
+      "jquery"
+    ],
+    "main": "bundles/ng2-bs3-modal.system.js",
+    "shim": {
+      "bootstrap": {
+        "exports": "jQuery"
+      },
+      "jquery": {
+        "exports": "jQuery"
+      }
+    }
+  },
   "keywords": [
     "angular2",
     "bootstrap",
@@ -93,7 +113,7 @@
     "modal"
   ],
   "license": "ISC",
-  "main": "ng2-bs3-modal.js",
+  "main": "bundles/ng2-bs3-modal.umd.js",
   "maintainers": [
     {
       "name": "dougludlow",
@@ -103,11 +123,11 @@
   "name": "ng2-bs3-modal",
   "optionalDependencies": {},
   "peerDependencies": {
-    "@angular/common": "^2.0.0",
-    "@angular/compiler": "^2.0.0",
-    "@angular/core": "^2.0.0",
-    "@angular/platform-browser": "^2.0.0",
-    "@angular/platform-browser-dynamic": "^2.0.0",
+    "@angular/common": ">=2.0.0",
+    "@angular/compiler": ">=2.0.0",
+    "@angular/core": ">=2.0.0",
+    "@angular/platform-browser": ">=2.0.0",
+    "@angular/platform-browser-dynamic": ">=2.0.0",
     "bootstrap": "~3.3.x"
   },
   "repository": {
@@ -115,19 +135,24 @@
     "url": "git+ssh://git@github.com/dougludlow/ng2-bs3-modal.git"
   },
   "scripts": {
-    "build": "npm run clean && npm run typings && npm run lint && npm run tsc && npm run bundle",
-    "bundle": "npm run tsc:single && npm run uglify",
-    "clean": "rimraf bundles components directives **/*.ngfactory.ts ng2-bs3-modal.* ",
-    "lint": "tslint ./src/**/*.ts",
-    "peer": "npm install es6-promise@^3.0.2 es6-shim@^0.33.3 reflect-metadata@0.1.2 rxjs@5.0.0-beta.0 zone.js@0.5.14",
-    "prepublish": "npm run build",
-    "start": "static",
-    "test": "karma start",
-    "test:w": "karma start --no-single-run",
-    "tsc": "ngc -p .",
-    "tsc:single": "tsc -p tsconfig.bundle.json",
-    "typings": "typings install",
-    "uglify": "uglifyjs ./bundles/ng2-bs3-modal.js --output ./bundles/ng2-bs3-modal.min.js"
+    "build": "ng build",
+    "build:system": "yarn run tsc:system && yarn run uglify:system",
+    "build:umd": "yarn run tsc:umd && rollup -c rollup.config.js && yarn run uglify:umd",
+    "bundles": "yarn run clean && yarn run lint && yarn run build:system && yarn run build:umd",
+    "clean": "rimraf bundles modal autofocus utils **/*.ngfactory.ts **/*.ngsummary.json src/**/*.js src/**/*.js.map ng2-bs3-modal.* ",
+    "e2e": "ng e2e",
+    "gh-pages": "ng build --app 'gh-pages' --prod --base-href '/ng2-bs3-modal/demo/' && angular-cli-ghpages",
+    "lint": "ng lint",
+    "ng": "ng",
+    "prepack": "yarn run build && yarn run bundles",
+    "start": "ng serve",
+    "test": "ng test",
+    "test:single": "ng test --single-run",
+    "tsc:system": "tsc -p tsconfig.system.json",
+    "tsc:umd": "ngc -p tsconfig.umd.json",
+    "uglify:system": "uglifyjs ./bundles/ng2-bs3-modal.system.js --output ./bundles/ng2-bs3-modal.system.min.js",
+    "uglify:umd": "uglifyjs ./bundles/ng2-bs3-modal.umd.js --output ./bundles/ng2-bs3-modal.umd.min.js"
   },
-  "version": "0.10.4"
+  "typings": "ng2-bs3-modal.d.ts",
+  "version": "0.12.1"
 }

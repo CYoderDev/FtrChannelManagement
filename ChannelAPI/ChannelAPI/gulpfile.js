@@ -72,7 +72,7 @@ gulp.task("copy:systemjs", function () {
 });
 
 gulp.task("copy:rxjs", function () {
-    return gulp.src(config.rxjs,
+    return gulp.src([config.rxjs,config.rxjsMap],
         { base: config.node_modules })
         .pipe(gulp.dest(config.lib));
 });

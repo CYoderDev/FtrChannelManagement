@@ -83,7 +83,17 @@ namespace ChannelAPI
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials())
-            .UseStaticFiles()
+            .UseStaticFiles(new StaticFileOptions() {
+                OnPrepareResponse = (context) =>
+                {
+                    //Set cache control to no-cache in the header on logo calls which means 
+                    //the browser must revalidate whenever the image has changed.
+                    if (context.File != null && context.File.Name.EndsWith(".png"))
+                    {
+                        context.Context.Response.Headers.Add("Cache-Control", "no-cache");
+                    }
+                }
+            })
             .Use(async (context, next) =>
             {
                 await next();
