@@ -98,11 +98,6 @@ let ChannelInfoComponent = class ChannelInfoComponent {
         var title = target.title;
         this.editField = title;
     }
-    onInputLoad($event) {
-        console.log("onInputLoad event called");
-        var target = $event.target;
-        target.focus();
-    }
     onFieldChange($event) {
         console.log("onFieldChange called");
         var newValue = $event.target.value;

@@ -116,12 +116,6 @@ export class ChannelInfoComponent implements OnInit {
         this.editField = title;
     }
 
-    onInputLoad($event) {
-        console.log("onInputLoad event called");
-        var target = $event.target as HTMLElement;
-        target.focus();
-    }
-
     onFieldChange($event) {
         console.log("onFieldChange called");
         var newValue = $event.target.value;
