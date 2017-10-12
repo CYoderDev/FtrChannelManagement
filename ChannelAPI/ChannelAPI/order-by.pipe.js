@@ -6,9 +6,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@angular/core");
-let OrderBy = OrderBy_1 = class OrderBy {
-    static _orderByComparator(a, b) {
+var core_1 = require("@angular/core");
+var OrderBy = (function () {
+    function OrderBy() {
+    }
+    OrderBy_1 = OrderBy;
+    OrderBy._orderByComparator = function (a, b) {
         if ((isNaN(parseFloat(a)) || !isFinite(a)) || (isNaN(parseFloat(b)) || !isFinite(b))) {
             if (a.toLowerCase() < b.toLowerCase())
                 return -1;
@@ -22,8 +25,9 @@ let OrderBy = OrderBy_1 = class OrderBy {
                 return 1;
         }
         return 0;
-    }
-    transform(input, [config = '+']) {
+    };
+    OrderBy.prototype.transform = function (input, _a) {
+        var _b = _a[0], config = _b === void 0 ? '+' : _b;
         if (!Array.isArray(input))
             return input;
         if (!Array.isArray(config) || (Array.isArray(config) && config.length == 1)) {
@@ -59,10 +63,11 @@ let OrderBy = OrderBy_1 = class OrderBy {
                 return 0;
             });
         }
-    }
-};
-OrderBy = OrderBy_1 = __decorate([
-    core_1.Pipe({ name: 'orderBy', pure: false })
-], OrderBy);
+    };
+    OrderBy = OrderBy_1 = __decorate([
+        core_1.Pipe({ name: 'orderBy', pure: false })
+    ], OrderBy);
+    return OrderBy;
+    var OrderBy_1;
+}());
 exports.OrderBy = OrderBy;
-var OrderBy_1;

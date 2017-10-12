@@ -14,20 +14,27 @@ export class ChannelService {
     constructor(private _http: Http) { }
 
     get(url: string): Observable<any> {
-        return this._http.get(url)
+        var headers = new Headers({ 'If-Modified-Since': '0' });
+        var options = new RequestOptions({ headers: headers });
+
+        return this._http.get(url, options)
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);
     }
 
     getBy(url: string, id: string): Observable<any> {
-        return this._http.get(url + id)
+        var headers = new Headers({ 'If-Modified-Since': '0' });
+        var options = new RequestOptions({ headers: headers });
+        return this._http.get(url + id, options)
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);
-
     }
 
     getBriefBy(id: string): Observable<any> {
-        return this._http.get('api/channel/' + id)
+        var headers = new Headers({ 'If-Modified-Since': '0' });
+        var options = new RequestOptions({ headers: headers });
+
+        return this._http.get('api/channel/' + id, options)
             .map((response: Response) => <any>response.json())
             .map((x: IChannel[]) => {
                 return x.map(y => {

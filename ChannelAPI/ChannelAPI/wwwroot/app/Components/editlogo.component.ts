@@ -6,7 +6,6 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/of';
 
 enum editLogoAction { all, single };
@@ -155,9 +154,6 @@ export class EditLogoForm implements OnInit
                  //Assign all stations to duplicate id
                 if (this.action == editLogoAction.all && duplicate) {
                     this.updateStation(this.stations, nextId);
-                    //this.stations.forEach((station) => {
-                    //    this.updateStation(station, nextId);
-                    //})
                 }
                 //Update logo image for existing ID
                 else if (this.action == editLogoAction.all && !duplicate) {
@@ -208,23 +204,6 @@ export class EditLogoForm implements OnInit
                 this.channelchange.emit(stations[index].strFIOSServiceId);
                 this.updateStation(stations, bitmapId, ++index);
             });
-
-        //console.log('updateStation called', station.strFIOSServiceId, bitmapId);
-        //this._channelLogoService.performRequest('/api/channellogo/' + bitmapId + '/station/' + station.strFIOSServiceId, 'PUT', null, 'application/json')
-        //    .subscribe((observer) => {
-        //        console.log(observer);
-        //    }, (error) => {
-        //        console.log(error);
-        //        this.errorMsg = "Failed to update id on station. " + error;
-        //    }, () => {
-        //        this.inputImg.nativeElement.value = "";
-        //        this.submitting = false;
-        //        if (!this.errorMsg) {
-        //            this.isSuccess = true;
-        //            this.loadStations();
-        //            this.channelchange.emit(station.strFIOSServiceId);
-        //        }
-        //    });
     }
 
     private updateLogo(bitmapId: number) {
@@ -244,7 +223,6 @@ export class EditLogoForm implements OnInit
                     this.stations.forEach((station) => {
                         this.channelchange.emit(station.strFIOSServiceId);
                     })
-                    //this.channelchange.emit(this.channel.strFIOSServiceId);
                 }
             });
     }

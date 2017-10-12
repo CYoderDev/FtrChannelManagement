@@ -9,29 +9,29 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@angular/core");
-let HeaderComponent = class HeaderComponent {
-    constructor(elementRef) {
+var core_1 = require("@angular/core");
+var HeaderComponent = (function () {
+    function HeaderComponent(elementRef) {
         console.log("HeaderComponent constructor");
         this.elementRef = elementRef;
     }
-    agInit(params) {
+    HeaderComponent.prototype.agInit = function (params) {
         console.log("HeaderComponent agInit");
         this.params = params;
         this.params.column.addEventListener('sortChanged', this.onSortChanged.bind(this));
         this.onSortChanged();
-    }
-    ngOnDestroy() {
-        console.log(`Destroying Header Component`);
-    }
-    onMenuClick() {
+    };
+    HeaderComponent.prototype.ngOnDestroy = function () {
+        console.log("Destroying Header Component");
+    };
+    HeaderComponent.prototype.onMenuClick = function () {
         this.params.showColumnMenu(this.querySelector('.customHeaderMenuButton'));
-    }
-    onSortRequested(order, event) {
+    };
+    HeaderComponent.prototype.onSortRequested = function (order, event) {
         this.params.setSort(order, event.shiftKey);
-    }
+    };
     ;
-    onSortChanged() {
+    HeaderComponent.prototype.onSortChanged = function () {
         if (this.params.column.isSortAscending()) {
             this.sorted = 'asc';
         }
@@ -41,12 +41,13 @@ let HeaderComponent = class HeaderComponent {
         else {
             this.sorted = '';
         }
-    }
+    };
     ;
-    querySelector(selector) {
+    HeaderComponent.prototype.querySelector = function (selector) {
         return this.elementRef.nativeElement.querySelector('.customHeaderMenuButton', selector);
-    }
-};
+    };
+    return HeaderComponent;
+}());
 HeaderComponent = __decorate([
     core_1.Component({
         templateUrl: 'app/Components/header.component.html',

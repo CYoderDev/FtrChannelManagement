@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef, 
 import { FormsModule } from '@angular/forms';
 import * as _ from 'lodash';
 import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/finally'
 import { ChannelService } from '../Service/channel.service';
 import { IChannel } from '../Models/channel';
 
@@ -57,11 +56,12 @@ export class ChannelInfoComponent implements OnInit {
         console.log('getActiveRegions called');
 
         this._channelService.get('/api/region/active')
-            .finally(() => { 
-                this.loadRegions();
-            })
             .subscribe(x => {
                 this._activeRegions = x;
+            }, (error) => {
+                this.errorMsg = error;
+            }, () => {
+                this.loadRegions();
             });
     }
 
@@ -79,14 +79,14 @@ export class ChannelInfoComponent implements OnInit {
                     return { name: ch.strFIOSRegionName, channel: ch.intChannelPosition, genre: ch.strStationGenre };
                 })
             )
-            .finally(() =>
-            {
-                this.regionLoading = false;
-                if (!this.stationLoading) 
-                    setTimeout(() => { this.onshow.emit(); });
-            })
             .subscribe(x => {
-                this.regions = _.uniqBy(x, function (reg: any) { return [reg.strFIOSRegionName, reg.intChannelPosition, reg.strStationGenre].join()});
+                this.regions = _.uniqBy(x, function (reg: any) { return [reg.name, reg.channel, reg.genre].join()});
+            }, (error) => {
+                this.errorMsg = error;
+            }, () => {
+                this.regionLoading = false;
+                if (!this.stationLoading)
+                    setTimeout(() => { this.onshow.emit(); });
             });
     }
 
@@ -96,14 +96,14 @@ export class ChannelInfoComponent implements OnInit {
         if (!this._channel) { return; }
 
         this._channelService.getBy('/api/station/', this._channel.strFIOSServiceId)
-            .finally(() =>
-            {
+            .subscribe(x => {
+                this._station = x;
+            }, (error) => {
+                this.errorMsg = error;
+            }, () => {
                 this.stationLoading = false;
                 if (!this.regionLoading)
                     setTimeout(() => { this.onshow.emit(); });
-            })
-            .subscribe(x => {
-                this._station = x;
             });
     }
 
@@ -163,10 +163,6 @@ export class ChannelInfoComponent implements OnInit {
         }
 
         this._channelService.put('/api/station', this._station)
-            .finally(() => {
-                this.loadStation();
-                this.stationchange.emit(this._channel.strFIOSServiceId);
-            })
             .subscribe((resp) => {
                 this.isSubmitting = false;
                 this.isSuccess = true;
@@ -174,6 +170,9 @@ export class ChannelInfoComponent implements OnInit {
                 this.errorMsg = error
                 this.isSuccess = false;
                 this.isSubmitting = false;
+            }, () => {
+                this.loadStation();
+                this.stationchange.emit(this._channel.strFIOSServiceId);
             });
 
         this.showSubmit = false;

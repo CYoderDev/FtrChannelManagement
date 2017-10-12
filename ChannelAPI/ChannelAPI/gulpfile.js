@@ -122,6 +122,12 @@ gulp.task("copy:aggrid", function () {
         .pipe(gulp.dest(config.lib))
 })
 
+gulp.task("copy:babelpolyfill", function () {
+    return gulp.src(config.babelpoly,
+        { base: config.node_modules })
+        .pipe(gulp.dest(config.lib));
+})
+
 gulp.task("dependencies", [
     "copy:angular",
     "copy:angularWebApi",
@@ -130,6 +136,7 @@ gulp.task("dependencies", [
     "copy:reflectjs",
     "copy:systemjs",
     "copy:rxjs",
+    "copy:babelpolyfill",
     "copy:jasmine",
     "copy:configsysjs",
     "copy:ng2",

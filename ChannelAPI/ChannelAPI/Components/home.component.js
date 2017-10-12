@@ -6,12 +6,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@angular/core");
-let HomeComponent = class HomeComponent {
-};
-HomeComponent = __decorate([
-    core_1.Component({
-        template: ``
-    })
-], HomeComponent);
+var core_1 = require("@angular/core");
+var HomeComponent = (function () {
+    function HomeComponent() {
+    }
+    HomeComponent = __decorate([
+        core_1.Component({
+            template: ""
+        })
+    ], HomeComponent);
+    return HomeComponent;
+}());
 exports.HomeComponent = HomeComponent;

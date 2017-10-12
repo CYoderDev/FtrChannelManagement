@@ -9,14 +9,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@angular/core");
-const channellogo_service_1 = require("../Service/channellogo.service");
-const ng2_bs3_modal_1 = require("ng2-bs3-modal");
-const Observable_1 = require("rxjs/Observable");
+var core_1 = require("@angular/core");
+var channellogo_service_1 = require("../Service/channellogo.service");
+var ng2_bs3_modal_1 = require("ng2-bs3-modal");
+var Observable_1 = require("rxjs/Observable");
 require("rxjs/add/operator/map");
 require("rxjs/add/operator/switchMap");
 require("rxjs/add/operator/do");
-require("rxjs/add/operator/catch");
 require("rxjs/add/observable/of");
 var editLogoAction;
 (function (editLogoAction) {
@@ -24,8 +23,8 @@ var editLogoAction;
     editLogoAction[editLogoAction["single"] = 1] = "single";
 })(editLogoAction || (editLogoAction = {}));
 ;
-let EditLogoForm = class EditLogoForm {
-    constructor(_channelLogoService) {
+var EditLogoForm = (function () {
+    function EditLogoForm(_channelLogoService) {
         this._channelLogoService = _channelLogoService;
         this.channelchange = new core_1.EventEmitter();
         this.showForm = false;
@@ -35,21 +34,25 @@ let EditLogoForm = class EditLogoForm {
         this.submitting = false;
         this.action = editLogoAction.all;
     }
-    set channel(value) {
-        if ((!this.channel && value) || value && (value.strFIOSServiceId != this.channel.strFIOSServiceId
-            || this.channel.dtCreateDate != value.dtCreateDate)) {
-            console.log("set channel called");
-            this._channel = value;
-            this.imgSource = this.getUri(value.intBitMapId);
-            if (!this.stations && this.action == editLogoAction.all && this.showForm)
-                this.loadStations();
-        }
-    }
+    Object.defineProperty(EditLogoForm.prototype, "channel", {
+        get: function () {
+            return this._channel;
+        },
+        set: function (value) {
+            if ((!this.channel && value) || value && (value.strFIOSServiceId != this.channel.strFIOSServiceId
+                || this.channel.dtCreateDate != value.dtCreateDate)) {
+                console.log("set channel called");
+                this._channel = value;
+                this.imgSource = this.getUri(value.intBitMapId);
+                if (!this.stations && this.action == editLogoAction.all && this.showForm)
+                    this.loadStations();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     ;
-    get channel() {
-        return this._channel;
-    }
-    ngOnInit() {
+    EditLogoForm.prototype.ngOnInit = function () {
         this.isLoading = true;
         if (null == this.channel) {
             this.showForm = false;
@@ -57,8 +60,8 @@ let EditLogoForm = class EditLogoForm {
         }
         ;
         this.isLoading = false;
-    }
-    onActionChange($obj) {
+    };
+    EditLogoForm.prototype.onActionChange = function ($obj) {
         console.log("onActionChange called");
         this.isSuccess = false;
         var descElement = document.getElementById('action-desc');
@@ -73,27 +76,28 @@ let EditLogoForm = class EditLogoForm {
             descElement.innerHTML = "Creates a new logo and assigns it only to this station.";
             this.showStations = false;
         }
-    }
-    OpenForm() {
+    };
+    EditLogoForm.prototype.OpenForm = function () {
         console.log('opening edit logo modal');
         if (this._channel)
             this.loadStations();
         this.modalChLogo.open();
-    }
-    loadStations() {
+    };
+    EditLogoForm.prototype.loadStations = function () {
+        var _this = this;
         console.log('Loading stations from edit logo modal');
         this.stationsLoading = true;
         this._channelLogoService.getBy('api/channellogo/{0}/station', this.channel.intBitMapId)
-            .subscribe(x => {
-            this.stations = x;
-        }, error => this.errorMsg = error, () => { this.stationsLoading = false; });
-    }
-    getUri(bitmapId) {
+            .subscribe(function (x) {
+            _this.stations = x;
+        }, function (error) { return _this.errorMsg = error; }, function () { _this.stationsLoading = false; });
+    };
+    EditLogoForm.prototype.getUri = function (bitmapId) {
         if (!bitmapId)
             return;
         return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
-    }
-    newImageChange($event) {
+    };
+    EditLogoForm.prototype.newImageChange = function ($event) {
         console.log("newImageChange called.");
         if (!$event || !$event.target.files || $event.target.files.length < 1)
             return;
@@ -106,144 +110,150 @@ let EditLogoForm = class EditLogoForm {
         };
         reader.readAsDataURL($event.target.files[0]);
         this.newImage = $event.target.files[0];
-    }
-    onSubmit() {
+    };
+    EditLogoForm.prototype.onSubmit = function () {
+        var _this = this;
         var nextId;
         var duplicate;
         this.getDuplicates()
-            .switchMap((value) => {
+            .switchMap(function (value) {
             if (!value) {
                 duplicate = false;
-                return this.getNextId();
+                return _this.getNextId();
             }
             else {
                 duplicate = true;
                 return Observable_1.Observable.of(value);
             }
         })
-            .subscribe((observer) => {
+            .subscribe(function (observer) {
             nextId = parseInt(observer);
             if (isNaN(nextId))
                 throw new Error("Failed to get image identifier.");
-        }, (error) => {
+        }, function (error) {
             console.log(error);
-            this.errorMsg = error;
-        }, () => {
-            if (this.errorMsg)
+            _this.errorMsg = error;
+        }, function () {
+            if (_this.errorMsg)
                 return;
-            if (this.action == editLogoAction.all && duplicate) {
-                this.updateStation(this.stations, nextId);
+            if (_this.action == editLogoAction.all && duplicate) {
+                _this.updateStation(_this.stations, nextId);
             }
-            else if (this.action == editLogoAction.all && !duplicate) {
-                this.updateLogo(this.channel.intBitMapId);
+            else if (_this.action == editLogoAction.all && !duplicate) {
+                _this.updateLogo(_this.channel.intBitMapId);
             }
             else if (duplicate) {
-                this.updateStation([this.channel], nextId);
+                _this.updateStation([_this.channel], nextId);
             }
             else {
-                this.createLogo(this.channel.strFIOSServiceId, nextId);
+                _this.createLogo(_this.channel.strFIOSServiceId, nextId);
             }
         });
-    }
-    getDuplicates() {
+    };
+    EditLogoForm.prototype.getDuplicates = function () {
         console.log('getDuplicates called');
         this.submitting = true;
         return this._channelLogoService.performRequest('/api/channellogo/image/duplicate', 'PUT', this.newImage, 'application/octet-stream', this.newImage.type);
-    }
-    getNextId() {
+    };
+    EditLogoForm.prototype.getNextId = function () {
         console.log('getNextId called');
         return this._channelLogoService.get('/api/channellogo/nextid');
-    }
-    updateStation(stations, bitmapId, index = 0) {
+    };
+    EditLogoForm.prototype.updateStation = function (stations, bitmapId, index) {
+        var _this = this;
+        if (index === void 0) { index = 0; }
         if (index >= stations.length)
             return;
         this._channelLogoService.performRequest('/api/channellogo/' + bitmapId + '/station/' + stations[index].strFIOSServiceId, 'PUT', null, 'application/json')
-            .subscribe((observer) => {
+            .subscribe(function (observer) {
             console.log('%i stations updated with id %s', observer, stations[index].strFIOSServiceId);
-        }, (error) => {
+        }, function (error) {
             console.log('Failed to update station id %s. %s', stations[index].strFIOSServiceId, error);
-            this.errorMsg = 'Failed to update station - ' + error;
-        }, () => {
-            this.inputImg.nativeElement.value = "";
+            _this.errorMsg = 'Failed to update station - ' + error;
+        }, function () {
+            _this.inputImg.nativeElement.value = "";
             if (index + 1 == stations.length) {
-                this.loadStations();
-                if (!this.errorMsg) {
-                    this.isSuccess = true;
+                _this.loadStations();
+                if (!_this.errorMsg) {
+                    _this.isSuccess = true;
                 }
-                this.submitting = false;
+                _this.submitting = false;
             }
-            this.channelchange.emit(stations[index].strFIOSServiceId);
-            this.updateStation(stations, bitmapId, ++index);
+            _this.channelchange.emit(stations[index].strFIOSServiceId);
+            _this.updateStation(stations, bitmapId, ++index);
         });
-    }
-    updateLogo(bitmapId) {
+    };
+    EditLogoForm.prototype.updateLogo = function (bitmapId) {
+        var _this = this;
         console.log('updateLogo called', bitmapId);
         return this._channelLogoService.performRequest('api/channellogo/image/' + bitmapId.toString(), 'PUT', this.newImage, 'application/octet-stream', this.newImage.type)
-            .subscribe((val) => {
-            this.channel.intBitMapId = bitmapId;
-        }, (error) => {
+            .subscribe(function (val) {
+            _this.channel.intBitMapId = bitmapId;
+        }, function (error) {
             console.log(error);
-            this.errorMsg = "Failed to update logo. " + error;
-        }, () => {
-            this.inputImg.nativeElement.value = "";
-            this.submitting = false;
-            if (!this.errorMsg) {
-                this.isSuccess = true;
-                this.stations.forEach((station) => {
-                    this.channelchange.emit(station.strFIOSServiceId);
+            _this.errorMsg = "Failed to update logo. " + error;
+        }, function () {
+            _this.inputImg.nativeElement.value = "";
+            _this.submitting = false;
+            if (!_this.errorMsg) {
+                _this.isSuccess = true;
+                _this.stations.forEach(function (station) {
+                    _this.channelchange.emit(station.strFIOSServiceId);
                 });
             }
         });
-    }
-    createLogo(fiosid, bitmapId) {
+    };
+    EditLogoForm.prototype.createLogo = function (fiosid, bitmapId) {
+        var _this = this;
         console.log('createLogo called', fiosid, bitmapId);
         return this._channelLogoService.performRequest('/api/station/' + fiosid + '/logo/' + bitmapId.toString(), 'PUT', this.newImage, 'application/octet-stream', this.newImage.type)
-            .do((val) => { console.log('Stations affected: ' + val); })
-            .subscribe((val) => {
-            this.channel.intBitMapId = bitmapId;
-        }, (error) => {
+            .do(function (val) { console.log('Stations affected: ' + val); })
+            .subscribe(function (val) {
+            _this.channel.intBitMapId = bitmapId;
+        }, function (error) {
             console.log(error);
-            this.errorMsg = "Failed to create new logo. " + error;
-        }, () => {
-            this.inputImg.nativeElement.value = "";
-            this.submitting = false;
-            if (!this.errorMsg) {
-                this.isSuccess = true;
-                this.channelchange.emit(fiosid);
+            _this.errorMsg = "Failed to create new logo. " + error;
+        }, function () {
+            _this.inputImg.nativeElement.value = "";
+            _this.submitting = false;
+            if (!_this.errorMsg) {
+                _this.isSuccess = true;
+                _this.channelchange.emit(fiosid);
             }
         });
-    }
-    onModalClose() {
+    };
+    EditLogoForm.prototype.onModalClose = function () {
         console.log('modal closing');
         this.showForm = false;
         this._channel = undefined;
         this.isSuccess = false;
         this.stations = undefined;
-    }
-};
-__decorate([
-    core_1.ViewChild('modalChLogo'),
-    __metadata("design:type", ng2_bs3_modal_1.BsModalComponent)
-], EditLogoForm.prototype, "modalChLogo", void 0);
-__decorate([
-    core_1.ViewChild('inputImg'),
-    __metadata("design:type", core_1.ElementRef)
-], EditLogoForm.prototype, "inputImg", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Object),
-    __metadata("design:paramtypes", [Object])
-], EditLogoForm.prototype, "channel", null);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", core_1.EventEmitter)
-], EditLogoForm.prototype, "channelchange", void 0);
-EditLogoForm = __decorate([
-    core_1.Component({
-        selector: 'editLogoForm',
-        templateUrl: 'app/Components/editlogo.component.html',
-        styleUrls: ['app/Styles/editlogo.component.css']
-    }),
-    __metadata("design:paramtypes", [channellogo_service_1.ChannelLogoService])
-], EditLogoForm);
+    };
+    __decorate([
+        core_1.ViewChild('modalChLogo'),
+        __metadata("design:type", ng2_bs3_modal_1.BsModalComponent)
+    ], EditLogoForm.prototype, "modalChLogo", void 0);
+    __decorate([
+        core_1.ViewChild('inputImg'),
+        __metadata("design:type", core_1.ElementRef)
+    ], EditLogoForm.prototype, "inputImg", void 0);
+    __decorate([
+        core_1.Input(),
+        __metadata("design:type", Object),
+        __metadata("design:paramtypes", [Object])
+    ], EditLogoForm.prototype, "channel", null);
+    __decorate([
+        core_1.Output(),
+        __metadata("design:type", core_1.EventEmitter)
+    ], EditLogoForm.prototype, "channelchange", void 0);
+    EditLogoForm = __decorate([
+        core_1.Component({
+            selector: 'editLogoForm',
+            templateUrl: 'app/Components/editlogo.component.html',
+            styleUrls: ['app/Styles/editlogo.component.css']
+        }),
+        __metadata("design:paramtypes", [channellogo_service_1.ChannelLogoService])
+    ], EditLogoForm);
+    return EditLogoForm;
+}());
 exports.EditLogoForm = EditLogoForm;

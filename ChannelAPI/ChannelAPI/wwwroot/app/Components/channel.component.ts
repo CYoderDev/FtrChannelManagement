@@ -6,8 +6,6 @@ import { IChannel } from '../Models/channel';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/finally';
 import * as _ from 'lodash';
 import { GridOptions } from 'ag-grid/main';
 import { HeaderComponent } from './header.component';
@@ -23,17 +21,17 @@ export class ChannelComponent implements OnInit, AfterViewInit
     @ViewChild(EditLogoForm) editLogoForm: EditLogoForm;
     channels: IChannel[];
     channel: IChannel;
-    channelsBrief: any;
+    //channelsBrief: any;
     vhos: {};
     vho: string;
     indLoading: boolean = false;
-    imgLoading: boolean = false;
+    //imgLoading: boolean = false;
     private updateChannel: boolean = false;
     showChannelInfo: boolean = true;
     msg: string;
-    logo: any
+    //logo: any
 
-    private obsChannels: Observable<IChannel[]>;
+    //private obsChannels: Observable<IChannel[]>;
     private gridOptions: GridOptions;
     public rowData: any[];
     public showGrid: boolean;
@@ -231,11 +229,6 @@ export class ChannelComponent implements OnInit, AfterViewInit
         let windowHeight = event.target.innerHeight;
         this.flexWidth(window.innerWidth);
         this.fitGridHeight(windowHeight);
-        //var chMgmtPrimary = document.getElementById("main-grid");
-        //var navbarHeight = document.getElementById("main-navbar").offsetHeight;
-        //var footerHeight = document.getElementById("footer").offsetHeight;
-
-        //chMgmtPrimary.style.height = (windowHeight - footerHeight - navbarHeight - (windowHeight * .2)).toString() + "px";
     }
 
     private flexWidth(width: number) {
@@ -288,7 +281,13 @@ export class ChannelComponent implements OnInit, AfterViewInit
         console.log("loadChannel", fiosid);
 
         this._channelService.getBy('api/channel/', fiosid)
-            .finally(() => {
+            .subscribe((x: IChannel[]) =>
+            {
+                //Assign channel to the first channel that belongs to the selected region
+                this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
+            }, (error) => {
+                this.msg = error;
+            }, () => {
                 if (this.updateChannel) {
                     console.log('Row updated for fios id.', fiosid);
                     var rowNodes = this.gridOptions.api.getSelectedNodes();
@@ -311,25 +310,19 @@ export class ChannelComponent implements OnInit, AfterViewInit
                         this.gridOptions.api.redrawRows({ rowNodes: rowNodes });
                     this.updateChannel = false;
                 }
-            })
-            .subscribe((x: IChannel[]) =>
-            {
-                //Assign channel to the first channel that belongs to the selected region
-                this.channel = x.filter(y => y.strFIOSRegionName == region).pop();
             });
     }
 
     loadVhos() {
         console.log("loadVhos");
         this._channelService.get('api/region/vho')
-            .finally(() => {
+            .subscribe((x: string) => {
+                this.vhos = x;
+            }, error => this.msg = <any>error, () => {
                 console.log("loadVhos => finally");
                 if (!this.vho && this.vhos)
                     this.vhoSelect(this.vhos[0]);
-            })
-            .subscribe((x: string) => {
-                this.vhos = x;
-            }, error => this.msg = <any>error);
+            });
     }
 
     updateLogoCell($id) {
@@ -356,21 +349,6 @@ export class ChannelComponent implements OnInit, AfterViewInit
                     this.loadChannel($id, regionName);
                 })
         })
-        //if (rowNode) {
-        //    this._channelService.getBriefBy($id)
-        //        .subscribe((ch) => {
-        //            rowNode.setData(ch);
-        //        }, (error) => this.msg = error, () => {
-        //            this.gridOptions.api.refreshCells({ rowNodes: [rowNode], columns: ['logo'], force: true, volatile: false });
-        //            if (rowNode.isSelected()) {
-        //                this._channelLogoService.openLocalImage(this.editLogoForm.newImage, (img) => {
-        //                    this.editLogoForm.imgSource = img;
-        //                    this.editLogoForm.newImage = undefined;
-        //                });
-        //                this.loadChannel($id, this.channel.strFIOSRegionName);
-        //            }
-        //        })
-        //}
     }
 }
 

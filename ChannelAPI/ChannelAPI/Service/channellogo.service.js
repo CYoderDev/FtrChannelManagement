@@ -9,14 +9,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@angular/core");
-const http_1 = require("@angular/http");
-const Observable_1 = require("rxjs/Observable");
+var core_1 = require("@angular/core");
+var http_1 = require("@angular/http");
+var Observable_1 = require("rxjs/Observable");
 require("rxjs/add/operator/map");
 require("rxjs/add/operator/do");
 require("rxjs/add/operator/catch");
-let ChannelLogoService = class ChannelLogoService {
-    constructor(_http) {
+var ChannelLogoService = (function () {
+    function ChannelLogoService(_http) {
         this._http = _http;
         this.openLocalImage = function (file, callback) {
             var fileReader = new FileReader();
@@ -26,65 +26,69 @@ let ChannelLogoService = class ChannelLogoService {
             fileReader.readAsDataURL(file);
         };
     }
-    get(url) {
+    ChannelLogoService.prototype.get = function (url) {
         return this._http.get(url)
-            .map((response) => response.json())
+            .map(function (response) { return response.json(); })
             .catch(this.handleError);
-    }
-    getBy(url, id) {
+    };
+    ChannelLogoService.prototype.getBy = function (url, id) {
         url = url.replace('{0}', id.toString());
         return this._http.get(url)
-            .map((response) => response.json())
+            .map(function (response) { return response.json(); })
             .catch(this.handleError);
-    }
-    getByBody(url, body) {
-        var ret = this.openLocalImage(body, (val) => {
-            return this._http.get(url, new http_1.RequestOptions({
+    };
+    ChannelLogoService.prototype.getByBody = function (url, body) {
+        var _this = this;
+        var ret = this.openLocalImage(body, function (val) {
+            return _this._http.get(url, new http_1.RequestOptions({
                 body: val,
                 headers: new http_1.Headers({ 'Content-Type': 'image/png' })
             }))
-                .map((response) => response.json())
-                .catch(this.handleError);
+                .map(function (response) { return response.json(); })
+                .catch(_this.handleError);
         });
         return ret.readAsDataURL(body);
-    }
-    putBody(url, obj) {
-        let headers = new http_1.Headers({ 'Content-Type': 'image/png' });
-        var ret = this.openLocalImage(obj, (val) => {
-            this._http.put(url, val, new http_1.RequestOptions({ headers: headers, withCredentials: true }))
-                .map((response) => {
+    };
+    ChannelLogoService.prototype.putBody = function (url, obj) {
+        var _this = this;
+        var headers = new http_1.Headers({ 'Content-Type': 'image/png' });
+        var ret = this.openLocalImage(obj, function (val) {
+            _this._http.put(url, val, new http_1.RequestOptions({ headers: headers, withCredentials: true }))
+                .map(function (response) {
                 if (response.ok)
                     return Observable_1.Observable.empty;
                 else
                     throw new Error('Http PUT request failed. Status: ' + response.status + ' - ' + response.statusText);
             })
-                .catch(this.handleError);
+                .catch(_this.handleError);
         });
         return ret.readAsDataURL(obj);
-    }
-    put(url) {
+    };
+    ChannelLogoService.prototype.put = function (url) {
         return this._http.put(url, null, new http_1.RequestOptions({ withCredentials: true }))
-            .map((response) => {
+            .map(function (response) {
             if (response.ok)
                 return Observable_1.Observable.empty;
             else
                 throw new Error('Http PUT request failed. Status: ' + response.status + ' - ' + response.statusText);
         })
             .catch(this.handleError);
-    }
-    post(url, obj) {
-        let headers = new http_1.Headers({ 'Content-Type': 'image/png' });
+    };
+    ChannelLogoService.prototype.post = function (url, obj) {
+        var headers = new http_1.Headers({ 'Content-Type': 'image/png' });
         return this._http.post(url, obj, new http_1.RequestOptions({ headers: headers, withCredentials: true }))
-            .map((response) => {
+            .map(function (response) {
             if (response.ok)
                 return Observable_1.Observable.empty;
             else
                 throw new Error('Http POST request failed. Status: ' + response.status + ' - ' + response.statusText);
         });
-    }
-    performRequest(endPoint, method, body = null, contentType, uploadContentType = null) {
+    };
+    ChannelLogoService.prototype.performRequest = function (endPoint, method, body, contentType, uploadContentType) {
+        if (body === void 0) { body = null; }
+        if (uploadContentType === void 0) { uploadContentType = null; }
         var headers = new http_1.Headers({ 'Content-Type': contentType });
-        let options = new http_1.RequestOptions({ headers: headers });
+        var options = new http_1.RequestOptions({ headers: headers });
         if (body)
             options.body = body;
         if (uploadContentType)
@@ -107,32 +111,33 @@ let ChannelLogoService = class ChannelLogoService {
                 .map(this.extractData)
                 .catch(this.handleError);
         }
-    }
-    convertToBase64(inputValue) {
+    };
+    ChannelLogoService.prototype.convertToBase64 = function (inputValue) {
         var file = inputValue;
         var reader = new FileReader();
         var image;
-        reader.onloadend = (e) => {
+        reader.onloadend = function (e) {
             e.target["result"];
             return reader.result;
         };
         reader.readAsDataURL(file);
-    }
-    extractData(response) {
+    };
+    ChannelLogoService.prototype.extractData = function (response) {
         var contentType = response.headers.get('Content-Type');
         if (contentType) {
             if (contentType.startsWith('image'))
                 return response.text();
         }
         return response.json();
-    }
-    handleError(error) {
+    };
+    ChannelLogoService.prototype.handleError = function (error) {
         console.error(error);
         return Observable_1.Observable.throw(error.json().error || 'Server error');
-    }
-};
-ChannelLogoService = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http])
-], ChannelLogoService);
+    };
+    ChannelLogoService = __decorate([
+        core_1.Injectable(),
+        __metadata("design:paramtypes", [http_1.Http])
+    ], ChannelLogoService);
+    return ChannelLogoService;
+}());
 exports.ChannelLogoService = ChannelLogoService;

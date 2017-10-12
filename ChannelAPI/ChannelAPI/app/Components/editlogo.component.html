@@ -52,8 +52,9 @@
                 <button type="button" class="btn btn-primary" [disabled]="!newImage" (click)="onSubmit()">Save</button>
             </div>
             <div *ngIf="!errorMsg && isSuccess" class="alert alert-success flex-container flex-row">
-                <div>Success!</div>
-                <button type="button" class="btn btn-default flex-right" data-dismiss="modalChLogo" (click)="modalChLogo.close()">Close</button>
+                <div style="flex-grow: 1">Success!</div>
+                <div style="flex-grow: 1; visibility:hidden"></div>
+                <button type="button" class="btn btn-default" data-dismiss="modalChLogo" (click)="modalChLogo.close()">Close</button>
             </div>
         </bs-modal-footer>
     </form>
