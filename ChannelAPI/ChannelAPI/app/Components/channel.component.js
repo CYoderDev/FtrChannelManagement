@@ -41,9 +41,6 @@ var ChannelComponent = (function () {
         console.log("channelcomponent: ngOnInit() called");
         this.loadVhos();
     };
-    ChannelComponent.prototype.ngAfterViewInit = function () {
-        console.log("ngAfterViewInit called");
-    };
     ChannelComponent.prototype.createRowData = function () {
         var _this = this;
         console.log("createRowData() called");
@@ -118,9 +115,6 @@ var ChannelComponent = (function () {
         this.gridOptions.onGridSizeChanged = this.onGridSizeChanged;
         this.flexWidth(window.innerWidth);
         this.fitGridHeight(window.innerHeight);
-    };
-    ChannelComponent.prototype.onRowSelected = function ($event) {
-        console.log("onRowSelected:" + $event.node.data.name);
     };
     ChannelComponent.prototype.onFilterModified = function () {
         console.log("onFilterModified");

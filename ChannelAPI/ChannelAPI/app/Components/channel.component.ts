@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild, ViewContainerRef, AfterViewInit, HostListener } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ViewContainerRef, HostListener } from '@angular/core';
 import { ChannelService } from '../Service/channel.service';
 import { ChannelLogoService } from '../Service/channellogo.service'
 import { EditLogoForm } from './editlogo.component'
@@ -16,22 +16,17 @@ import { ImageCellRendererComponent } from './imagecellrender.component';
     templateUrl: 'app/Components/channel.component.html',
 })
 
-export class ChannelComponent implements OnInit, AfterViewInit
+export class ChannelComponent implements OnInit
 {
     @ViewChild(EditLogoForm) editLogoForm: EditLogoForm;
     channels: IChannel[];
     channel: IChannel;
-    //channelsBrief: any;
     vhos: {};
     vho: string;
     indLoading: boolean = false;
-    //imgLoading: boolean = false;
     private updateChannel: boolean = false;
     showChannelInfo: boolean = true;
     msg: string;
-    //logo: any
-
-    //private obsChannels: Observable<IChannel[]>;
     private gridOptions: GridOptions;
     public rowData: any[];
     public showGrid: boolean;
@@ -55,10 +50,6 @@ export class ChannelComponent implements OnInit, AfterViewInit
     ngOnInit(): void {
         console.log("channelcomponent: ngOnInit() called");
         this.loadVhos();
-    }
-
-    ngAfterViewInit(): void {
-        console.log("ngAfterViewInit called");
     }
 
     private createRowData() {
@@ -138,10 +129,6 @@ export class ChannelComponent implements OnInit, AfterViewInit
         this.gridOptions.onGridSizeChanged = this.onGridSizeChanged;
         this.flexWidth(window.innerWidth);
         this.fitGridHeight(window.innerHeight);
-    }
-
-    private onRowSelected($event) {
-        console.log("onRowSelected:" + $event.node.data.name);
     }
 
     private onFilterModified() {

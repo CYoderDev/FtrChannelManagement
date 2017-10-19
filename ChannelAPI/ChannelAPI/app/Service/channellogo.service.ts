@@ -111,6 +111,7 @@ export class ChannelLogoService {
         }
         fileReader.readAsDataURL(file);
     }
+
     convertToBase64(inputValue: any): any {
         var file: File = inputValue;
         var reader = new FileReader();
@@ -133,8 +134,11 @@ export class ChannelLogoService {
         return response.json();
     }
 
-    private handleError(error: Response) {
+    private handleError(error) {
         console.error(error);
-        return Observable.throw(error.json().error || 'Server error');
+        if (error instanceof Response)
+            return Observable.throw(error.json().error || 'Backend Server error');
+        else
+            return Observable.throw(error || 'Backend Server Error');
     }
 }
