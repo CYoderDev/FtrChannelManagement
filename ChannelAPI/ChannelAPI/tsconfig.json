@@ -11,7 +11,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "noEmitOnError": true,
     "removeComments": true,
-    "sourceMap": true
+    "sourceMap": false
   },
   "exclude": [
     "node_modules",

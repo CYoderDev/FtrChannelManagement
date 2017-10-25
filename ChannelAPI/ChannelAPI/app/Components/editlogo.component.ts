@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { ChannelLogoService } from '../Service/channellogo.service'
+import { Logger } from '../Logging/default-logger.service';
 import { IChannel } from '../Models/channel';
 import { BsModalComponent } from 'ng2-bs3-modal';
 import { Observable } from 'rxjs/Observable';
@@ -23,7 +24,7 @@ export class EditLogoForm implements OnInit
     @Input() set channel(value: IChannel) {
         if ((!this.channel && value) || value && (value.strFIOSServiceId != this.channel.strFIOSServiceId
             || this.channel.dtCreateDate != value.dtCreateDate)) {
-            console.log("set channel called");
+            this.logger.log("set channel called");
             this._channel = value;
             this.imgSource = this.getUri(value.intBitMapId);
             if (!this.stations && this.action == editLogoAction.all && this.showForm)
@@ -50,7 +51,7 @@ export class EditLogoForm implements OnInit
     private duplicateIds: string[];
     private submitting: boolean = false;
 
-    constructor(private _channelLogoService: ChannelLogoService)
+    constructor(private _channelLogoService: ChannelLogoService, private logger: Logger)
     {
         this.action = editLogoAction.all;
     }
@@ -65,7 +66,7 @@ export class EditLogoForm implements OnInit
     }
 
     private onActionChange($obj) {
-        console.log("onActionChange called");
+        this.logger.log("onActionChange called");
         this.isSuccess = false;
         var descElement = document.getElementById('action-desc');
         if ($obj.target.value == 'all')
@@ -84,7 +85,7 @@ export class EditLogoForm implements OnInit
     }
 
     OpenForm() {
-        console.log('opening edit logo modal');
+        this.logger.log('opening edit logo modal');
         if (this._channel)
             this.loadStations();
         this.modalChLogo.open();
@@ -92,7 +93,7 @@ export class EditLogoForm implements OnInit
 
     private loadStations()
     {
-        console.log('Loading stations from edit logo modal');
+        this.logger.log('Loading stations from edit logo modal');
         this.stationsLoading = true;
         this._channelLogoService.getBy('api/channellogo/{0}/station', this.channel.intBitMapId)
             .subscribe(x => {
@@ -107,7 +108,7 @@ export class EditLogoForm implements OnInit
     }
 
     private newImageChange($event) {
-        console.log("newImageChange called.")
+        this.logger.log("newImageChange called.")
         if (!$event || !$event.target.files || $event.target.files.length < 1)
             return;
 
@@ -145,7 +146,7 @@ export class EditLogoForm implements OnInit
                 if (isNaN(nextId))
                     throw new Error("Failed to get image identifier.");
             }, (error) => {
-                console.log(error);
+                this.logger.log(error);
                 this.errorMsg = error;
             }, () => {
                 if (this.errorMsg)
@@ -171,13 +172,13 @@ export class EditLogoForm implements OnInit
     }
 
     private getDuplicates() : Observable<any> {
-        console.log('getDuplicates called');
+        this.logger.log('getDuplicates called');
         this.submitting = true;
         return this._channelLogoService.performRequest('/api/channellogo/image/duplicate', 'PUT', this.newImage, 'application/octet-stream', this.newImage.type);
     }
 
     private getNextId(): Observable<any> {
-        console.log('getNextId called');
+        this.logger.log('getNextId called');
         return this._channelLogoService.get('/api/channellogo/nextid');
     }
 
@@ -188,9 +189,9 @@ export class EditLogoForm implements OnInit
 
         this._channelLogoService.performRequest('/api/channellogo/' + bitmapId + '/station/' + stations[index].strFIOSServiceId, 'PUT', null, 'application/json')
             .subscribe((observer) => {
-                console.log('%i stations updated with id %s', observer, stations[index].strFIOSServiceId);
+                this.logger.log('%i stations updated with id %s', observer, stations[index].strFIOSServiceId);
             }, (error) => {
-                console.log('Failed to update station id %s. %s', stations[index].strFIOSServiceId, error);
+                this.logger.log('Failed to update station id %s. %s', stations[index].strFIOSServiceId, error);
                 this.errorMsg = 'Failed to update station - ' + error;
             }, () => {
                 this.inputImg.nativeElement.value = "";
@@ -207,13 +208,13 @@ export class EditLogoForm implements OnInit
     }
 
     private updateLogo(bitmapId: number) {
-        console.log('updateLogo called', bitmapId);
+        this.logger.log('updateLogo called', bitmapId);
         return this._channelLogoService.performRequest('api/channellogo/image/' + bitmapId.toString(), 'PUT',
             this.newImage, 'application/octet-stream', this.newImage.type)
             .subscribe((val) => {
                 this.channel.intBitMapId = bitmapId;
             }, (error) => {
-                console.log(error);
+                this.logger.log(error);
                 this.errorMsg = "Failed to update logo. " + error;
             }, () => {
                 this.inputImg.nativeElement.value = "";
@@ -228,14 +229,14 @@ export class EditLogoForm implements OnInit
     }
 
     private createLogo(fiosid: string, bitmapId: number) {
-        console.log('createLogo called', fiosid, bitmapId);
+        this.logger.log('createLogo called', fiosid, bitmapId);
         return this._channelLogoService.performRequest('/api/station/' + fiosid + '/logo/' + bitmapId.toString(),
             'PUT', this.newImage, 'application/octet-stream', this.newImage.type)
-            .do((val) => { console.log('Stations affected: ' + val)})
+            .do((val) => { this.logger.log('Stations affected: ' + val)})
             .subscribe((val) => {
                 this.channel.intBitMapId = bitmapId;
             }, (error) => {
-                console.log(error);
+                this.logger.log(error);
                 this.errorMsg = "Failed to create new logo. " + error;
             }, () => {
                 this.inputImg.nativeElement.value = "";
@@ -248,7 +249,7 @@ export class EditLogoForm implements OnInit
     }
 
     onModalClose() {
-        console.log('modal closing');
+        this.logger.log('modal closing');
         this.showForm = false;
         this._channel = undefined;
         this.isSuccess = false;

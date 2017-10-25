@@ -10,19 +10,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
+var default_logger_service_1 = require("../Logging/default-logger.service");
 var HeaderComponent = (function () {
-    function HeaderComponent(elementRef) {
-        console.log("HeaderComponent constructor");
+    function HeaderComponent(elementRef, logger) {
+        this.logger = logger;
         this.elementRef = elementRef;
     }
     HeaderComponent.prototype.agInit = function (params) {
-        console.log("HeaderComponent agInit");
+        this.logger.log("HeaderComponent agInit");
         this.params = params;
         this.params.column.addEventListener('sortChanged', this.onSortChanged.bind(this));
         this.onSortChanged();
     };
     HeaderComponent.prototype.ngOnDestroy = function () {
-        console.log("Destroying Header Component");
+        this.logger.log("Destroying Header Component");
     };
     HeaderComponent.prototype.onMenuClick = function () {
         this.params.showColumnMenu(this.querySelector('.customHeaderMenuButton'));
@@ -53,7 +54,6 @@ HeaderComponent = __decorate([
         templateUrl: 'app/Components/header.component.html',
         styleUrls: ['app/Components/header.component.css']
     }),
-    __metadata("design:paramtypes", [core_1.ElementRef])
+    __metadata("design:paramtypes", [core_1.ElementRef, default_logger_service_1.Logger])
 ], HeaderComponent);
 exports.HeaderComponent = HeaderComponent;
-//# sourceMappingURL=header.component.js.map

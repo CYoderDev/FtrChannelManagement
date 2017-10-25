@@ -62,7 +62,10 @@ var ChannelService = (function () {
     };
     ChannelService.prototype.handleError = function (error) {
         console.error(error);
-        return Observable_1.Observable.throw(error.json().error || 'Server error');
+        if (error instanceof http_1.Response)
+            return Observable_1.Observable.throw(error.json().error || 'Backend Server Error');
+        else
+            return Observable_1.Observable.throw(error || 'Backend Server Error');
     };
     ChannelService = __decorate([
         core_1.Injectable(),

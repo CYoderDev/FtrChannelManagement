@@ -22,6 +22,8 @@ var channelinfo_component_1 = require("./Components/channelinfo.component");
 var channellogo_service_1 = require("./Service/channellogo.service");
 var imagecellrender_component_1 = require("./Components/imagecellrender.component");
 var header_component_1 = require("./Components/header.component");
+var consolelogger_service_1 = require("./Logging/consolelogger.service");
+var default_logger_service_1 = require("./Logging/default-logger.service");
 var AppModule = (function () {
     function AppModule() {
     }
@@ -34,9 +36,8 @@ AppModule = __decorate([
                 imagecellrender_component_1.ImageCellRendererComponent
             ])],
         declarations: [app_component_1.AppComponent, channel_component_1.ChannelComponent, header_component_1.HeaderComponent, editlogo_component_1.EditLogoForm, channelinfo_component_1.ChannelInfoComponent, imagecellrender_component_1.ImageCellRendererComponent, channelinfo_component_1.FocusableInput],
-        providers: [{ provide: common_1.APP_BASE_HREF, useValue: '/' }, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService],
+        providers: [{ provide: common_1.APP_BASE_HREF, useValue: '/' }, { provide: default_logger_service_1.Logger, useClass: consolelogger_service_1.ConsoleLogService }, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService],
         bootstrap: [app_component_1.AppComponent]
     })
 ], AppModule);
 exports.AppModule = AppModule;
-//# sourceMappingURL=app.module.js.map

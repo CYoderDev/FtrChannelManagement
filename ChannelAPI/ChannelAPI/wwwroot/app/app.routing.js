@@ -7,4 +7,3 @@ var appRoutes = [
     { path: 'home', component: channel_component_1.ChannelComponent }
 ];
 exports.routing = router_1.RouterModule.forRoot(appRoutes);
-//# sourceMappingURL=app.routing.js.map

@@ -74,4 +74,3 @@ ChannelService = __decorate([
     __metadata("design:paramtypes", [http_1.Http])
 ], ChannelService);
 exports.ChannelService = ChannelService;
-//# sourceMappingURL=channel.service.js.map

@@ -18,14 +18,16 @@ require("rxjs/add/operator/do");
 var _ = require("lodash");
 var header_component_1 = require("./header.component");
 var imagecellrender_component_1 = require("./imagecellrender.component");
+var default_logger_service_1 = require("../Logging/default-logger.service");
 var ChannelComponent = (function () {
-    function ChannelComponent(_channelService, _channelLogoService) {
+    function ChannelComponent(_channelService, _channelLogoService, logger) {
         this._channelService = _channelService;
         this._channelLogoService = _channelLogoService;
+        this.logger = logger;
         this.indLoading = false;
         this.updateChannel = false;
         this.showChannelInfo = true;
-        console.log("ChannelComponent constructor called");
+        logger.log("ChannelComponent constructor called");
         this.gridOptions = {
             getRowNodeId: function (data) { return data.id + data.region + data.num; }
         };
@@ -38,15 +40,12 @@ var ChannelComponent = (function () {
         };
     }
     ChannelComponent.prototype.ngOnInit = function () {
-        console.log("channelcomponent: ngOnInit() called");
+        this.logger.log("channelcomponent: ngOnInit() called");
         this.loadVhos();
-    };
-    ChannelComponent.prototype.ngAfterViewInit = function () {
-        console.log("ngAfterViewInit called");
     };
     ChannelComponent.prototype.createRowData = function () {
         var _this = this;
-        console.log("createRowData() called");
+        this.logger.log("createRowData() called");
         this._channelService.getBy('api/channel/vho/', this.vho).map(function (arr) { return arr.map(function (ch) {
             return { id: ch.strFIOSServiceId, call: ch.strStationCallSign, name: ch.strStationName, num: ch.intChannelPosition, region: ch.strFIOSRegionName, logoid: ch.intBitMapId };
         }); })
@@ -56,7 +55,7 @@ var ChannelComponent = (function () {
         }, function (error) { return _this.msg = error; });
     };
     ChannelComponent.prototype.createColumnDefs = function () {
-        console.log("createColumnDefs called");
+        this.logger.log("createColumnDefs called");
         this.columnDefs = [
             {
                 headerName: 'Service ID',
@@ -111,7 +110,7 @@ var ChannelComponent = (function () {
         ];
     };
     ChannelComponent.prototype.onReady = function () {
-        console.log('onReady');
+        this.logger.log('onReady');
         this.gridOptions.api.showLoadingOverlay();
         this.createColumnDefs();
         this.gridOptions.columnApi.autoSizeAllColumns();
@@ -119,14 +118,11 @@ var ChannelComponent = (function () {
         this.flexWidth(window.innerWidth);
         this.fitGridHeight(window.innerHeight);
     };
-    ChannelComponent.prototype.onRowSelected = function ($event) {
-        console.log("onRowSelected:" + $event.node.data.name);
-    };
     ChannelComponent.prototype.onFilterModified = function () {
-        console.log("onFilterModified");
+        this.logger.log("onFilterModified");
     };
     ChannelComponent.prototype.onRowClicked = function ($event) {
-        console.log("onRowClicked: " + $event.node.data.name);
+        this.logger.log("onRowClicked: " + $event.node.data.name);
         $event.node.setSelected(true, true);
         if ($event.event.target !== undefined) {
             var data = $event.data;
@@ -149,13 +145,12 @@ var ChannelComponent = (function () {
         this.gridOptions.api.setQuickFilter($event.target.value);
     };
     ChannelComponent.prototype.onModelUpdated = function () {
-        console.log("onModelUpdated");
+        this.logger.log("onModelUpdated");
         if (this.gridOptions.api && this.columnDefs) {
             this.gridOptions.api.sizeColumnsToFit();
         }
     };
     ChannelComponent.prototype.onGridSizeChanged = function ($event) {
-        console.log("gridSizeChanged");
         if ($event && $event.api) {
             $event.api.sizeColumnsToFit();
         }
@@ -176,24 +171,24 @@ var ChannelComponent = (function () {
             }
     };
     ChannelComponent.prototype.columnResize = function () {
-        console.log("columnResize");
+        this.logger.log("columnResize");
         if (this.gridOptions.api && this.columnDefs) {
             this.gridOptions.api.sizeColumnsToFit();
         }
     };
     ChannelComponent.prototype.updateRow = function ($event) {
-        console.log("updateRow called", $event);
+        this.logger.log("updateRow called", $event);
         this.updateChannel = true;
         this.loadChannel($event, this.channel.strFIOSRegionName);
     };
     ChannelComponent.prototype.onWindowResize = function (event) {
-        console.log("onWindowsResize");
+        this.logger.log("onWindowsResize");
         var windowHeight = event.target.innerHeight;
         this.flexWidth(window.innerWidth);
         this.fitGridHeight(windowHeight);
     };
     ChannelComponent.prototype.flexWidth = function (width) {
-        console.log("flexWidth", width);
+        this.logger.log("flexWidth", width);
         var rowHeight = this.gridOptions.rowHeight;
         if (width <= 500) {
             this.gridOptions.rowHeight = 70;
@@ -215,7 +210,7 @@ var ChannelComponent = (function () {
             this.gridOptions.api.resetRowHeights();
     };
     ChannelComponent.prototype.fitGridHeight = function (height) {
-        console.log("fitGridHeight", height);
+        this.logger.log("fitGridHeight", height);
         if (height == null)
             height = window.innerHeight;
         var chMgmtPrimary = document.getElementById("main-grid");
@@ -233,7 +228,7 @@ var ChannelComponent = (function () {
     };
     ChannelComponent.prototype.loadChannel = function (fiosid, region) {
         var _this = this;
-        console.log("loadChannel", fiosid);
+        this.logger.log("loadChannel", fiosid);
         this._channelService.getBy('api/channel/', fiosid)
             .subscribe(function (x) {
             _this.channel = x.filter(function (y) { return y.strFIOSRegionName == region; }).pop();
@@ -241,7 +236,7 @@ var ChannelComponent = (function () {
             _this.msg = error;
         }, function () {
             if (_this.updateChannel) {
-                console.log('Row updated for fios id.', fiosid);
+                _this.logger.log('Row updated for fios id.', fiosid);
                 var rowNodes = _this.gridOptions.api.getSelectedNodes();
                 if (!rowNodes || rowNodes.length < 1) {
                     _this.updateChannel = false;
@@ -264,12 +259,12 @@ var ChannelComponent = (function () {
     };
     ChannelComponent.prototype.loadVhos = function () {
         var _this = this;
-        console.log("loadVhos");
+        this.logger.log("loadVhos");
         this._channelService.get('api/region/vho')
             .subscribe(function (x) {
             _this.vhos = x;
         }, function (error) { return _this.msg = error; }, function () {
-            console.log("loadVhos => finally");
+            _this.logger.log("loadVhos => finally");
             if (!_this.vho && _this.vhos)
                 _this.vhoSelect(_this.vhos[0]);
         });
@@ -312,7 +307,7 @@ var ChannelComponent = (function () {
             selector: 'channel-manager',
             templateUrl: 'app/Components/channel.component.html',
         }),
-        __metadata("design:paramtypes", [channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService])
+        __metadata("design:paramtypes", [channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService, default_logger_service_1.Logger])
     ], ChannelComponent);
     return ChannelComponent;
 }());

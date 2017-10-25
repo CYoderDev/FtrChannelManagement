@@ -33,7 +33,6 @@ var ImageCellRendererComponent = ImageCellRendererComponent_1 = (function () {
         return true;
     };
     ImageCellRendererComponent.getLogo = function (id, logoService) {
-        console.log('imageCellRenderer getLogo called');
         return logoService.performRequest('/ChannelLogoRepository/' + id + '.png', 'GET', null, 'application/json');
     };
     return ImageCellRendererComponent;
@@ -51,4 +50,3 @@ ImageCellRendererComponent = ImageCellRendererComponent_1 = __decorate([
 ], ImageCellRendererComponent);
 exports.ImageCellRendererComponent = ImageCellRendererComponent;
 var ImageCellRendererComponent_1;
-//# sourceMappingURL=imagecellrender.component.js.map

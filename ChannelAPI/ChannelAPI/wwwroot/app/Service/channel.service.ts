@@ -58,8 +58,11 @@ export class ChannelService {
             .catch(this.handleError);
     }
 
-    private handleError(error: Response) {
+    private handleError(error) {
         console.error(error);
-        return Observable.throw(error.json().error || 'Server error');
+        if (error instanceof Response)
+            return Observable.throw(error.json().error || 'Backend Server Error');
+        else
+            return Observable.throw(error || 'Backend Server Error');
     }
 }

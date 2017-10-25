@@ -1,6 +1,7 @@
 ﻿import { Component, ElementRef } from "@angular/core";
 import { IHeaderParams } from "ag-grid/main"
 import { IHeaderAngularComp } from "ag-grid-angular/main";
+import { Logger } from "../Logging/default-logger.service";
 
 interface HeaderParams extends IHeaderParams {
     menuIcon: string;
@@ -16,20 +17,19 @@ export class HeaderComponent implements IHeaderAngularComp {
     public sorted: string;
     private elementRef: ElementRef;
 
-    constructor(elementRef: ElementRef) {
-        console.log("HeaderComponent constructor");
+    constructor(elementRef: ElementRef, private logger: Logger) {
         this.elementRef = elementRef;
     }
 
     agInit(params: HeaderParams): void {
-        console.log("HeaderComponent agInit");
+        this.logger.log("HeaderComponent agInit");
         this.params = params;
         this.params.column.addEventListener('sortChanged', this.onSortChanged.bind(this));
         this.onSortChanged();
     }
 
     ngOnDestroy() {
-        console.log(`Destroying Header Component`);
+        this.logger.log(`Destroying Header Component`);
     }
 
     onMenuClick() {

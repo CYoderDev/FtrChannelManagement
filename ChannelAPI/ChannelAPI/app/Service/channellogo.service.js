@@ -144,4 +144,3 @@ ChannelLogoService = __decorate([
     __metadata("design:paramtypes", [http_1.Http])
 ], ChannelLogoService);
 exports.ChannelLogoService = ChannelLogoService;
-//# sourceMappingURL=channellogo.service.js.map

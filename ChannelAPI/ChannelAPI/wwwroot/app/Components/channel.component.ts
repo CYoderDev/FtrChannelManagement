@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewContainerRef, AfterViewInit, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewContainerRef, HostListener } from '@angular/core';
 import { ChannelService } from '../Service/channel.service';
 import { ChannelLogoService } from '../Service/channellogo.service'
 import { EditLogoForm } from './editlogo.component'
@@ -10,35 +10,31 @@ import * as _ from 'lodash';
 import { GridOptions } from 'ag-grid/main';
 import { HeaderComponent } from './header.component';
 import { ImageCellRendererComponent } from './imagecellrender.component';
+import { Logger } from '../Logging/default-logger.service';
 
 @Component({
     selector: 'channel-manager',
     templateUrl: 'app/Components/channel.component.html',
 })
 
-export class ChannelComponent implements OnInit, AfterViewInit
+export class ChannelComponent implements OnInit
 {
     @ViewChild(EditLogoForm) editLogoForm: EditLogoForm;
     channels: IChannel[];
     channel: IChannel;
-    //channelsBrief: any;
     vhos: {};
     vho: string;
     indLoading: boolean = false;
-    //imgLoading: boolean = false;
     private updateChannel: boolean = false;
     showChannelInfo: boolean = true;
     msg: string;
-    //logo: any
-
-    //private obsChannels: Observable<IChannel[]>;
     private gridOptions: GridOptions;
     public rowData: any[];
     public showGrid: boolean;
     private columnDefs: any[];
     
-    constructor(private _channelService: ChannelService, private _channelLogoService: ChannelLogoService) {
-        console.log("ChannelComponent constructor called");
+    constructor(private _channelService: ChannelService, private _channelLogoService: ChannelLogoService, private logger: Logger) {
+        logger.log("ChannelComponent constructor called");
         this.gridOptions = <GridOptions>{
             getRowNodeId: function (data) { return data.id + data.region + data.num }
         };
@@ -53,16 +49,12 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     ngOnInit(): void {
-        console.log("channelcomponent: ngOnInit() called");
+        this.logger.log("channelcomponent: ngOnInit() called");
         this.loadVhos();
     }
 
-    ngAfterViewInit(): void {
-        console.log("ngAfterViewInit called");
-    }
-
     private createRowData() {
-        console.log("createRowData() called");
+        this.logger.log("createRowData() called");
 
         this._channelService.getBy('api/channel/vho/', this.vho).map(arr => arr.map(ch => {
             return { id: ch.strFIOSServiceId, call: ch.strStationCallSign, name: ch.strStationName, num: ch.intChannelPosition, region: ch.strFIOSRegionName, logoid: ch.intBitMapId };
@@ -75,7 +67,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     private createColumnDefs() {
-        console.log("createColumnDefs called");
+        this.logger.log("createColumnDefs called");
         this.columnDefs = [
             {
                 headerName: 'Service ID',
@@ -131,7 +123,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     private onReady() {
-        console.log('onReady');
+        this.logger.log('onReady');
         this.gridOptions.api.showLoadingOverlay();
         this.createColumnDefs();
         this.gridOptions.columnApi.autoSizeAllColumns();
@@ -140,16 +132,12 @@ export class ChannelComponent implements OnInit, AfterViewInit
         this.fitGridHeight(window.innerHeight);
     }
 
-    private onRowSelected($event) {
-        console.log("onRowSelected:" + $event.node.data.name);
-    }
-
     private onFilterModified() {
-        console.log("onFilterModified");
+        this.logger.log("onFilterModified");
     }
 
     private onRowClicked($event) {
-        console.log("onRowClicked: " + $event.node.data.name);
+        this.logger.log("onRowClicked: " + $event.node.data.name);
         $event.node.setSelected(true, true);
         if ($event.event.target !== undefined) {
             let data = $event.data;
@@ -177,14 +165,13 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     private onModelUpdated() {
-        console.log("onModelUpdated");
+        this.logger.log("onModelUpdated");
         if (this.gridOptions.api && this.columnDefs) {
             this.gridOptions.api.sizeColumnsToFit();
         }
     }
 
     private onGridSizeChanged($event) {
-        console.log("gridSizeChanged");
         if ($event && $event.api)
         {
             $event.api.sizeColumnsToFit();
@@ -210,14 +197,14 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     private columnResize() {
-        console.log("columnResize");
+        this.logger.log("columnResize");
         if (this.gridOptions.api && this.columnDefs) {
             this.gridOptions.api.sizeColumnsToFit();
         }
     }
 
     updateRow($event) {
-        console.log("updateRow called", $event);
+        this.logger.log("updateRow called", $event);
         this.updateChannel = true;
         this.loadChannel($event, this.channel.strFIOSRegionName);
     }
@@ -225,14 +212,14 @@ export class ChannelComponent implements OnInit, AfterViewInit
     @HostListener('window:resize', ['$event'])
     onWindowResize(event)
     {
-        console.log("onWindowsResize");
+        this.logger.log("onWindowsResize");
         let windowHeight = event.target.innerHeight;
         this.flexWidth(window.innerWidth);
         this.fitGridHeight(windowHeight);
     }
 
     private flexWidth(width: number) {
-        console.log("flexWidth", width);
+        this.logger.log("flexWidth", width);
         var rowHeight = this.gridOptions.rowHeight;
         if (width <= 500) {
             this.gridOptions.rowHeight = 70;
@@ -255,7 +242,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     private fitGridHeight(height?: number) {
-        console.log("fitGridHeight", height);
+        this.logger.log("fitGridHeight", height);
 
         if (height == null)
             height = window.innerHeight;
@@ -278,7 +265,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     loadChannel(fiosid: string, region: string) {
-        console.log("loadChannel", fiosid);
+        this.logger.log("loadChannel", fiosid);
 
         this._channelService.getBy('api/channel/', fiosid)
             .subscribe((x: IChannel[]) =>
@@ -289,7 +276,7 @@ export class ChannelComponent implements OnInit, AfterViewInit
                 this.msg = error;
             }, () => {
                 if (this.updateChannel) {
-                    console.log('Row updated for fios id.', fiosid);
+                    this.logger.log('Row updated for fios id.', fiosid);
                     var rowNodes = this.gridOptions.api.getSelectedNodes();
                     if (!rowNodes || rowNodes.length < 1) {
                         this.updateChannel = false;
@@ -314,12 +301,12 @@ export class ChannelComponent implements OnInit, AfterViewInit
     }
 
     loadVhos() {
-        console.log("loadVhos");
+        this.logger.log("loadVhos");
         this._channelService.get('api/region/vho')
             .subscribe((x: string) => {
                 this.vhos = x;
             }, error => this.msg = <any>error, () => {
-                console.log("loadVhos => finally");
+                this.logger.log("loadVhos => finally");
                 if (!this.vho && this.vhos)
                     this.vhoSelect(this.vhos[0]);
             });

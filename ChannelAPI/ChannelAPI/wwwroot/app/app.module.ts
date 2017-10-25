@@ -16,6 +16,8 @@ import { ChannelInfoComponent, FocusableInput } from './Components/channelinfo.c
 import { ChannelLogoService } from './Service/channellogo.service';
 import { ImageCellRendererComponent } from './Components/imagecellrender.component';
 import { HeaderComponent } from './Components/header.component';
+import { ConsoleLogService } from './Logging/consolelogger.service';
+import { Logger } from './Logging/default-logger.service';
 
 @NgModule({
     imports: [BrowserModule, HttpModule, routing, FormsModule, BsModalModule, AgGridModule.withComponents(
@@ -25,8 +27,8 @@ import { HeaderComponent } from './Components/header.component';
         ]
     )],
     declarations: [AppComponent, ChannelComponent, HeaderComponent, EditLogoForm, ChannelInfoComponent, ImageCellRendererComponent, FocusableInput],
-    providers: [{ provide: APP_BASE_HREF, useValue: '/' }, ChannelService, ChannelLogoService],
+    providers: [{ provide: APP_BASE_HREF, useValue: '/' }, { provide: Logger, useClass: ConsoleLogService }, ChannelService, ChannelLogoService],
     bootstrap: [AppComponent]
 })
-
+    
 export class AppModule { }

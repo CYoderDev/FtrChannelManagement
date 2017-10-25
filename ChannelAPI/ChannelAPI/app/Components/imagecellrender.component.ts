@@ -50,7 +50,6 @@ export class ImageCellRendererComponent implements ICellRendererAngularComp {
 
     //Forces the browser cache to update the existing image if it has been modified
     public static getLogo(id: number, logoService: ChannelLogoService) {
-        console.log('imageCellRenderer getLogo called');
         return logoService.performRequest('/ChannelLogoRepository/' + id + '.png', 'GET', null, 'application/json');
     }
 }

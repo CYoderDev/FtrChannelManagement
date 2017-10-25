@@ -34,7 +34,6 @@ var ImageCellRendererComponent = (function () {
         return true;
     };
     ImageCellRendererComponent.getLogo = function (id, logoService) {
-        console.log('imageCellRenderer getLogo called');
         return logoService.performRequest('/ChannelLogoRepository/' + id + '.png', 'GET', null, 'application/json');
     };
     __decorate([

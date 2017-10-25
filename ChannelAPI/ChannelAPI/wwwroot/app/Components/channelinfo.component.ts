@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import 'rxjs/add/operator/filter';
 import { ChannelService } from '../Service/channel.service';
 import { IChannel } from '../Models/channel';
+import { Logger } from '../Logging/default-logger.service';
 
 @Component({
     selector: 'channel-info',
@@ -44,7 +45,7 @@ export class ChannelInfoComponent implements OnInit {
     stationLoading: boolean = false;
     regionLoading: boolean = false;
 
-    constructor(private _channelService: ChannelService) {
+    constructor(private _channelService: ChannelService, private logger: Logger) {
         this.editField = '';
     }
 
@@ -53,7 +54,7 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     getActiveRegions() {
-        console.log('getActiveRegions called');
+        this.logger.log('getActiveRegions called');
 
         this._channelService.get('/api/region/active')
             .subscribe(x => {
@@ -66,7 +67,7 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     loadRegions() {
-        console.log('loadRegions called');
+        this.logger.log('loadRegions called');
         if (!this._channel) { return; }
 
         this.regionLoading = true;
@@ -91,7 +92,7 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     loadStation() {
-        console.log('loadStation called');
+        this.logger.log('loadStation called');
         this.stationLoading = true;
         if (!this._channel) { return; }
 
@@ -108,7 +109,7 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     onEdit($event) {
-        console.log("onEdit event called");
+        this.logger.log("onEdit event called");
         this.resetVars();
         var target = $event.target as HTMLElement;
         var title = target.title;
@@ -117,7 +118,7 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     onFieldChange($event) {
-        console.log("onFieldChange called");
+        this.logger.log("onFieldChange called");
         var newValue = $event.target.value;
         switch (this.editField)
         {
@@ -149,12 +150,12 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     onFieldFocusOut() {
-        console.log("onFieldFocusOut called");
+        this.logger.log("onFieldFocusOut called");
         this.editField = '';
     }
 
     onSubmit() {
-        console.log("onSubmit called");
+        this.logger.log("onSubmit called");
         this.isSubmitting = true;
         if (!this._station) {
             this.errorMsg = 'Failed to load Fios Station.';
@@ -179,7 +180,7 @@ export class ChannelInfoComponent implements OnInit {
     }
 
     onCancel($event) {
-        console.log("onCancel called");
+        this.logger.log("onCancel called");
         this.resetVars();
         this.showSubmit = false;
         this._station.strStationName = this._channel.strStationName;

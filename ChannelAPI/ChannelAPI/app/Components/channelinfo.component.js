@@ -13,9 +13,11 @@ var core_1 = require("@angular/core");
 var _ = require("lodash");
 require("rxjs/add/operator/filter");
 var channel_service_1 = require("../Service/channel.service");
+var default_logger_service_1 = require("../Logging/default-logger.service");
 var ChannelInfoComponent = (function () {
-    function ChannelInfoComponent(_channelService) {
+    function ChannelInfoComponent(_channelService, logger) {
         this._channelService = _channelService;
+        this.logger = logger;
         this.stationchange = new core_1.EventEmitter();
         this.onshow = new core_1.EventEmitter();
         this.showSubmit = false;
@@ -47,7 +49,7 @@ var ChannelInfoComponent = (function () {
     };
     ChannelInfoComponent.prototype.getActiveRegions = function () {
         var _this = this;
-        console.log('getActiveRegions called');
+        this.logger.log('getActiveRegions called');
         this._channelService.get('/api/region/active')
             .subscribe(function (x) {
             _this._activeRegions = x;
@@ -59,7 +61,7 @@ var ChannelInfoComponent = (function () {
     };
     ChannelInfoComponent.prototype.loadRegions = function () {
         var _this = this;
-        console.log('loadRegions called');
+        this.logger.log('loadRegions called');
         if (!this._channel) {
             return;
         }
@@ -84,7 +86,7 @@ var ChannelInfoComponent = (function () {
     };
     ChannelInfoComponent.prototype.loadStation = function () {
         var _this = this;
-        console.log('loadStation called');
+        this.logger.log('loadStation called');
         this.stationLoading = true;
         if (!this._channel) {
             return;
@@ -101,14 +103,14 @@ var ChannelInfoComponent = (function () {
         });
     };
     ChannelInfoComponent.prototype.onEdit = function ($event) {
-        console.log("onEdit event called");
+        this.logger.log("onEdit event called");
         this.resetVars();
         var target = $event.target;
         var title = target.title;
         this.editField = title;
     };
     ChannelInfoComponent.prototype.onFieldChange = function ($event) {
-        console.log("onFieldChange called");
+        this.logger.log("onFieldChange called");
         var newValue = $event.target.value;
         switch (this.editField) {
             case "station_name":
@@ -138,12 +140,12 @@ var ChannelInfoComponent = (function () {
         }
     };
     ChannelInfoComponent.prototype.onFieldFocusOut = function () {
-        console.log("onFieldFocusOut called");
+        this.logger.log("onFieldFocusOut called");
         this.editField = '';
     };
     ChannelInfoComponent.prototype.onSubmit = function () {
         var _this = this;
-        console.log("onSubmit called");
+        this.logger.log("onSubmit called");
         this.isSubmitting = true;
         if (!this._station) {
             this.errorMsg = 'Failed to load Fios Station.';
@@ -165,7 +167,7 @@ var ChannelInfoComponent = (function () {
         this.showSubmit = false;
     };
     ChannelInfoComponent.prototype.onCancel = function ($event) {
-        console.log("onCancel called");
+        this.logger.log("onCancel called");
         this.resetVars();
         this.showSubmit = false;
         this._station.strStationName = this._channel.strStationName;
@@ -199,7 +201,7 @@ ChannelInfoComponent = __decorate([
         templateUrl: 'app/Components/channelinfo.component.html',
         styleUrls: ['app/Styles/channelinfo.component.css']
     }),
-    __metadata("design:paramtypes", [channel_service_1.ChannelService])
+    __metadata("design:paramtypes", [channel_service_1.ChannelService, default_logger_service_1.Logger])
 ], ChannelInfoComponent);
 exports.ChannelInfoComponent = ChannelInfoComponent;
 var FocusableInput = (function () {
@@ -246,4 +248,3 @@ FocusableInput = __decorate([
     })
 ], FocusableInput);
 exports.FocusableInput = FocusableInput;
-//# sourceMappingURL=channelinfo.component.js.map

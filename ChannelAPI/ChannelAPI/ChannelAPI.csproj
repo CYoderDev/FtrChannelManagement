@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <TypeScriptToolsVersion>2.3</TypeScriptToolsVersion>
+    <StartupObject>ChannelAPI.Program</StartupObject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE;NETCOREAPP2_0;RELEASE;NETCOREAPP2_0</DefineConstants>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +25,9 @@
     <None Remove="app\Components\channelinfo.component.ts" />
     <None Remove="app\Components\header.component.ts" />
     <None Remove="app\Components\imagecellrender.component.ts" />
+    <None Remove="app\Environments\environment.ts" />
+    <None Remove="app\Logging\consolelogger.service.ts" />
+    <None Remove="app\Logging\default-logger.service.ts" />
     <None Remove="app\Service\channellogo.service.ts" />
     <None Remove="Components\editlogo.component.ts" />
   </ItemGroup>
@@ -51,6 +60,9 @@
     <TypeScriptCompile Include="app\Components\header.component.ts" />
     <TypeScriptCompile Include="app\Components\home.component.ts" />
     <TypeScriptCompile Include="app\Components\imagecellrender.component.ts" />
+    <TypeScriptCompile Include="app\Environments\environment.ts" />
+    <TypeScriptCompile Include="app\Logging\consolelogger.service.ts" />
+    <TypeScriptCompile Include="app\Logging\default-logger.service.ts" />
     <TypeScriptCompile Include="app\main.ts" />
     <TypeScriptCompile Include="app\Models\channel.ts" />
     <TypeScriptCompile Include="app\Service\channel.service.ts" />
