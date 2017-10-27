@@ -31,12 +31,7 @@ namespace ChannelAPI.Repositories
 
         public BitmapRepository(IConfiguration config, ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
         {
-#if DEBUG
             this._bitmapDirectory = Path.Combine(hostingEnvironment.WebRootPath, "ChannelLogoRepository");
-            //this._bitmapDirectory = config.GetValue<string>("FiosChannelData:LogoRepository_DEBUG");
-#else
-            this._bitmapDirectory = config.GetValue<string>("FiosChannelData:LogoRepository");
-#endif
             this._logoHeight = config.GetValue<int>("FiosChannelData:LogoHeight");
             this._logoWidth = config.GetValue<int>("FiosChannelData:LogoWidth");
             this._version = config.GetValue<string>("FiosChannelData:VersionAliasId");

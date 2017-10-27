@@ -47,6 +47,8 @@ namespace ChannelAPI
                 options.InputFormatters.Insert(0, new ImageFormatter());
             });
 
+            services.AddDirectoryBrowser();
+
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -78,11 +80,24 @@ namespace ChannelAPI
             //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             //loggerFactory.AddDebug();
 
+            //app.UseStaticFiles();
+
             app.UseCors(builder =>
                 builder.AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowCredentials())
+                .AllowCredentials().Build())
+            .Use(async (context, next) =>
+                {
+                    await next();
+                    if (context.Response.StatusCode == 404 &&
+                        !System.IO.Path.HasExtension(context.Request.Path.Value) &&
+                        !context.Request.Path.Value.StartsWith("/api/"))
+                    {
+                        context.Request.Path = "/index.html";
+                        await next();
+                    }
+                })
             .UseStaticFiles(new StaticFileOptions() {
                 OnPrepareResponse = (context) =>
                 {
@@ -94,17 +109,19 @@ namespace ChannelAPI
                     }
                 }
             })
-            .Use(async (context, next) =>
+            .UseStaticFiles(new StaticFileOptions()
             {
-                await next();
-                if (context.Response.StatusCode == 404 &&
-                    !System.IO.Path.HasExtension(context.Request.Path.Value) &&
-                    !context.Request.Path.Value.StartsWith("/api/"))
-                {
-                    context.Request.Path = "/index.html";
-                    await next();
-                }
+                FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+                    System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), @"wwwroot", "ChannelLogoRepository")),
+                RequestPath = new PathString("/ChannelLogoRepository")
             })
+            .UseDirectoryBrowser(new DirectoryBrowserOptions()
+            {
+                FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+                        System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), @"wwwroot", "ChannelLogoRepository")),
+                RequestPath = new PathString("/ChannelLogoRepository")
+            })
+            .UseDefaultFiles()
             .UseMvcWithDefaultRoute();
 
 
@@ -123,7 +140,7 @@ namespace ChannelAPI
             {
                 app.UseExceptionHandler();
             }
-
+            
             //app.UseDefaultFiles();
             //app.UseStaticFiles();
             app.UseMvc(routes =>

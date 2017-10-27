@@ -36,7 +36,7 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>FiosRegion Json Format</returns>
         /// <example>api/region</example>
-        [AllowAnonymous]
+        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -64,7 +64,7 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>string values in json format</returns>
         /// <example>/api/region/vho</example>
-        [AllowAnonymous]
+        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet("vho")]
         public async Task<IActionResult> GetActiveVhos()
         {
@@ -88,7 +88,7 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>string values in json format</returns>
         /// <example>/api/region/active</example>
-        [AllowAnonymous]
+        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet("active")]
         public async Task<IActionResult> GetActiveRegions()
         {

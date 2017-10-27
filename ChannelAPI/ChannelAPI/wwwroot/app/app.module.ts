@@ -27,7 +27,7 @@ import { Logger } from './Logging/default-logger.service';
         ]
     )],
     declarations: [AppComponent, ChannelComponent, HeaderComponent, EditLogoForm, ChannelInfoComponent, ImageCellRendererComponent, FocusableInput],
-    providers: [{ provide: APP_BASE_HREF, useValue: '/' }, { provide: Logger, useClass: ConsoleLogService }, ChannelService, ChannelLogoService],
+    providers: [ { provide: Logger, useClass: ConsoleLogService }, ChannelService, ChannelLogoService],
     bootstrap: [AppComponent]
 })
     

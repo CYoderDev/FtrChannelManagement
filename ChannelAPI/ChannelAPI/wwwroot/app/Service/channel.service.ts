@@ -15,8 +15,8 @@ export class ChannelService {
 
     get(url: string): Observable<any> {
         var headers = new Headers({ 'If-Modified-Since': '0' });
-        var options = new RequestOptions({ headers: headers });
-
+        var options = new RequestOptions({ headers: headers, withCredentials: true});
+        
         return this._http.get(url, options)
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);
@@ -24,7 +24,7 @@ export class ChannelService {
 
     getBy(url: string, id: string): Observable<any> {
         var headers = new Headers({ 'If-Modified-Since': '0' });
-        var options = new RequestOptions({ headers: headers });
+        var options = new RequestOptions({ headers: headers, withCredentials: true });
         return this._http.get(url + id, options)
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);
@@ -32,7 +32,7 @@ export class ChannelService {
 
     getBriefBy(id: string): Observable<any> {
         var headers = new Headers({ 'If-Modified-Since': '0' });
-        var options = new RequestOptions({ headers: headers });
+        var options = new RequestOptions({ headers: headers, withCredentials: true });
 
         return this._http.get('api/channel/' + id, options)
             .map((response: Response) => <any>response.json())
@@ -46,7 +46,7 @@ export class ChannelService {
     put(url: string, obj: any): Observable<any> {
         let body = JSON.stringify(obj);
         let headers = new Headers({ 'Content-Type': 'application/json' });
-        let options = new RequestOptions({ headers: headers });
+        let options = new RequestOptions({ headers: headers, withCredentials: true });
 
         return this._http.put(url, body, options)
             .map((response: Response) => {

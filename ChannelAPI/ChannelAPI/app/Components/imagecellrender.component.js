@@ -14,7 +14,7 @@ var channellogo_service_1 = require("../Service/channellogo.service");
 var ImageCellRendererComponent = ImageCellRendererComponent_1 = (function () {
     function ImageCellRendererComponent(_channelLogoService) {
         this._channelLogoService = _channelLogoService;
-        this.sourceBase = '/ChannelLogoRepository/';
+        this.sourceBase = 'ChannelLogoRepository/';
     }
     ImageCellRendererComponent.prototype.agInit = function (params) {
         this.params = params;
@@ -33,7 +33,7 @@ var ImageCellRendererComponent = ImageCellRendererComponent_1 = (function () {
         return true;
     };
     ImageCellRendererComponent.getLogo = function (id, logoService) {
-        return logoService.performRequest('/ChannelLogoRepository/' + id + '.png', 'GET', null, 'application/json');
+        return logoService.performRequest('ChannelLogoRepository/' + id + '.png', 'GET', null, 'application/json');
     };
     return ImageCellRendererComponent;
 }());

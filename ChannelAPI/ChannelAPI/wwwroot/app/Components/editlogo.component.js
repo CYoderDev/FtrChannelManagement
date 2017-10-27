@@ -97,7 +97,7 @@ var EditLogoForm = (function () {
     EditLogoForm.prototype.getUri = function (bitmapId) {
         if (!bitmapId)
             return;
-        return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
+        return "ChannelLogoRepository/" + bitmapId.toString() + ".png";
     };
     EditLogoForm.prototype.newImageChange = function ($event) {
         this.logger.log("newImageChange called.");
@@ -155,18 +155,18 @@ var EditLogoForm = (function () {
     EditLogoForm.prototype.getDuplicates = function () {
         this.logger.log('getDuplicates called');
         this.submitting = true;
-        return this._channelLogoService.performRequest('/api/channellogo/image/duplicate', 'PUT', this.newImage, 'application/octet-stream', this.newImage.type);
+        return this._channelLogoService.performRequest('api/channellogo/image/duplicate', 'PUT', this.newImage, 'application/octet-stream', this.newImage.type);
     };
     EditLogoForm.prototype.getNextId = function () {
         this.logger.log('getNextId called');
-        return this._channelLogoService.get('/api/channellogo/nextid');
+        return this._channelLogoService.get('api/channellogo/nextid');
     };
     EditLogoForm.prototype.updateStation = function (stations, bitmapId, index) {
         var _this = this;
         if (index === void 0) { index = 0; }
         if (index >= stations.length)
             return;
-        this._channelLogoService.performRequest('/api/channellogo/' + bitmapId + '/station/' + stations[index].strFIOSServiceId, 'PUT', null, 'application/json')
+        this._channelLogoService.performRequest('api/channellogo/' + bitmapId + '/station/' + stations[index].strFIOSServiceId, 'PUT', null, 'application/json')
             .subscribe(function (observer) {
             _this.logger.log('%i stations updated with id %s', observer, stations[index].strFIOSServiceId);
         }, function (error) {
@@ -208,7 +208,7 @@ var EditLogoForm = (function () {
     EditLogoForm.prototype.createLogo = function (fiosid, bitmapId) {
         var _this = this;
         this.logger.log('createLogo called', fiosid, bitmapId);
-        return this._channelLogoService.performRequest('/api/station/' + fiosid + '/logo/' + bitmapId.toString(), 'PUT', this.newImage, 'application/octet-stream', this.newImage.type)
+        return this._channelLogoService.performRequest('api/station/' + fiosid + '/logo/' + bitmapId.toString(), 'PUT', this.newImage, 'application/octet-stream', this.newImage.type)
             .do(function (val) { _this.logger.log('Stations affected: ' + val); })
             .subscribe(function (val) {
             _this.channel.intBitMapId = bitmapId;

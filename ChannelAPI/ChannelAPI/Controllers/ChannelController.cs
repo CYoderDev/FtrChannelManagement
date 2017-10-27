@@ -16,7 +16,7 @@ using ChannelAPI.Models;
 
 namespace ChannelAPI.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(policy: "RequireWindowsGroupMembership")]
     [Route("api/[controller]")]
     public class ChannelController : Controller
     {

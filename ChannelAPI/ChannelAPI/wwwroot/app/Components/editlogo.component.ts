@@ -104,7 +104,7 @@ export class EditLogoForm implements OnInit
     getUri(bitmapId: number) {
         if (!bitmapId)
             return;
-        return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
+        return "ChannelLogoRepository/" + bitmapId.toString() + ".png";
     }
 
     private newImageChange($event) {
@@ -174,12 +174,12 @@ export class EditLogoForm implements OnInit
     private getDuplicates() : Observable<any> {
         this.logger.log('getDuplicates called');
         this.submitting = true;
-        return this._channelLogoService.performRequest('/api/channellogo/image/duplicate', 'PUT', this.newImage, 'application/octet-stream', this.newImage.type);
+        return this._channelLogoService.performRequest('api/channellogo/image/duplicate', 'PUT', this.newImage, 'application/octet-stream', this.newImage.type);
     }
 
     private getNextId(): Observable<any> {
         this.logger.log('getNextId called');
-        return this._channelLogoService.get('/api/channellogo/nextid');
+        return this._channelLogoService.get('api/channellogo/nextid');
     }
 
     private updateStation(stations: any[], bitmapId: number, index = 0) {
@@ -187,7 +187,7 @@ export class EditLogoForm implements OnInit
         if (index >= stations.length)
             return;
 
-        this._channelLogoService.performRequest('/api/channellogo/' + bitmapId + '/station/' + stations[index].strFIOSServiceId, 'PUT', null, 'application/json')
+        this._channelLogoService.performRequest('api/channellogo/' + bitmapId + '/station/' + stations[index].strFIOSServiceId, 'PUT', null, 'application/json')
             .subscribe((observer) => {
                 this.logger.log('%i stations updated with id %s', observer, stations[index].strFIOSServiceId);
             }, (error) => {
@@ -230,7 +230,7 @@ export class EditLogoForm implements OnInit
 
     private createLogo(fiosid: string, bitmapId: number) {
         this.logger.log('createLogo called', fiosid, bitmapId);
-        return this._channelLogoService.performRequest('/api/station/' + fiosid + '/logo/' + bitmapId.toString(),
+        return this._channelLogoService.performRequest('api/station/' + fiosid + '/logo/' + bitmapId.toString(),
             'PUT', this.newImage, 'application/octet-stream', this.newImage.type)
             .do((val) => { this.logger.log('Stations affected: ' + val)})
             .subscribe((val) => {

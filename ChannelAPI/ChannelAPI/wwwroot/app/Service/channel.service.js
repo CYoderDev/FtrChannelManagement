@@ -24,21 +24,21 @@ var ChannelService = (function () {
     }
     ChannelService.prototype.get = function (url) {
         var headers = new http_1.Headers({ 'If-Modified-Since': '0' });
-        var options = new http_1.RequestOptions({ headers: headers });
+        var options = new http_1.RequestOptions({ headers: headers, withCredentials: true });
         return this._http.get(url, options)
             .map(function (response) { return response.json(); })
             .catch(this.handleError);
     };
     ChannelService.prototype.getBy = function (url, id) {
         var headers = new http_1.Headers({ 'If-Modified-Since': '0' });
-        var options = new http_1.RequestOptions({ headers: headers });
+        var options = new http_1.RequestOptions({ headers: headers, withCredentials: true });
         return this._http.get(url + id, options)
             .map(function (response) { return response.json(); })
             .catch(this.handleError);
     };
     ChannelService.prototype.getBriefBy = function (id) {
         var headers = new http_1.Headers({ 'If-Modified-Since': '0' });
-        var options = new http_1.RequestOptions({ headers: headers });
+        var options = new http_1.RequestOptions({ headers: headers, withCredentials: true });
         return this._http.get('api/channel/' + id, options)
             .map(function (response) { return response.json(); })
             .map(function (x) {
@@ -50,7 +50,7 @@ var ChannelService = (function () {
     ChannelService.prototype.put = function (url, obj) {
         var body = JSON.stringify(obj);
         var headers = new http_1.Headers({ 'Content-Type': 'application/json' });
-        var options = new http_1.RequestOptions({ headers: headers });
+        var options = new http_1.RequestOptions({ headers: headers, withCredentials: true });
         return this._http.put(url, body, options)
             .map(function (response) {
             if (response.ok)

@@ -19,7 +19,7 @@ import { ChannelLogoService } from '../Service/channellogo.service';
 export class ImageCellRendererComponent implements ICellRendererAngularComp {
     private params: any;
     private source: string;
-    private sourceBase: string = '/ChannelLogoRepository/';
+    private sourceBase: string = 'ChannelLogoRepository/';
     @ViewChild('logo') logoEle: ElementRef;
     private image;
 
@@ -50,6 +50,6 @@ export class ImageCellRendererComponent implements ICellRendererAngularComp {
 
     //Forces the browser cache to update the existing image if it has been modified
     public static getLogo(id: number, logoService: ChannelLogoService) {
-        return logoService.performRequest('/ChannelLogoRepository/' + id + '.png', 'GET', null, 'application/json');
+        return logoService.performRequest('ChannelLogoRepository/' + id + '.png', 'GET', null, 'application/json');
     }
 }

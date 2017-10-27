@@ -10,14 +10,14 @@ export class ChannelLogoService {
     constructor(private _http: Http) { }
 
     get(url: string): Observable<any>{
-        return this._http.get(url)
+        return this._http.get(url, new RequestOptions({ withCredentials: true }))
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);
     }
 
     getBy(url: string, id): Observable<any> {
         url = url.replace('{0}', id.toString());
-        return this._http.get(url)
+        return this._http.get(url, new RequestOptions({ withCredentials: true }))
             .map((response: Response) => <any>response.json())
             .catch(this.handleError);
     }
@@ -27,7 +27,8 @@ export class ChannelLogoService {
         var ret =  this.openLocalImage(body, (val) => {
             return this._http.get(url, new RequestOptions({
                 body: val,
-                headers: new Headers({ 'Content-Type': 'image/png' })
+                headers: new Headers({ 'Content-Type': 'image/png' }),
+                withCredentials: true
             }))
             .map((response: Response) => <any>response.json())
             .catch(this.handleError)
@@ -77,7 +78,7 @@ export class ChannelLogoService {
 
     performRequest(endPoint: string, method: string, body = null, contentType: string, uploadContentType: string = null): Observable<any> {
         var headers = new Headers({ 'Content-Type': contentType });
-        let options = new RequestOptions({ headers: headers });
+        let options = new RequestOptions({ headers: headers, withCredentials: true });
         if (body)
             options.body = body;
         if (uploadContentType)

@@ -16,6 +16,7 @@ using ChannelAPI.Repositories;
 
 namespace ChannelAPI.Controllers
 {
+    [Authorize(policy: "RequireWindowsGroupMembership")]
     [Route("api/[controller]")]
     public class ChannelLogoController : Controller
     {
@@ -42,7 +43,6 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>int[]</returns>
         /// <example>GET: api/channelogo</example>
-        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -64,7 +64,6 @@ namespace ChannelAPI.Controllers
         /// <param name="id">Channel logo bitmap id</param>
         /// <returns>image/png</returns>
         /// <example>GET: api/channellogo/2202</example>
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {

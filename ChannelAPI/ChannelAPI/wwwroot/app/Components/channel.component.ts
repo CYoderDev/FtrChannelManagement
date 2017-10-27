@@ -261,7 +261,7 @@ export class ChannelComponent implements OnInit
     getUri(bitmapId: number) {
         if (!bitmapId)
             return;
-        return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
+        return "ChannelLogoRepository/" + bitmapId.toString() + ".png";
     }
 
     loadChannel(fiosid: string, region: string) {

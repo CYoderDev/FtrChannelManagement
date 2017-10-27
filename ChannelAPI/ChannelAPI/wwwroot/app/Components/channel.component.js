@@ -224,7 +224,7 @@ var ChannelComponent = (function () {
     ChannelComponent.prototype.getUri = function (bitmapId) {
         if (!bitmapId)
             return;
-        return "/ChannelLogoRepository/" + bitmapId.toString() + ".png";
+        return "ChannelLogoRepository/" + bitmapId.toString() + ".png";
     };
     ChannelComponent.prototype.loadChannel = function (fiosid, region) {
         var _this = this;

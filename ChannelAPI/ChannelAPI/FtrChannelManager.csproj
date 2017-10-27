@@ -4,6 +4,11 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <TypeScriptToolsVersion>2.3</TypeScriptToolsVersion>
     <StartupObject>ChannelAPI.Program</StartupObject>
+    <ApplicationIcon>fios-new-section1.ico</ApplicationIcon>
+    <Company>Frontier Communications</Company>
+    <Authors>Cameron Yoder</Authors>
+    <Description>Channel Management Application for Frontier Communications Video Operations</Description>
+    <Copyright>Frontier Communications</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

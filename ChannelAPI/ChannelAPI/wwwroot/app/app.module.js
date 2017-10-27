@@ -7,7 +7,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var common_1 = require("@angular/common");
 var platform_browser_1 = require("@angular/platform-browser");
 var forms_1 = require("@angular/forms");
 var ng2_bs3_modal_1 = require("ng2-bs3-modal");
@@ -36,7 +35,7 @@ AppModule = __decorate([
                 imagecellrender_component_1.ImageCellRendererComponent
             ])],
         declarations: [app_component_1.AppComponent, channel_component_1.ChannelComponent, header_component_1.HeaderComponent, editlogo_component_1.EditLogoForm, channelinfo_component_1.ChannelInfoComponent, imagecellrender_component_1.ImageCellRendererComponent, channelinfo_component_1.FocusableInput],
-        providers: [{ provide: common_1.APP_BASE_HREF, useValue: '/' }, { provide: default_logger_service_1.Logger, useClass: consolelogger_service_1.ConsoleLogService }, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService],
+        providers: [{ provide: default_logger_service_1.Logger, useClass: consolelogger_service_1.ConsoleLogService }, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService],
         bootstrap: [app_component_1.AppComponent]
     })
 ], AppModule);

@@ -56,7 +56,7 @@ export class ChannelInfoComponent implements OnInit {
     getActiveRegions() {
         this.logger.log('getActiveRegions called');
 
-        this._channelService.get('/api/region/active')
+        this._channelService.get('api/region/active')
             .subscribe(x => {
                 this._activeRegions = x;
             }, (error) => {
@@ -71,7 +71,7 @@ export class ChannelInfoComponent implements OnInit {
         if (!this._channel) { return; }
 
         this.regionLoading = true;
-        this._channelService.getBy('/api/channel/', this._channel.strFIOSServiceId)
+        this._channelService.getBy('api/channel/', this._channel.strFIOSServiceId)
             .map(arr => arr
                 .filter(ch => {
                     return this._activeRegions.includes(ch.strFIOSRegionName);
@@ -96,7 +96,7 @@ export class ChannelInfoComponent implements OnInit {
         this.stationLoading = true;
         if (!this._channel) { return; }
 
-        this._channelService.getBy('/api/station/', this._channel.strFIOSServiceId)
+        this._channelService.getBy('api/station/', this._channel.strFIOSServiceId)
             .subscribe(x => {
                 this._station = x;
             }, (error) => {
@@ -163,7 +163,7 @@ export class ChannelInfoComponent implements OnInit {
             return;
         }
 
-        this._channelService.put('/api/station', this._station)
+        this._channelService.put('api/station', this._station)
             .subscribe((resp) => {
                 this.isSubmitting = false;
                 this.isSuccess = true;

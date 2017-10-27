@@ -50,7 +50,7 @@ var ChannelInfoComponent = (function () {
     ChannelInfoComponent.prototype.getActiveRegions = function () {
         var _this = this;
         this.logger.log('getActiveRegions called');
-        this._channelService.get('/api/region/active')
+        this._channelService.get('api/region/active')
             .subscribe(function (x) {
             _this._activeRegions = x;
         }, function (error) {
@@ -66,7 +66,7 @@ var ChannelInfoComponent = (function () {
             return;
         }
         this.regionLoading = true;
-        this._channelService.getBy('/api/channel/', this._channel.strFIOSServiceId)
+        this._channelService.getBy('api/channel/', this._channel.strFIOSServiceId)
             .map(function (arr) { return arr
             .filter(function (ch) {
             return _this._activeRegions.includes(ch.strFIOSRegionName);
@@ -91,7 +91,7 @@ var ChannelInfoComponent = (function () {
         if (!this._channel) {
             return;
         }
-        this._channelService.getBy('/api/station/', this._channel.strFIOSServiceId)
+        this._channelService.getBy('api/station/', this._channel.strFIOSServiceId)
             .subscribe(function (x) {
             _this._station = x;
         }, function (error) {
@@ -152,7 +152,7 @@ var ChannelInfoComponent = (function () {
             this.showSubmit = false;
             return;
         }
-        this._channelService.put('/api/station', this._station)
+        this._channelService.put('api/station', this._station)
             .subscribe(function (resp) {
             _this.isSubmitting = false;
             _this.isSuccess = true;

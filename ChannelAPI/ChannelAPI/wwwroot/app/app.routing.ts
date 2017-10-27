@@ -4,7 +4,9 @@ import { ChannelComponent } from './Components/channel.component';
 
 const appRoutes: Routes = [
     //{ path: 'home/ChannelLogoRepository', redirectTo: '/ChannelLogoRepository/', pathMatch: 'prefix' },
-    { path: '', redirectTo: 'home', pathMatch: 'full' },
+    { path: '', redirectTo: '/home', pathMatch: 'full' },
+    //{ path: 'FtrChannelManager', pathMatch: 'prefix'},
+    //{ path: '~/home', redirectTo: '~/home', pathMatch:'full'},
     { path: 'home', component: ChannelComponent }
 ];
 

@@ -14,6 +14,7 @@ using ChannelAPI.Repositories;
 
 namespace ChannelAPI.Controllers
 {
+    [Authorize(policy: "RequireWindowsGroupMembership")]
     [Route("api/[controller]")]
     public class StationController : Controller
     {
@@ -40,7 +41,6 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>FiOS station</returns>
         /// <example>GET: api/station</example>
-        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -68,7 +68,6 @@ namespace ChannelAPI.Controllers
         /// <param name="id">FiOS service ID</param>
         /// <returns>FiOS station</returns>
         /// <example>GET: api/station/5</example>
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {

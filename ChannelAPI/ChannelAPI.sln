@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChannelAPI", "ChannelAPI\ChannelAPI.csproj", "{CC296DF8-DD21-41D8-AF4E-B2ADF2D6E10B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FtrChannelManager", "ChannelAPI\FtrChannelManager.csproj", "{CC296DF8-DD21-41D8-AF4E-B2ADF2D6E10B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChannelManager", "ChannelManager\ChannelManager.csproj", "{B19E829D-C928-4646-BE30-E1FD49C500B4}"
 EndProject

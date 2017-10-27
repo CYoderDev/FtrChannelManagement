@@ -27,13 +27,13 @@ var ChannelLogoService = (function () {
         };
     }
     ChannelLogoService.prototype.get = function (url) {
-        return this._http.get(url)
+        return this._http.get(url, new http_1.RequestOptions({ withCredentials: true }))
             .map(function (response) { return response.json(); })
             .catch(this.handleError);
     };
     ChannelLogoService.prototype.getBy = function (url, id) {
         url = url.replace('{0}', id.toString());
-        return this._http.get(url)
+        return this._http.get(url, new http_1.RequestOptions({ withCredentials: true }))
             .map(function (response) { return response.json(); })
             .catch(this.handleError);
     };
@@ -42,7 +42,8 @@ var ChannelLogoService = (function () {
         var ret = this.openLocalImage(body, function (val) {
             return _this._http.get(url, new http_1.RequestOptions({
                 body: val,
-                headers: new http_1.Headers({ 'Content-Type': 'image/png' })
+                headers: new http_1.Headers({ 'Content-Type': 'image/png' }),
+                withCredentials: true
             }))
                 .map(function (response) { return response.json(); })
                 .catch(_this.handleError);
@@ -88,7 +89,7 @@ var ChannelLogoService = (function () {
         if (body === void 0) { body = null; }
         if (uploadContentType === void 0) { uploadContentType = null; }
         var headers = new http_1.Headers({ 'Content-Type': contentType });
-        var options = new http_1.RequestOptions({ headers: headers });
+        var options = new http_1.RequestOptions({ headers: headers, withCredentials: true });
         if (body)
             options.body = body;
         if (uploadContentType)
