@@ -64,7 +64,6 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>string values in json format</returns>
         /// <example>/api/region/vho</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet("vho")]
         public async Task<IActionResult> GetActiveVhos()
         {
@@ -88,7 +87,6 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>string values in json format</returns>
         /// <example>/api/region/active</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet("active")]
         public async Task<IActionResult> GetActiveRegions()
         {
