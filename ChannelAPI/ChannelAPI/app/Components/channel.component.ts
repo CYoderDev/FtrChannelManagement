@@ -193,6 +193,7 @@ export class ChannelComponent implements OnInit
                 this.vho = vho;
                 this.createRowData();
                 this.gridOptions.api.redrawRows();
+                this.fitGridHeight();
             }
     }
 
@@ -277,23 +278,23 @@ export class ChannelComponent implements OnInit
             }, () => {
                 if (this.updateChannel) {
                     this.logger.log('Row updated for fios id.', fiosid);
-                    var rowNodes = this.gridOptions.api.getSelectedNodes();
-                    if (!rowNodes || rowNodes.length < 1) {
-                        this.updateChannel = false;
-                        return;
-                    }
-
-                    var rowNode = rowNodes[0];
-                    rowNode.updateData(
+                    let rowNodes: any[] = [];
+                    this.gridOptions.api.forEachNodeAfterFilterAndSort((rn) => {
+                        if (rn.data.id == this.channel.strFIOSServiceId)
                         {
-                            id: this.channel.strFIOSServiceId,
-                            call: this.channel.strStationCallSign,
-                            name: this.channel.strStationName,
-                            num: this.channel.intChannelPosition,
-                            region: this.channel.strFIOSRegionName,
-                            logoid: this.channel.intBitMapId
-                        });
-                    if (this.editLogoForm.isSuccess)
+                            rn.updateData(
+                                {
+                                    id: this.channel.strFIOSServiceId,
+                                    call: this.channel.strStationCallSign,
+                                    name: this.channel.strStationName,
+                                    num: rn.data.num,
+                                    region: rn.data.region,
+                                    logoid: rn.data.logoid
+                                });
+                            rowNodes.push(rn);
+                        }
+                    })
+                    if (this.editLogoForm.isSuccess && rowNodes.length > 0)
                         this.gridOptions.api.redrawRows({ rowNodes: rowNodes });
                     this.updateChannel = false;
                 }

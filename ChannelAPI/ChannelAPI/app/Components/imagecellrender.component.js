@@ -44,7 +44,7 @@ __decorate([
 ImageCellRendererComponent = ImageCellRendererComponent_1 = __decorate([
     core_1.Component({
         selector: 'logo-cell',
-        template: "\n            <div class=\"bg-black3d\">\n                <div *ngIf=\"!source\" class=\"fa fa-2x fa-spinner fa-pulse\" aria-hidden=\"true\"></div>\n                <img *ngIf=\"source\" #logo src=\"{{source}}\" alt=\"No Logo\" />\n                <div class='editBtnWrapper'>\n                    <button type=\"button\" class=\"btn btn-primary btn-xs\" title=\"Edit\" data-action-type=\"editlogo\">Edit</button>\n                </div>\n            </div>\n"
+        template: "\n            <div class=\"bg-black3d\" style=\"height: 100%; display: flex; flex-direction: column;\">\n                <div *ngIf=\"!source\" class=\"fa fa-2x fa-spinner fa-pulse\" aria-hidden=\"true\"></div>\n                <img *ngIf=\"source\" #logo src=\"{{source}}\" alt=\"No Logo\" style=\"flex-grow: 1; align-self: center;\" />\n                <div class='editBtnWrapper'>\n                    <button type=\"button\" class=\"btn btn-primary btn-xs\" title=\"Edit\" data-action-type=\"editlogo\">Edit</button>\n                </div>\n            </div>\n"
     }),
     __metadata("design:paramtypes", [channellogo_service_1.ChannelLogoService])
 ], ImageCellRendererComponent);

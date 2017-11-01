@@ -119,6 +119,9 @@ var ChannelInfoComponent = (function () {
                         this.showSubmit = true;
                         this._station.strStationName = newValue;
                     }
+                    else {
+                        this._station.strStationName = this._channel.strStationName;
+                    }
                     break;
                 }
             case "station_desc":
@@ -126,6 +129,9 @@ var ChannelInfoComponent = (function () {
                     if (this.channel.strStationDescription != newValue) {
                         this.showSubmit = true;
                         this._station.strStationDescription = newValue;
+                    }
+                    else {
+                        this._station.strStationDescription = this._channel.strStationDescription;
                     }
                     break;
                 }
@@ -135,8 +141,16 @@ var ChannelInfoComponent = (function () {
                         this.showSubmit = true;
                         this._station.strStationCallSign = newValue;
                     }
+                    else {
+                        this._station.strStationCallSign = this._channel.strStationCallSign;
+                    }
                     break;
                 }
+        }
+        if (this._station.strStationName == this._channel.strStationName &&
+            this._station.strStationDescription == this._channel.strStationDescription &&
+            this._station.strStationCallSign == this._channel.strStationCallSign) {
+            this.showSubmit = false;
         }
     };
     ChannelInfoComponent.prototype.onFieldFocusOut = function () {

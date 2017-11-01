@@ -134,14 +134,14 @@ var ChannelLogoService = (function () {
     ChannelLogoService.prototype.handleError = function (error) {
         console.error(error);
         if (error instanceof http_1.Response)
-            return Observable_1.Observable.throw(error.json().error || 'Backend Server error');
+            return Observable_1.Observable.throw(error.statusText || 'Backend Server error');
         else
             return Observable_1.Observable.throw(error || 'Backend Server Error');
     };
+    ChannelLogoService = __decorate([
+        core_1.Injectable(),
+        __metadata("design:paramtypes", [http_1.Http])
+    ], ChannelLogoService);
     return ChannelLogoService;
 }());
-ChannelLogoService = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http])
-], ChannelLogoService);
 exports.ChannelLogoService = ChannelLogoService;

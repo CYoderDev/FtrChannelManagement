@@ -41,6 +41,7 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>FiOS station</returns>
         /// <example>GET: api/station</example>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -68,6 +69,7 @@ namespace ChannelAPI.Controllers
         /// <param name="id">FiOS service ID</param>
         /// <returns>FiOS station</returns>
         /// <example>GET: api/station/5</example>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
@@ -95,7 +97,6 @@ namespace ChannelAPI.Controllers
         /// <param name="station">FiOS station with updated values from request body</param>
         /// <returns></returns>
         /// <example>PUT: api/station</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut]
         public async Task<IActionResult> Put([FromBody]FiosStation station)
         {
@@ -126,7 +127,6 @@ namespace ChannelAPI.Controllers
         /// <param name="logo">System.Drawing.Image logo to update and assign to the station</param>
         /// <returns></returns>
         /// <example>PUT: api/station/5/logo/2202</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut("{fiosid}/logo/{bitmapid}")]
         public async Task<IActionResult> PutBitmap(string fiosid, int bitmapid, [FromBody] Image logo)
         {

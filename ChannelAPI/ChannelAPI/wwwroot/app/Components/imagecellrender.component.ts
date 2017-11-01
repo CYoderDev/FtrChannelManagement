@@ -6,9 +6,9 @@ import { ChannelLogoService } from '../Service/channellogo.service';
 @Component({
     selector: 'logo-cell',
     template: `
-            <div class="bg-black3d">
+            <div class="bg-black3d" style="height: 100%; display: flex; flex-direction: column;">
                 <div *ngIf="!source" class="fa fa-2x fa-spinner fa-pulse" aria-hidden="true"></div>
-                <img *ngIf="source" #logo src="{{source}}" alt="No Logo" />
+                <img *ngIf="source" #logo src="{{source}}" alt="No Logo" style="flex-grow: 1; align-self: center;" />
                 <div class='editBtnWrapper'>
                     <button type="button" class="btn btn-primary btn-xs" title="Edit" data-action-type="editlogo">Edit</button>
                 </div>

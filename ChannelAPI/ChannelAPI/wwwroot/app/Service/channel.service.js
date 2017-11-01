@@ -63,14 +63,14 @@ var ChannelService = (function () {
     ChannelService.prototype.handleError = function (error) {
         console.error(error);
         if (error instanceof http_1.Response)
-            return Observable_1.Observable.throw(error.json().error || 'Backend Server Error');
+            return Observable_1.Observable.throw(error.statusText || 'Backend Server Error');
         else
             return Observable_1.Observable.throw(error || 'Backend Server Error');
     };
+    ChannelService = __decorate([
+        core_1.Injectable(),
+        __metadata("design:paramtypes", [http_1.Http])
+    ], ChannelService);
     return ChannelService;
 }());
-ChannelService = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http])
-], ChannelService);
 exports.ChannelService = ChannelService;

@@ -64,7 +64,11 @@ namespace ChannelAPI
 
             services.AddAuthorization(options =>
             {
+#if DEBUG
                 options.AddPolicy("RequireWindowsGroupMembership", policy => policy.RequireRole(@"CORP\FTW Data Center", @"VHE\FUI-IMG"));
+#else
+                options.AddPolicy("RequireWindowsGroupMembership", policy => policy.RequireRole(@"VHE\FUI-IMG"));
+#endif
             });
 
 #if DEBUG

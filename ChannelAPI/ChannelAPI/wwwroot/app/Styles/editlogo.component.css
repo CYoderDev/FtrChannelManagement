@@ -5,10 +5,14 @@
     padding-left: 5px;
 }
 
+li {
+    width: 100%;
+}
+
 .div-right {
     float: right;
     padding-left: 75px;
-    padding-right: 5px;
+    padding-right: 15px;
 }
 
 modal-footer {

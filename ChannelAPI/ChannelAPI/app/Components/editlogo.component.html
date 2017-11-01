@@ -46,7 +46,7 @@
         </bs-modal-body>
         <bs-modal-footer>
             <div id="submit-wrapper" *ngIf="!errorMsg && !isSuccess && submitting"><div  class="fa fa-spinner fa-pulse left" aria-hidden="true"></div><label class="label text-justify" style="background: darkslategray">Submitting...</label></div>
-            <div *ngIf="errorMsg"><div class="alert alert-danger">{{errorMsg}}</div><button type="button" class="btn btn-lg btn-primary" (click)="errorMsg = undefined">Ok</button></div>
+            <div *ngIf="errorMsg"><div class="alert alert-danger">{{errorMsg}}</div><button type="button" class="btn btn-lg btn-primary" (click)="errorMsg = undefined; submitting = false;">Ok</button></div>
             <div *ngIf="!errorMsg && !isSuccess">
                 <button type="button" class="btn btn-default" data-dismiss="modalChLogo" (click)="modalChLogo.dismiss()">Cancel</button>
                 <button type="button" class="btn btn-primary" [disabled]="!newImage" (click)="onSubmit()">Save</button>

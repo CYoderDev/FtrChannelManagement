@@ -138,7 +138,7 @@ export class ChannelLogoService {
     private handleError(error) {
         console.error(error);
         if (error instanceof Response)
-            return Observable.throw(error.json().error || 'Backend Server error');
+            return Observable.throw(error.statusText || 'Backend Server error');
         else
             return Observable.throw(error || 'Backend Server Error');
     }

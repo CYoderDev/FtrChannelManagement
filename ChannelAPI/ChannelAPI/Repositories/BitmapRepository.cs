@@ -24,7 +24,7 @@ namespace ChannelAPI.Repositories
         private string _bitmapDirectory;
         private int _logoHeight;
         private int _logoWidth;
-        private int _maxBitmapId = 10000;
+        internal int _maxBitmapId = 10000;
         private string _logoFormat;
         private string _version;
         private ILogger _logger;

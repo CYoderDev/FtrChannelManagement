@@ -26,17 +26,17 @@ var default_logger_service_1 = require("./Logging/default-logger.service");
 var AppModule = (function () {
     function AppModule() {
     }
+    AppModule = __decorate([
+        core_1.NgModule({
+            imports: [platform_browser_1.BrowserModule, http_1.HttpModule, app_routing_1.routing, forms_1.FormsModule, ng2_bs3_modal_1.BsModalModule, main_1.AgGridModule.withComponents([
+                    header_component_1.HeaderComponent,
+                    imagecellrender_component_1.ImageCellRendererComponent
+                ])],
+            declarations: [app_component_1.AppComponent, channel_component_1.ChannelComponent, header_component_1.HeaderComponent, editlogo_component_1.EditLogoForm, channelinfo_component_1.ChannelInfoComponent, imagecellrender_component_1.ImageCellRendererComponent, channelinfo_component_1.FocusableInput],
+            providers: [{ provide: default_logger_service_1.Logger, useClass: consolelogger_service_1.ConsoleLogService }, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService],
+            bootstrap: [app_component_1.AppComponent]
+        })
+    ], AppModule);
     return AppModule;
 }());
-AppModule = __decorate([
-    core_1.NgModule({
-        imports: [platform_browser_1.BrowserModule, http_1.HttpModule, app_routing_1.routing, forms_1.FormsModule, ng2_bs3_modal_1.BsModalModule, main_1.AgGridModule.withComponents([
-                header_component_1.HeaderComponent,
-                imagecellrender_component_1.ImageCellRendererComponent
-            ])],
-        declarations: [app_component_1.AppComponent, channel_component_1.ChannelComponent, header_component_1.HeaderComponent, editlogo_component_1.EditLogoForm, channelinfo_component_1.ChannelInfoComponent, imagecellrender_component_1.ImageCellRendererComponent, channelinfo_component_1.FocusableInput],
-        providers: [{ provide: default_logger_service_1.Logger, useClass: consolelogger_service_1.ConsoleLogService }, channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService],
-        bootstrap: [app_component_1.AppComponent]
-    })
-], AppModule);
 exports.AppModule = AppModule;

@@ -128,6 +128,9 @@ export class ChannelInfoComponent implements OnInit {
                         this.showSubmit = true;
                         this._station.strStationName = newValue;
                     }
+                    else {
+                        this._station.strStationName = this._channel.strStationName;
+                    }
                     break;
                 }
             case "station_desc":
@@ -135,6 +138,9 @@ export class ChannelInfoComponent implements OnInit {
                     if (this.channel.strStationDescription != newValue) {
                         this.showSubmit = true;
                         this._station.strStationDescription = newValue;
+                    }
+                    else {
+                        this._station.strStationDescription = this._channel.strStationDescription;
                     }
                     break;
                 }
@@ -144,8 +150,17 @@ export class ChannelInfoComponent implements OnInit {
                         this.showSubmit = true;
                         this._station.strStationCallSign = newValue;
                     }
+                    else {
+                        this._station.strStationCallSign = this._channel.strStationCallSign;
+                    }
                     break;
                 }
+        }
+        //If station and channel properties the same, then do not show the submit button
+        if (this._station.strStationName == this._channel.strStationName &&
+            this._station.strStationDescription == this._channel.strStationDescription &&
+            this._station.strStationCallSign == this._channel.strStationCallSign) {
+            this.showSubmit = false;
         }
     }
 

@@ -12,7 +12,7 @@
                     <label>Name:</label>
                 </div>
                 <div class="col-lg-8 col-md-7 col-sm-9 col-xs-8">
-                    <input *ngIf="editField == 'station_name'" style="width:100%;" [(ngModel)]="_station.strStationName" value="{{channel.strStationName}}" (input)="onFieldChange($event)" (focusout)="onFieldFocusOut()" (onload)="onInputLoad($event)" autofocus/>
+                    <focusable-input *ngIf="editField == 'station_name' && !stationLoading" [model]="_station.strStationName" [inputValue]="channel.strStationName" (onFieldChange)="onFieldChange($event)" (onFieldFocusOut)="onFieldFocusOut()"></focusable-input>
                     <div *ngIf="editField != 'station_name'">{{_station.strStationName}}<div title="station_name" class="fa fa-pencil-square-o" aria-hidden="true" (click)="onEdit($event)"></div></div>
                 </div>
             </div>
@@ -21,7 +21,6 @@
                     <label>Call Sign:</label>
                 </div>
                 <div class="col-lg-8 col-md-7 col-sm-9 col-xs-8">
-                    <!--<input *ngIf="editField == 'station_callsign' && !stationLoading" style="width:100%" [(ngModel)]="_station.strStationCallSign" value="{{channel.strStationCallSign}}" (input)="onFieldChange($event)" (focusout)="onFieldFocusOut()" (onload)="onInputLoad($event)" autofocus/>-->
                     <focusable-input *ngIf="editField == 'station_callsign' && !stationLoading" [model]="_station.strStationCallSign" [inputValue]="channel.strStationCallSign" (onFieldChange)="onFieldChange($event)" (onFieldFocusOut)="onFieldFocusOut()"></focusable-input>
                     <div *ngIf="editField != 'station_callsign' && !stationLoading">{{_station.strStationCallSign}}<div title="station_callsign" class="fa fa-pencil-square-o" aria-hidden="true" (click)="onEdit($event)"></div></div>
                 </div>
@@ -47,7 +46,7 @@
                     <label>Description:</label>
                 </div>
                 <div class="col-lg-8 col-md-7 col-sm-9 col-xs-8">
-                    <input *ngIf="editField == 'station_desc'" style="width:100%" [(ngModel)]="_station.strStationDescription" value="{{channel.strStationDescription}}" (input)="onFieldChange($event)" (focusout)="onFieldFocusOut()" (onload)="onInputLoad($event)" autofocus/>
+                    <focusable-input *ngIf="editField == 'station_desc' && !stationLoading" [model]="_station.strStationDescription" [inputValue]="channel.strStationDescription" (onFieldChange)="onFieldChange($event)" (onFieldFocusOut)="onFieldFocusOut()"></focusable-input>
                     <div *ngIf="editField != 'station_desc'">{{_station.strStationDescription}}<div title="station_desc" class="fa fa-pencil-square-o" aria-hidden="true" (click)="onEdit($event)"></div></div>
                 </div>
             </div>

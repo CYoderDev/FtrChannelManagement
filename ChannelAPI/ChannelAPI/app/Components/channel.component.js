@@ -168,6 +168,7 @@ var ChannelComponent = (function () {
                 this.vho = vho;
                 this.createRowData();
                 this.gridOptions.api.redrawRows();
+                this.fitGridHeight();
             }
     };
     ChannelComponent.prototype.columnResize = function () {
@@ -237,22 +238,22 @@ var ChannelComponent = (function () {
         }, function () {
             if (_this.updateChannel) {
                 _this.logger.log('Row updated for fios id.', fiosid);
-                var rowNodes = _this.gridOptions.api.getSelectedNodes();
-                if (!rowNodes || rowNodes.length < 1) {
-                    _this.updateChannel = false;
-                    return;
-                }
-                var rowNode = rowNodes[0];
-                rowNode.updateData({
-                    id: _this.channel.strFIOSServiceId,
-                    call: _this.channel.strStationCallSign,
-                    name: _this.channel.strStationName,
-                    num: _this.channel.intChannelPosition,
-                    region: _this.channel.strFIOSRegionName,
-                    logoid: _this.channel.intBitMapId
+                var rowNodes_1 = [];
+                _this.gridOptions.api.forEachNodeAfterFilterAndSort(function (rn) {
+                    if (rn.data.id == _this.channel.strFIOSServiceId) {
+                        rn.updateData({
+                            id: _this.channel.strFIOSServiceId,
+                            call: _this.channel.strStationCallSign,
+                            name: _this.channel.strStationName,
+                            num: rn.data.num,
+                            region: rn.data.region,
+                            logoid: rn.data.logoid
+                        });
+                        rowNodes_1.push(rn);
+                    }
                 });
-                if (_this.editLogoForm.isSuccess)
-                    _this.gridOptions.api.redrawRows({ rowNodes: rowNodes });
+                if (_this.editLogoForm.isSuccess && rowNodes_1.length > 0)
+                    _this.gridOptions.api.redrawRows({ rowNodes: rowNodes_1 });
                 _this.updateChannel = false;
             }
         });

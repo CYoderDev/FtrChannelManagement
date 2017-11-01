@@ -27,7 +27,7 @@ export class EditLogoForm implements OnInit
             this.logger.log("set channel called");
             this._channel = value;
             this.imgSource = this.getUri(value.intBitMapId);
-            if (!this.stations && this.action == editLogoAction.all && this.showForm)
+            if (this.action == editLogoAction.all && (this.showForm || this.modalChLogo.visible))
                 this.loadStations();
         }
     };
@@ -58,7 +58,7 @@ export class EditLogoForm implements OnInit
 
     ngOnInit() {
         this.isLoading = true;
-        if (null == this.channel) {
+        if (!this._channel) {
             this.showForm = false;
             return;
         };

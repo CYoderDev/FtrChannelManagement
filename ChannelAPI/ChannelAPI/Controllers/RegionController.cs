@@ -15,6 +15,7 @@ using ChannelAPI.Repositories;
 
 namespace ChannelAPI.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     public class RegionController : Controller
     {
@@ -36,7 +37,6 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>FiosRegion Json Format</returns>
         /// <example>api/region</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpGet]
         public async Task<IActionResult> Get()
         {

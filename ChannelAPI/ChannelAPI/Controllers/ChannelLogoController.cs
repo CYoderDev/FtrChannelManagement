@@ -43,6 +43,7 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>int[]</returns>
         /// <example>GET: api/channelogo</example>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -64,6 +65,7 @@ namespace ChannelAPI.Controllers
         /// <param name="id">Channel logo bitmap id</param>
         /// <returns>image/png</returns>
         /// <example>GET: api/channellogo/2202</example>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -87,7 +89,7 @@ namespace ChannelAPI.Controllers
         /// <param name="id">Channel logo bitmap id</param>
         /// <returns>int[]</returns>
         /// <example>GET: api/channellogo/2202/station</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
+        [AllowAnonymous]
         [HttpGet("{id}/station")]
         public async Task<IActionResult> GetStations(int id)
         {
@@ -111,7 +113,7 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <param name="base64img">Base64 encoded image string from request body</param>
         /// <returns>int[]</returns>
-        /// <example>GET: api/channellogo/image/duplicate</example>
+        /// <example>PUT: api/channellogo/image/duplicate</example>
         [AllowAnonymous]
         [HttpPut("image/duplicate")]
         public IActionResult GetDuplicates([FromBody]Image img)
@@ -130,6 +132,11 @@ namespace ChannelAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the next available bitmap id that is not currently being used.
+        /// </summary>
+        /// <returns>int</returns>
+        /// <example>GET: api/channellogo/nextid</example>
         [AllowAnonymous]
         [HttpGet("nextid")]
         public IActionResult GetNextId()
@@ -154,7 +161,6 @@ namespace ChannelAPI.Controllers
         /// <param name="id">Channel logo bitmap id</param>
         /// <returns></returns>
         /// <example>POST: api/channellogo/2202</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPost("{id}")]
         public async Task<IActionResult> Post([FromBody]Image value, int id)
         {
@@ -181,7 +187,6 @@ namespace ChannelAPI.Controllers
         /// <param name="id">Channel logo bitmap id</param>
         /// <returns></returns>
         /// <example>PUT: api/channellogo/2202</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id)
         {
@@ -213,7 +218,6 @@ namespace ChannelAPI.Controllers
         /// <param name="value">System.Drawing.Image from request body</param>
         /// <returns></returns>
         /// <example>PUT: api/channellogo/image/2202</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut("image/{id}")]
         public async Task<IActionResult> Put (int id, [FromBody]Image value)
         {
@@ -245,7 +249,6 @@ namespace ChannelAPI.Controllers
         /// <param name="fiosid">Fios Service Id</param>
         /// <returns></returns>
         /// <example>PUT: api/channellogo/2202/station/5</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpPut("{bitmapid}/station/{fiosid}")]
         public async Task<IActionResult> Put (int bitmapid, string fiosid)
         {
@@ -268,96 +271,28 @@ namespace ChannelAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
-
-        [Authorize(policy: "RequireWindowsGroupMembership")]
-        [HttpPut("{bitmapid}/station")]
-        public async Task<IActionResult> PutStationsForm(int bitmapid)
-        {
-            try
-            {
-                _logger.LogTrace("Begin.");
-                IFormCollection form = await this.Request.ReadFormAsync();
-                var stations = form["stations"];
-                if (stations.Count == 0)
-                    return Ok(0);
-                var imageFile = form.Files.GetFile("logo");
-                int retVal = 0;
-                int maxVal = int.Parse(this._config.GetValue<string>("FiosChannelData:DefaultLogoId"));
-                using (var imgStream = imageFile.OpenReadStream())
-                {
-                    var image = Image.FromStream(imgStream);
-
-                    int? nextId = this._bitmapRepo.GetDuplicates(image);
-                    bool isDuplicate = nextId.HasValue;
-
-                    if (!isDuplicate)
-                    {
-                        nextId = this._bitmapRepo.GetNextAvailableId();
-                    }
-
-                    if (!nextId.HasValue)
-                    {
-                        _logger.LogError("Unable to find next available bitmap id.");
-                        return StatusCode(StatusCodes.Status507InsufficientStorage);
-                    }
-                    else if (nextId.Value <= 0 || nextId.Value > maxVal)
-                    {
-                        _logger.LogWarning("Invalid ID. Must be greater than 0 and less than {0}. Provided value: {1}", maxVal, nextId.Value);
-                        return BadRequest();
-                    }
-
-                    if (stations.Count > 1 && !isDuplicate)
-                    {
-                        //Update all and there is a duplicate, assign all stations to duplicate bitmap id
-                        //and update timestamps on duplicate bitmap id
-                        if (isDuplicate)
-                        {
-                            
-                        }
-                        //Update all and no duplicate, update image file for old bitmap id and update timestamps
-                        else
-                        {
-                            await this._bitmapRepo.UpdateBitmap(image, bitmapid.ToString());
-                            await this._bitmapRepo.UpdateChannelBitmap(bitmapid, image);
-                        }
-                    }
-                    else
-                    {
-                        if (isDuplicate)
-                        {
-                            for (int i = 0; i < stations.Count; i++)
-                            {
-                                retVal += await this._stationRepo.UpdateBitmap(stations[i], nextId.Value);
-                            }
-                            await this._bitmapRepo.UpdateChannelBitmap(nextId.Value);
-                        }
-                    }
-                }
-
-                return Ok(retVal);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        }
         #endregion PUT
 
         #region DELETE
         /// <summary>
-        /// Deletes a logo image from the channel logo repository.
+        /// Deletes a logo image from the channel logo repository and assigns 
+        /// stations with the provided ID back to the default.
         /// </summary>
         /// <param name="id">Channel logo bitmap id</param>
         /// <returns></returns>
         /// <example>DELETE: api/channellogo/2202</example>
-        [Authorize(policy: "RequireWindowsGroupMembership")]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
                 this._bitmapRepo.DeleteBitmap(id.ToString());
+                var stations =  await this._bitmapRepo.GetStationsByBitmapId(id);
+                //Assign each station with the deleted bitmap id back to the default
+                foreach (var station in stations)
+                {
+                    _stationRepo.UpdateBitmap(station.strFIOSServiceId, this._bitmapRepo._maxBitmapId);
+                }
                 return Ok();
             }
             catch (FileNotFoundException ex)

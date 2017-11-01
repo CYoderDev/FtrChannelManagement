@@ -43,14 +43,14 @@ namespace ChannelAPI.Controllers
         /// <param name="id">FiOS region ID</param>
         /// <returns>FiOS Channel[]</returns>
         /// <example>GET: api/channel/region/93636</example>
+        [AllowAnonymous]
         [HttpGet("region/{id}")]
         public async Task<IActionResult> GetByRegion(string id)
         {
             try
             {
                 _logger.LogTrace("Begin. params: {0}", id);
-                var channelRepo = new ChannelRepository(this._config);
-                var channels = await channelRepo.GetByRegionAsync(id);
+                var channels = await _channelRepo.GetByRegionAsync(id);
                 if (!channels.Any())
                     return NoContent();
                 else
@@ -63,13 +63,20 @@ namespace ChannelAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Get all channel information by Genre ID
+        /// </summary>
+        /// <param name="id">ID value of the genre</param>
+        /// <returns>FiOS Channel[]</returns>
+        /// <example>GET: api/channel/genre/2</example>
+        [AllowAnonymous]
         [HttpGet("genre/{id}")]
         public async Task<IActionResult> GetByGenre(int id)
         {
             try
             {
                 _logger.LogTrace("Begin. params: {0}", id);
-                var genre = await this._channelRepo.GetByGenreId(id);
+                var genre = await _channelRepo.GetByGenreId(id);
                 return Json(genre);
             }
             catch (Exception ex)
@@ -85,14 +92,14 @@ namespace ChannelAPI.Controllers
         /// <param name="id">FiOS VHO ID</param>
         /// <returns>FiOS Channel[]</returns>
         /// <example>GET: api/channel/vho/1</example>
+        [AllowAnonymous]
         [HttpGet("vho/{id}")]
         public async Task<IActionResult> GetByVHOId(string id)
         {
             try
             {
                 _logger.LogTrace("Begin. params: {0}", id);
-                var channelRepo = new ChannelRepository(this._config);
-                var channel = await channelRepo.GetByVHOId(id);
+                var channel = await _channelRepo.GetByVHOId(id);
                 if (channel == null)
                 {
                     _logger.LogDebug("No channels found.");
@@ -117,14 +124,14 @@ namespace ChannelAPI.Controllers
         /// <param name="name">All or part of the FiOS station name</param>
         /// <returns>FiOS Channel[]</returns>
         /// <example>GET: api/channel/station/abc</example>
+        [AllowAnonymous]
         [HttpGet("station/{name}")]
         public async Task<IActionResult> GetByStationName(string name)
         {
             try
             {
                 _logger.LogTrace("Begin. params: {0}", name);
-                var channelRepo = new ChannelRepository(this._config);
-                var channels = await channelRepo.GetLikeColumn(name, "strStationName");
+                var channels = await _channelRepo.GetLikeColumn(name, "strStationName");
                 if (!channels.Any())
                     return NoContent();
                 else
@@ -143,14 +150,14 @@ namespace ChannelAPI.Controllers
         /// <param name="name">Station call sign</param>
         /// <returns>Fios Channel[]</returns>
         /// <example>GET: api/channel/callsign/abchd</example>
+        [AllowAnonymous]
         [HttpGet("callsign/{name}")]
         public async Task<IActionResult> GetByCallSign(string name)
         {
             try
             {
                 _logger.LogTrace("Begin. params: {0}", name);
-                var channelRepo = new ChannelRepository(this._config);
-                var channels = await channelRepo.GetLikeColumn(name, "strStationCallSign");
+                var channels = await _channelRepo.GetLikeColumn(name, "strStationCallSign");
                 if (!channels.Any())
                     return NoContent();
                 else
@@ -168,14 +175,14 @@ namespace ChannelAPI.Controllers
         /// </summary>
         /// <returns>int[]</returns>
         /// <example>GET: api/channel</example>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
             try
             {
                 _logger.LogTrace("Begin. params: none");
-                var channelRepo = new ChannelRepository(this._config);
-                var channels = await channelRepo.GetAllIdsAsync();
+                var channels = await _channelRepo.GetAllIdsAsync();
                 if (!channels.Any())
                     return NoContent();
                 else
@@ -194,14 +201,14 @@ namespace ChannelAPI.Controllers
         /// <param name="id">FiOS service ID</param>
         /// <returns>FiOS channel</returns>
         /// <example>GET: api/channel/5</example>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
             try
             {
                 _logger.LogTrace("Begin. params: {0}", id);
-                var channelRepo = new ChannelRepository(this._config);
-                var channels = await channelRepo.FindAllByIDAsync(id);
+                var channels = await _channelRepo.FindAllByIDAsync(id);
                 if (!channels.Any())
                     return NotFound();
                 else
