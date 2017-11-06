@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration xmlns="http://FrontierVOps.FiOS.config/Database.xsd">
+  <DataSource Name="IMGADTXCAWDPV01\IMGPRD01" IP="10.106.1.109" Type="TSQL">
+    <Role>
+      <AdminConsole xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">Database</AdminConsole>
+    </Role>
+    <Database Name="DBAdmin">
+      <Function Location="VHE">Admin</Function>
+    </Database>
+    <Database Name="FIOSApp_DC">
+      <Function Location="VHE">Application</Function>
+    </Database>
+    <Database Name="FIOSLog_DC">
+      <Function Location="VHE">Logging</Function>
+    </Database>
+  </DataSource>
+</configuration>

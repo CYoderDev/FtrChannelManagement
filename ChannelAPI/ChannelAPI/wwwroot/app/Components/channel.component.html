@@ -1,0 +1,42 @@
+<div id="chMgmt-primary" class="panel panel-primary">
+    <div class="panel-heading">
+        Channel Management
+    </div>
+    <div class="panel-body">
+        <div class="wrapper">
+            <div class="alert alert-info" role="alert" *ngIf="indLoading">Loading...</div>
+            <div style="margin: 0 0 20px 0">
+                <label style="margin: 0 0 0 10px">VHO:</label>
+                <select *ngIf="vhos" (change)="onVhoSelect($event)">
+                    <option *ngFor="let v of vhos" value="{{v}}">{{v}}</option>
+                </select>
+            </div>
+            <div *ngIf="channels && channels.length==0" class="alert alert-info" role="alert">No channels found!</div>
+            <div *ngIf="showGrid">
+                <ag-grid-angular #agGrid class="ag-fresh" style="width:100%; height: 750px;" id="main-grid"
+                    [gridOptions]="gridOptions"
+                    [columnDefs]="columnDefs"
+
+                    enableColResize
+                    enableCellChangeFlash
+                    pagination
+                    enableSorting
+                    enableFilter
+                    floatingFilter
+                    suppressCellSelection
+                    suppressClickEdit
+                    rowSelection="single"
+                    rowHeight = "110"
+
+                    (modelUpdated)="onModelUpdated()"
+                    (rowClicked)="onRowClicked($event)"
+                    (gridReady)="onReady($event)"
+                    (filterModified)="onFilterModified()">
+                </ag-grid-angular>
+            </div>
+            <div class="alert alert-warning" role="alert" *ngIf="msg">{{msg}}</div> 
+        </div>
+        <channel-info *ngIf="channel" [channel]="channel" (stationchange)="updateRow($event)" (onshow)="fitGridHeight()"></channel-info>
+    </div>
+</div>
+<editLogoForm [channel]="channel" id="editLogo" (channelchange)="updateLogoCell($event)"></editLogoForm>

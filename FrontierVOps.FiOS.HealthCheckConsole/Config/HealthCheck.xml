@@ -1,0 +1,827 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration xmlns="http://FrontierVOps.FiOS.config/HealthChecks.xsd">
+  <Services>
+    <WindowsService Name="W32Time" DisplayName="Windows Time">
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>NT AUTHORITY\LocalService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="eventlog" DisplayName="Windows Event Log">
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>NT AUTHORITY\LocalService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SepMasterService" DisplayName="Symantec Endpoint Protection">
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="LanmanServer" DisplayName="Server">
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="RpcSs" DisplayName="Remote Procedure Call (RPC)" >
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>NT AUTHORITY\NetworkService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="Netlogon" DisplayName="Netlogon" >
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="gpsvc" DisplayName="Group Policy Client" >
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="Dnscache" DisplayName="DNS Client" >
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>NT AUTHORITY\NetworkService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="Dhcp" DisplayName="DHCP Client" >
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>NT AUTHORITY\LocalService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="BITS" DisplayName="Background Intelligent Transfer Service">
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    
+    <!--IIS Web Services-->
+    <WindowsService Name="W3SVC" DisplayName="World Wide Publishing Service">
+      <Include>
+        <Function All="Web"/>
+      </Include>
+      <Exclude>
+        <Servers>
+          <!--Excluding VMS NSP servers because they don't have IIS installed-->
+          <Server Name="VMSSTXCAWAPV01" Domain="VHE.FiOSProd.Net" IP="10.106.1.51"/>
+          <Server Name="VMSSTXCAWAPV02" Domain="VHE.FiOSProd.Net" IP="10.106.1.52"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="WAS" DisplayName="Windows Process Activation Service">
+      <Include>
+        <Function All="Web"/>
+      </Include>
+      <Exclude>
+        <Servers>
+          <!--Excluding VMS NSP servers because they don't have IIS installed-->
+          <Server Name="VMSSTXCAWAPV01" Domain="VHE.FiOSProd.Net" IP="10.106.1.51"/>
+          <Server Name="VMSSTXCAWAPV02" Domain="VHE.FiOSProd.Net" IP="10.106.1.52"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--***************-->
+    
+    <!--SQL Database Services-->
+    <!--BEGIN GENERAL SQL-->
+    <WindowsService Name="ClusSvc" DisplayName="Cluster Service">
+      <Include>
+        <Function All="Database"/>
+      </Include>
+      <Exclude>
+        <Servers>
+          <Server Name="HYDRATXCAWDPP03" Domain="VHO.FiOSProd.Net" IP="10.106.1.191"/>
+          <Server Name="HYDRATXCAWDPP04" Domain="VHO.FiOSProd.Net" IP="10.106.1.192"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="MSiSCSI" DisplayName="Microsoft iSCSI Initiator Service">
+      <Include>
+        <Function All="Database"/>
+      </Include>
+      <Exclude>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+            <MGS>Database</MGS>
+            <Infrastructure>SCOM-DB</Infrastructure>
+          </Role>
+        </Roles>
+        <Servers>
+          <Server Name="HYDRATXCAWDPP03" Domain="VHO.FiOSProd.Net" IP="10.106.1.191"/>
+          <Server Name="HYDRATXCAWDPP04" Domain="VHO.FiOSProd.Net" IP="10.106.1.192"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>       
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLBrowser" DisplayName="SQL Server Browser">
+      <Include>
+        <Function All="Database"/>
+      </Include>
+      <Exclude>
+        <Servers>
+          <Server Name="HYDRATXCAWDPP03" Domain="VHO.FiOSProd.Net" IP="10.106.1.191"/>
+          <Server Name="HYDRATXCAWDPP04" Domain="VHO.FiOSProd.Net" IP="10.106.1.192"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>NT AUTHORITY\LocalService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLWriter" DisplayName="SQL Server VSS Writer">
+      <Include>
+        <Function All="Database"/>
+      </Include>
+      <Exclude>
+        <Servers>
+          <Server Name="HYDRATXCAWDPP03" Domain="VHO.FiOSProd.Net" IP="10.106.1.191"/>
+          <Server Name="HYDRATXCAWDPP04" Domain="VHO.FiOSProd.Net" IP="10.106.1.192"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END GENERAL SQL-->
+    <!--BEGIN ADMIN CONSOLE SQL-->
+    <WindowsService Name="MSSQL$IMGPRD01" DisplayName="SQL Server (IMGPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <AdminConsole>Database</AdminConsole>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$IMGPRD01" DisplayName="SQL Server Agent (IMGPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <AdminConsole>Database</AdminConsole>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END ADMIN CONSOLE SQL-->
+    <!--BEGIN AUTO PROVISIONING SQL-->
+    <WindowsService Name="MSSQL$APVPRD01" DisplayName="SQL Server (APVPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <AutoProvision>Database</AutoProvision>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$APVPRD01" DisplayName="SQL Server Agent (APVPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <AutoProvision>Database</AutoProvision>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END AUTO PROVISIONING SQL-->
+    <!--BEGIN FIOS ADVANCED AIM SQL-->
+    <WindowsService Name="MSSQL$AIMPRD01" DisplayName="SQL Server (AIMPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <FiOSAdvanced-AIM>Database</FiOSAdvanced-AIM>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$AIMPRD01" DisplayName="SQL Server Agent (AIMPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <FiOSAdvanced-AIM>Database</FiOSAdvanced-AIM>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END FIOS ADVANCED AIM SQL-->
+    <!--BEGIN FIOS ADVANCED BANNER ADS SQL-->
+    <WindowsService Name="MSSQL$ADSPRD01" DisplayName="SQL Server (ADSPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <FiOSAdvanced-Banner>Database</FiOSAdvanced-Banner>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$ADSPRD01" DisplayName="SQL Server Agent (ADSPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <FiOSAdvanced-Banner>Database</FiOSAdvanced-Banner>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END FIOS ADVANCED BANNER ADS SQL-->
+    <!--BEGIN HYDRA SQL-->
+    <WindowsService Name="MSSQL$HYDRAPRD01" DisplayName="SQL Server (HYDRAPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <TVE-Hydra>Database</TVE-Hydra>
+          </Role>
+        </Roles>
+      </Include>
+      <Exclude>
+        <Servers>
+          <Server Name="HYDRATXCAWDPP03" Domain="VHE.FiOSProd.Net" IP ="10.106.1.191" />
+          <Server Name="HYDRATXCAWDPP04" Domain="VHE.FiOSProd.Net" IP="10.106.1.192"/>
+        </Servers>
+      </Exclude>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$HYDRAPRD01" DisplayName="SQL Server Agent(HYDRAPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <TVE-Hydra>Database</TVE-Hydra>
+          </Role>
+        </Roles>
+      </Include>
+      <Exclude>
+        <Servers>
+          <Server Name="HYDRATXCAWDPP03" Domain="VHE.FiOSProd.Net" IP ="10.106.1.191" />
+          <Server Name="HYDRATXCAWDPP04" Domain="VHE.FiOSProd.Net" IP="10.106.1.192"/>
+        </Servers>
+      </Exclude>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END HYDRA SQL-->
+    <!--BEGIN HYDRA MONGO-->
+    <WindowsService Name="MongoDBSvc" DisplayName="MongoDBSvc">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <TVE-Hydra>Database</TVE-Hydra>
+          </Role>
+        </Roles>
+      </Include>
+      <Exclude>
+        <Servers>
+          <Server Name="HYDRATXCAWDPP01" Domain="VHE.FiOSProd.Net" IP="10.106.1.23"/>
+          <Server Name="HYDRATXCAWDPP02" Domain="VHE.FiOSProd.Net" IP="10.106.1.24"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END HYDRA MONGO-->
+    <!--BEGIN MSV SQL-->
+    <WindowsService Name="MSSQL$MSVPRD01" DisplayName="SQL Server (MSVPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <MSV>Database</MSV>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$MSVPRD01" DisplayName="SQL Server Agent(MSVPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <MSV>Database</MSV>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END MSV SQL-->
+    <!--BEGIN NSP SQL-->
+    <WindowsService Name="MSSQL$NSPPRD01" DisplayName="SQL Server (NSPPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <NSP>Database</NSP>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$NSPPRD01" DisplayName="SQL Server Agent(NSPPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <NSP>Database</NSP>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END NSP SQL-->
+    <!--BEGIN STB LOG SQL-->
+    <WindowsService Name="MSSQL$LOGPRD01" DisplayName="SQL Server (LOGPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <Logging>Database</Logging>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$LOGPRD01" DisplayName="SQL Server Agent (LOGPRD01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <Logging>Database</Logging>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>vhe\sqladmin</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END STB LOG SQL-->
+    <!--BEGIN SCOM SQL-->
+    <WindowsService Name="MSSQL$SCDB_AG1" DisplayName="SQL Server (SCDB_AG1)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <Infrastructure>SCOM-DB</Infrastructure>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>VHE\SCDB-SQL</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$SCDB_AG1" DisplayName="SQL Server Agent (SCDB_AG1)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <Infrastructure>SCOM-DB</Infrastructure>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>VHE\SCDB-SQL</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="MsDtsServer110" DisplayName="SQL Server Integration Services 11.0">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <Infrastructure>SCOM-DB</Infrastructure>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>VHE\SCDB-SQL</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END SCOM SQL-->
+    <!--BEGIN IMG SQL-->
+    <WindowsService Name="MSSQL$IMG01" DisplayName="SQL Server (IMG01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+            <MGS>Database</MGS>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$IMG01" DisplayName="SQL Server Agent (IMG01)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+            <MGS>Database</MGS>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+
+    <WindowsService Name="MSSQL$IMG02" DisplayName="SQL Server (IMG02)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <Logging>Database</Logging>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$IMG02" DisplayName="SQL Server Agent (IMG02)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+            <MGS>Database</MGS>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+
+    <WindowsService Name="MSSQL$IMG03" DisplayName="SQL Server (IMG03)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$IMG03" DisplayName="SQL Server Agent (IMG03)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+
+    <WindowsService Name="MSSQL$IMG04" DisplayName="SQL Server (IMG04)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="SQLAgent$IMG04" DisplayName="SQL Server Agent (IMG04)">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Database</IMG>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Manual</StartupType>
+        <LogOnAs>IMG\V01_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V02_SQLSVC</LogOnAs>
+        <LogOnAs>IMG\V03_SQLSVC</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END IMG SQL-->
+    
+    <!--***************-->
+    
+    <!--FIOS SERVICES-->
+    <!--BEGIN VOD TRIGGER-->
+    <WindowsService Name="TandbergTriggerService" DisplayName="TandbergTriggerService">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Web</IMG>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END VOD TRIGGER-->
+    
+    <!--BEGIN FILE REPLICATION-->
+    <WindowsService Name="FileReplicationService" DisplayName ="FileReplicationService">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <IMG>Web</IMG>
+            <MES>Web</MES>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>IMG\FTVFRS.user</LogOnAs>
+      </Defaults>     
+    </WindowsService>
+    <!--END FILE REPLICATION-->
+    
+    <!--BEGIN HYDRA WEB-->
+    <WindowsService Name="DataStax_DDC_Server" DisplayName="DataStax DDC Server 3.4.0">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <TVE-Hydra>Web</TVE-Hydra>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="NfsService" DisplayName="Server for NFS">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <TVE-Hydra>Web</TVE-Hydra>
+          </Role>
+        </Roles>
+      </Include>
+      <Exclude>
+        <Servers>
+          <Server Name="HYDRATXCAWWPV01" Domain="VHE.FiOSProd.Net" IP ="10.106.1.25" />
+          <Server Name="HYDRATXCAWWPV02" Domain="VHE.FiOSProd.Net" IP="10.106.1.26"/>
+        </Servers>
+      </Exclude>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>NT AUTHORITY\NetworkService</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <WindowsService Name="VZ.Fios.CEProbeService" DisplayName="VZ.Fios.CEProbeService">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <TVE-Hydra>Web</TVE-Hydra>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END HYDRA WEB-->
+    
+    <!--START MES-->
+    <WindowsService Name="VZ.Fios.HotOnFiosRT" DisplayName="VZ.Fios.HotOnFiosRT">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <MES>Web</MES>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+
+    <WindowsService Name="VZ.Fios.UDPServer" DisplayName="VZ.Fios.UDPServer">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <MES>Web</MES>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+
+    <WindowsService Name="Attachmate Reflection for Secure IT Server" DisplayName="Attachmate Reflection for Secure IT Server">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <MES>Web</MES>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+
+    <WindowsService Name="WidgetDataRetrievalSvc-1.9" DisplayName="WidgetDataRetrievalSvc-1.9">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <MES>Web</MES>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults>
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+
+    <WindowsService Name="CEEASListener" DisplayName="CEEASListener">
+      <Include>
+        <Roles>
+          <Role xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd">
+            <MES>Web</MES>
+          </Role>
+        </Roles>
+      </Include>
+      <Defaults OnePerGroup="true">
+        <Status>Running</Status>
+        <StartupType>Automatic</StartupType>
+        <LogOnAs>LocalSystem</LogOnAs>
+      </Defaults>
+    </WindowsService>
+    <!--END MES-->
+    <!--***************-->
+  </Services>
+  
+  <!--EXEMPTIONS-->
+  <Exemptions>
+    <IIS>
+      <Servers>
+        <Server Name="VMSSTXCAWAPV01" Domain="VHE.FiOSProd.Net" IP="10.106.1.51"/>
+        <Server Name="VMSSTXCAWAPV02" Domain="VHE.FiOSProd.Net" IP="10.106.1.52"/>
+      </Servers>
+    </IIS>
+    <HardDrive>
+      <DriveLetter>O</DriveLetter>
+      <Filter>
+        <Servers>
+          <Server Name="CTXV01PIMGD03" Domain="IMG.FiOSProd.Net" IP="104.55.104.137"/>
+        </Servers>
+      </Filter>
+    </HardDrive>
+  </Exemptions>
+</configuration>

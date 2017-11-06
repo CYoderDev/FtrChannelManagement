@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="FiOSRoles"
+    targetNamespace="http://FrontierVOps.FiOS.config/FiOSRoles.xsd"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd"
+    xmlns:mstns="http://FrontierVOps.FiOS.config/FiOSRoles.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:element name="configuration">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Roles" type="RoleType" />
+      </xs:sequence>
+    </xs:complexType>
+    <xs:key name="keyRole">
+      <xs:selector xpath="Roles/*" />
+      <xs:field xpath="Roles/*" />
+    </xs:key>
+    <xs:keyref name="keyrefRole" refer="keyRole">
+      <xs:selector xpath="Role/*" />
+      <xs:field xpath="." />
+    </xs:keyref>
+  </xs:element>
+
+  <xs:complexType name="Role">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="AdminConsole" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="AES" type="AESSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="AutoProvision" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="FiOSAdvanced-AIM" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="FiOSAdvanced-Banner" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="FOTG" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="TVE-Hydra" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="MSV" type="MSVSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="NSP" type="NSPSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Playready" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="RatingsAndRecomm" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Search" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Logging" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="VOD" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="WebRemote-MediaMgr" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Infrastructure" type="InfrastructureSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Gateway" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="IMG" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="MES" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="MGS" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="MMG" type="CommonSubRole" minOccurs="0" maxOccurs="unbounded" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="Function">
+    <xs:attribute name="All" type="CommonSubRole" use="required" />
+  </xs:complexType>
+    
+  <xs:complexType name="RoleType">
+    <xs:sequence>
+      <xs:element name="Role" type="Role">
+        <!--<xs:unique name="unique-Rl">
+          <xs:selector xpath="*" />
+          <xs:field xpath="." />
+        </xs:unique>-->
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="AESSubRole">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FrontEnd" />
+      <xs:enumeration value="KeyGen" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="MSVSubRole">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Database" />
+      <xs:enumeration value="Injection" />
+      <xs:enumeration value="Ultra-Violet" />
+      <xs:enumeration value="Web" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NSPSubRole">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Application" />
+      <xs:enumeration value="Database" />
+      <xs:enumeration value="TCP" />
+      <xs:enumeration value="UDP" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="InfrastructureSubRole">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DomainController" />
+      <xs:enumeration value="AV-Mgmt" />
+      <xs:enumeration value="Hopper" />
+      <xs:enumeration value="SCOM-DB" />
+      <xs:enumeration value="SCOM-Mgmt" />
+      <xs:enumeration value="SCOM-GW" />
+      <xs:enumeration value="SCOM-RS" />
+      <xs:enumeration value="SCCM" />
+      <xs:enumeration value="SFTP" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CommonSubRole">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Web" />
+      <xs:enumeration value="Database" />
+      <xs:enumeration value="Application" />
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,67 @@
+#horizontal-collapse {
+    width:100%;
+    background-color:black;
+    height: 10px;
+    font-size: 8px;
+    line-height: 1;
+}
+
+.center-contents {
+    text-align:center;
+}
+
+#collapse-button {
+    background-color:cornflowerblue;
+    border: 1px inset white;
+}
+
+h4 {
+    border: 3px outset gray;
+    padding: 5px;
+    color: white;
+}
+
+.region-header {
+    border-bottom: 1px double black;
+    width: 100%;
+}
+
+.text-overflow {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#region-column {
+    border: 3px inset black;
+    border-radius: 5px;
+    padding: 10px;
+    background: -moz-linear-gradient(top, rgba(155,158,170,0.4) 0%, rgba(0,0,0,0.09) 96%, rgba(0,0,0,0.08) 100%);
+    background: -webkit-linear-gradient(top, rgba(155,158,170,0.4) 0%,rgba(0,0,0,0.09) 96%,rgba(0,0,0,0.08) 100%);
+    background: linear-gradient(to bottom, rgba(155,158,170,0.4) 0%,rgba(0,0,0,0.09) 96%,rgba(0,0,0,0.08) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#669b9eaa', endColorstr='#14000000',GradientType=0 );
+}
+
+#title-wrapper {
+    width: 100%;
+    background-color: black;
+    margin: 0 0 10px 0;
+}
+
+.row {
+    margin-right: 0 !important;
+}
+
+.btn {
+    margin: 10px 15px 0 15px;
+}
+
+.btn-group {
+    padding-left: 15px;
+}
+
+.btn-row {
+    margin-left:15px;
+    clear:both;
+    text-align: center;
+}

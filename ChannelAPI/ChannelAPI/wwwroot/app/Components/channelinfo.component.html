@@ -1,0 +1,89 @@
+<div class="well" id="chan-detail">
+    <div id="title-wrapper" style="width:100%">
+        <h4>Channel Details</h4>
+    </div>
+    <div class="row">
+        <div *ngIf="stationLoading" class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+            <div class="fa fa-spinner fa-pulse"></div>
+        </div>
+        <div *ngIf="!stationLoading" class="col-lg-6 col-md-6 col-sm-5 col-xs-6">
+            <div class="row">
+                <div class="col-lg-4 col-md-5 col-sm-3 col-xs-4">
+                    <label>Name:</label>
+                </div>
+                <div class="col-lg-8 col-md-7 col-sm-9 col-xs-8">
+                    <focusable-input *ngIf="editField == 'station_name' && !stationLoading" [model]="_station.strStationName" [inputValue]="channel.strStationName" (onFieldChange)="onFieldChange($event)" (onFieldFocusOut)="onFieldFocusOut()"></focusable-input>
+                    <div *ngIf="editField != 'station_name'">{{_station.strStationName}}<div title="station_name" class="fa fa-pencil-square-o" aria-hidden="true" (click)="onEdit($event)"></div></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-5 col-sm-3 col-xs-4">
+                    <label>Call Sign:</label>
+                </div>
+                <div class="col-lg-8 col-md-7 col-sm-9 col-xs-8">
+                    <focusable-input *ngIf="editField == 'station_callsign' && !stationLoading" [model]="_station.strStationCallSign" [inputValue]="channel.strStationCallSign" (onFieldChange)="onFieldChange($event)" (onFieldFocusOut)="onFieldFocusOut()"></focusable-input>
+                    <div *ngIf="editField != 'station_callsign' && !stationLoading">{{_station.strStationCallSign}}<div title="station_callsign" class="fa fa-pencil-square-o" aria-hidden="true" (click)="onEdit($event)"></div></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-5 col-sm-3 col-xs-4">
+                    <label>Provider ID:</label>
+                </div>
+                <div class="col-lg-8 col-md-7 col-sm-7 col-xs-8">
+                    <span>{{channel.tmsId}}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-5 col-sm-3 col-xs-4">
+                    <label>Logo Last Updated:</label>
+                </div>
+                <div class="col-lg-8 col-md-7 col-sm-7 col-xs-8">
+                    <span>{{channel.dtCreateDate | date: 'M/d/yy h:mm a Z'}}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-5 col-sm-3 col-xs-4">
+                    <label>Description:</label>
+                </div>
+                <div class="col-lg-8 col-md-7 col-sm-9 col-xs-8">
+                    <focusable-input *ngIf="editField == 'station_desc' && !stationLoading" [model]="_station.strStationDescription" [inputValue]="channel.strStationDescription" (onFieldChange)="onFieldChange($event)" (onFieldFocusOut)="onFieldFocusOut()"></focusable-input>
+                    <div *ngIf="editField != 'station_desc'">{{_station.strStationDescription}}<div title="station_desc" class="fa fa-pencil-square-o" aria-hidden="true" (click)="onEdit($event)"></div></div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="regionLoading" class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+            <div class="fa fa-spinner fa-pulse"></div> 
+        </div>
+        <div *ngIf="!regionLoading" class="col-lg-6 col-md-6 col-sm-7 col-xs-6" id="region-column">
+            <div class="row">
+                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5 center-contents">
+                    <label class="region-header">Regions</label>
+                    <div *ngFor="let region of regions">
+                        <div class="text-overflow" title="{{region.name}}">{{region.name}}</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 center-contents">
+                    <label class="region-header">Ch#</label>
+                    <div *ngFor="let region of regions">
+                        <div>{{region.channel}}</div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 center-contents">
+                    <label class="region-header">Genre</label>
+                    <div *ngFor="let region of regions">
+                        <div class="text-overflow" title="{{region.genre}}">{{region.genre}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row btn-row">
+            <div class="btn-group" *ngIf="showSubmit && !isSubmitting && !errorMsg && !isSuccess">
+                <button type="submit" class="btn btn-primary" (click)="onSubmit($event)">Submit</button>
+                <button type="button" class="btn btn-default" (click)="onCancel($event)">Cancel</button>
+            </div>
+            <label id="success_msg" class="alert alert-success" *ngIf="isSuccess && !isSubmitting">Successfully updated!</label>
+            <label id="error_msg" class="alert alert-danger" *ngIf="!isSuccess && !isSubmitting && errorMsg">Submit FAILED: {{errorMsg}}</label>
+            <label id="submitting" class="alert alert-info" *ngIf="isSubmitting">Submitting...</label>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="Database"
+    targetNamespace="http://FrontierVOps.FiOS.config/Database.xsd"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    xmlns="http://FrontierVOps.FiOS.config/Database.xsd"
+    xmlns:mstns="http://FrontierVOps.FiOS.config/Database.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:fr="http://FrontierVOps.FiOS.config/FiOSRoles.xsd"
+>
+  <xs:import namespace="http://FrontierVOps.FiOS.config/FiOSRoles.xsd"/>
+  <xs:element name="configuration">
+    <xs:annotation>
+      <xs:documentation>Configuration Root Element</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="DataSource" type="DatasourceType" minOccurs="1" maxOccurs="unbounded" />
+      </xs:sequence>
+      
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="DatasourceType">
+    <xs:sequence>
+      <xs:element name="Role" type="fr:Role" minOccurs="1" maxOccurs="1" />
+      <xs:element name="Database" type="DatabaseType" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" use="required" />
+    <xs:attribute name="IP" type="xs:string" use="required" />
+    <xs:attribute name="Type" type="DbVersion" use="optional" default="TSQL" />
+  </xs:complexType>
+
+  <xs:complexType name="DatabaseType">
+    <xs:sequence>
+      <xs:element name="Function" minOccurs="1" maxOccurs="1">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="DbFunction">
+              <xs:attribute name="Location" type="DbLocation" use="required" />
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:simpleType name="DbFunction">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Admin" />
+      <xs:enumeration value="Application" />
+      <xs:enumeration value="Logging" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DbLocation">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="VHE" />
+      <xs:enumeration value="VHO" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="DbVersion">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TSQL" />
+      <xs:enumeration value="Mongo" />
+      <xs:enumeration value="Cassandra" />
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,79 @@
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="max-age=0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>@ViewData["Title"] - ChannelManager</title>
+
+    <environment names="Development">
+        <link rel="stylesheet" href="~/css/site.css" />
+        <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.min.css" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="~/lib/es6-shim/es6-shim.min.js"></script>
+        <script src="~/lib/systemjs/dist/system-polyfills.js"></script>
+        <script src="~/lib/babel-polyfill/dist/polyfill.min.js"></script>
+        <script src="~/lib/zone.js/dist/zone.js"></script>
+        <script src="~/lib/reflect-metadata/Reflect.js"></script>
+        <base href="/" />
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.min.css" />
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="~/lib/es6-shim/es6-shim.min.js"></script>
+        <script src="~/lib/systemjs/dist/system-polyfills.js"></script>
+        <script src="~/lib/babel-polyfill/dist/polyfill.min.js"></script>
+        <script src="~/lib/zone.js/dist/zone.min.js"></script>
+        <script src="~/lib/reflect-metadata/Reflect.js"></script>
+        <base href="/FtrChannelManager/" />
+    </environment>
+    <script src="~/lib/systemjs/dist/system.src.js"></script>
+    <script src="~/js/systemjs.config.js"></script>
+    <script>
+        System.import('app').catch(function (err) { console.error(err); });
+    </script>
+    @Html.Raw(JavaScriptSnippet.FullScript)
+</head>
+<body id="main-container">
+    <div>
+        @RenderBody()
+    </div>
+    <footer id="footer" class="flex-row bg-black3d">
+        <div style="text-align:left; flex-grow:1">
+            <p style="justify-content:flex-start">- @Context.User.Identity.Name -</p>
+        </div>
+        <div>
+            <p>&copy; @DateTime.Now.Year - ChannelManager</p>
+        </div>
+    </footer>
+    @*<environment names="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+        </script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+    </environment>*@
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

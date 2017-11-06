@@ -1,0 +1,61 @@
+<bs-modal (onClose)="onModalClose()" (onDismiss)="onModalClose()" #modalChLogo>
+    <form novalidate (ngSubmit)="onSubmit()">
+        <bs-modal-header [showDismiss]="true">
+            <h4 class="modal-title">Edit Channel Logo</h4>
+        </bs-modal-header>
+        <bs-modal-body>
+            <div class="form-group" *ngIf="channel">
+                <div id="img-row-wrapper" class="bg-black3d">
+                    <div class="pull-left">
+                        <img [src]="imgSource" alt="None" height="80" width="100" />
+                        <div class="image-label"><label>Current Logo</label></div>
+                    </div>
+                    <div [hidden]="!newImage" class="pull-right">
+                        <img id="newImage" alt="None" height="80" width="100" />
+                        <div class="image-label"><label>New Logo</label></div>
+                    </div>
+                </div>
+                <div style="clear:both">
+                    <input #inputImg type="file" (change)="newImageChange($event)" [disabled]="submitting"/>
+                </div>
+                <br />
+                <div style="padding: 5px">
+                    <select (change)="onActionChange($event)" [disabled]="submitting">
+                        <option value="all" selected>Update All</option>
+                        <option value="single">Create New</option>
+                    </select>
+                    <br />
+                    <label style="margin-top:10px" id ="action-desc" class="alert alert-info">Updates the logo for all stations to which this logo is currently assigned (listed below).</label>
+                </div>
+                <div *ngIf="stationsLoading && showStations" class="fa fa-lg fa-spinner fa-pulse" aria-hidden="true"></div>
+                <div *ngIf="showStations && stations">
+                    <h3>{{stations.length}} Station(s) Affected</h3>
+                    <ul id="station-list">
+                        <li *ngFor="let station of stations">
+                            <div>
+                                <label class="label-left">Name: </label><div class="div-right">{{station.strStationName}}</div>
+                                <label class="label-left">Call Sign: </label><div class="div-right">{{station.strStationCallSign}}</div>
+                                <label class="label-left">Location: </label><div class="div-right">{{station.strFIOSRegionName}}</div>
+                                <label class="label-left">Ch#: </label><div class="div-right">{{station.intChannelPosition}}</div>
+                                <br />
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </bs-modal-body>
+        <bs-modal-footer>
+            <div id="submit-wrapper" *ngIf="!errorMsg && !isSuccess && submitting"><div  class="fa fa-spinner fa-pulse left" aria-hidden="true"></div><label class="label text-justify" style="background: darkslategray">Submitting...</label></div>
+            <div *ngIf="errorMsg"><div class="alert alert-danger">{{errorMsg}}</div><button type="button" class="btn btn-lg btn-primary" (click)="errorMsg = undefined; submitting = false;">Ok</button></div>
+            <div *ngIf="!errorMsg && !isSuccess">
+                <button type="button" class="btn btn-default" data-dismiss="modalChLogo" (click)="modalChLogo.dismiss()">Cancel</button>
+                <button type="button" class="btn btn-primary" [disabled]="!newImage" (click)="onSubmit()">Save</button>
+            </div>
+            <div *ngIf="!errorMsg && isSuccess" class="alert alert-success flex-container flex-row">
+                <div style="flex-grow: 1">Success!</div>
+                <div style="flex-grow: 1; visibility:hidden"></div>
+                <button type="button" class="btn btn-default" data-dismiss="modalChLogo" (click)="modalChLogo.close()">Close</button>
+            </div>
+        </bs-modal-footer>
+    </form>
+</bs-modal>
