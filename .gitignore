@@ -188,3 +188,5 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 /FrontierVOps.Common/FrontierVOps.ChannelMapWS/LogoRepository
+/ChannelAPI/ChannelAPI/ChannelLogoRepository
+/ChannelAPI/ChannelAPI/wwwroot/ChannelLogoRepository
