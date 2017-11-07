@@ -81,6 +81,7 @@ var EditLogoForm = (function () {
     };
     EditLogoForm.prototype.OpenForm = function () {
         this.logger.log('opening edit logo modal');
+        this.newImage = undefined;
         if (this._channel)
             this.loadStations();
         this.modalChLogo.open();

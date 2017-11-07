@@ -86,6 +86,7 @@ export class EditLogoForm implements OnInit
 
     OpenForm() {
         this.logger.log('opening edit logo modal');
+        this.newImage = undefined;
         if (this._channel)
             this.loadStations();
         this.modalChLogo.open();
