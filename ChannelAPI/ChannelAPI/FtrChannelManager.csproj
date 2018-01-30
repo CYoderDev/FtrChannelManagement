@@ -9,7 +9,9 @@
     <Authors>Cameron Yoder</Authors>
     <Description>Channel Management Application for Frontier Communications Video Operations</Description>
     <Copyright>Frontier Communications</Copyright>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
+    <AssemblyVersion>1.1.0.1</AssemblyVersion>
+    <FileVersion>1.1.0.1</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
