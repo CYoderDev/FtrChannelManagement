@@ -203,3 +203,5 @@ ModelManifest.xml
 /HealthCheck
 /ChannelAPI/ChannelAPI/ChannelLogoRepository
 /ChannelAPI/ChannelAPI/wwwroot/ChannelLogoRepository
+/ChannelAPI/.vs/
+/.vs
