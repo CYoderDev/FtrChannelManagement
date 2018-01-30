@@ -143,7 +143,10 @@ var EditLogoForm = (function () {
                 _this.updateStation(_this.stations, nextId);
             }
             else if (_this.action == editLogoAction.all && !duplicate) {
-                _this.updateLogo(_this.channel.intBitMapId);
+                if (_this.channel.intBitMapId == 10000)
+                    _this.createLogo(_this.channel.strFIOSServiceId, nextId);
+                else
+                    _this.updateLogo(_this.channel.intBitMapId);
             }
             else if (duplicate) {
                 _this.updateStation([_this.channel], nextId);

@@ -267,7 +267,7 @@ namespace ChannelAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex.Message + ex.StackTrace);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

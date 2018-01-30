@@ -4,6 +4,13 @@
             <h4 class="modal-title">Edit Channel Logo</h4>
         </bs-modal-header>
         <bs-modal-body>
+            <div *ngIf="!channel" class="flex-container flex-row">
+                <div style="flex-grow: 1; visibility: hidden"></div>
+                <div style="justify-content:center; align-content: center;">
+                    <div class="fa fa-spinner fa-pulse left" aria-hidden="true"></div><label class="label text-justify" style="background: darkslategray; margin-left: 5px">Loading Channel Data...</label>
+                </div>
+                <div style="flex-grow: 1; visibility: hidden"></div>
+            </div>
             <div class="form-group" *ngIf="channel">
                 <div id="img-row-wrapper" class="bg-black3d">
                     <div class="pull-left">

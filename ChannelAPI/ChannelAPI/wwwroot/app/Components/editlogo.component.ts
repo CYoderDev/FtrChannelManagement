@@ -86,6 +86,7 @@ export class EditLogoForm implements OnInit
 
     OpenForm() {
         this.logger.log('opening edit logo modal');
+        this.newImage = undefined;
         if (this._channel)
             this.loadStations();
         this.modalChLogo.open();
@@ -158,7 +159,10 @@ export class EditLogoForm implements OnInit
                 }
                 //Update logo image for existing ID
                 else if (this.action == editLogoAction.all && !duplicate) {
-                    this.updateLogo(this.channel.intBitMapId);
+                    if (this.channel.intBitMapId == 10000)
+                        this.createLogo(this.channel.strFIOSServiceId, nextId);
+                    else
+                        this.updateLogo(this.channel.intBitMapId);
                 }
                 //Assign this station to duplicate id
                 else if (duplicate) {
