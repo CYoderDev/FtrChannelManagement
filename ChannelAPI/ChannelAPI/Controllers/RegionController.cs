@@ -73,7 +73,25 @@ namespace ChannelAPI.Controllers
                 var response = await _regionRepo.GetActiveVHOs();
                 if (response == null || !response.Any())
                     return NoContent();
-                return Json(response);
+
+                var sortedResponse = new SortedList<int, string>();
+                foreach (var vhoName in response)
+                {
+                    if (vhoName.ToLower().Contains("vho"))
+                    {
+                        int vhoNumber;
+                        if (int.TryParse(vhoName.ToLower().Replace("vho", "").Trim(), out vhoNumber))
+                            sortedResponse.Add(vhoNumber, vhoName);
+                        else
+                            _logger.LogError("Could not parse vho number from {0}.", vhoName);
+                    }
+                    else
+                    {
+                        _logger.LogError("Incorrectly formatted vho name. {0}", vhoName);
+                    }
+                }
+                
+                return Json(sortedResponse.Values);
             }
             catch (Exception ex)
             {
