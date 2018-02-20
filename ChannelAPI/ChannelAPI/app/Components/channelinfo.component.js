@@ -194,29 +194,29 @@ var ChannelInfoComponent = (function () {
         this.errorMsg = undefined;
         this.isSuccess = false;
     };
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [Object])
-    ], ChannelInfoComponent.prototype, "channel", null);
-    __decorate([
-        core_1.Output(),
-        __metadata("design:type", core_1.EventEmitter)
-    ], ChannelInfoComponent.prototype, "stationchange", void 0);
-    __decorate([
-        core_1.Output(),
-        __metadata("design:type", core_1.EventEmitter)
-    ], ChannelInfoComponent.prototype, "onshow", void 0);
-    ChannelInfoComponent = __decorate([
-        core_1.Component({
-            selector: 'channel-info',
-            templateUrl: 'app/Components/channelinfo.component.html',
-            styleUrls: ['app/Styles/channelinfo.component.css']
-        }),
-        __metadata("design:paramtypes", [channel_service_1.ChannelService, default_logger_service_1.Logger])
-    ], ChannelInfoComponent);
     return ChannelInfoComponent;
 }());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object),
+    __metadata("design:paramtypes", [Object])
+], ChannelInfoComponent.prototype, "channel", null);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], ChannelInfoComponent.prototype, "stationchange", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], ChannelInfoComponent.prototype, "onshow", void 0);
+ChannelInfoComponent = __decorate([
+    core_1.Component({
+        selector: 'channel-info',
+        templateUrl: 'app/Components/channelinfo.component.html',
+        styleUrls: ['app/Styles/channelinfo.component.css']
+    }),
+    __metadata("design:paramtypes", [channel_service_1.ChannelService, default_logger_service_1.Logger])
+], ChannelInfoComponent);
 exports.ChannelInfoComponent = ChannelInfoComponent;
 var FocusableInput = (function () {
     function FocusableInput() {
@@ -232,33 +232,33 @@ var FocusableInput = (function () {
     FocusableInput.prototype.onFieldFocusOut = function ($event) {
         this.onFieldFocusOutEvent.emit($event);
     };
-    __decorate([
-        core_1.ViewChild('focusinput'),
-        __metadata("design:type", core_1.ElementRef)
-    ], FocusableInput.prototype, "focusInput", void 0);
-    __decorate([
-        core_1.Input('model'),
-        __metadata("design:type", Object)
-    ], FocusableInput.prototype, "model", void 0);
-    __decorate([
-        core_1.Input('inputValue'),
-        __metadata("design:type", String)
-    ], FocusableInput.prototype, "inputValue", void 0);
-    __decorate([
-        core_1.Output('onFieldChange'),
-        __metadata("design:type", core_1.EventEmitter)
-    ], FocusableInput.prototype, "onFieldChangeEvent", void 0);
-    __decorate([
-        core_1.Output('onFieldFocusOut'),
-        __metadata("design:type", core_1.EventEmitter)
-    ], FocusableInput.prototype, "onFieldFocusOutEvent", void 0);
-    FocusableInput = __decorate([
-        core_1.Component({
-            selector: 'focusable-input',
-            template: "\n        <input #focusinput [(ngModel)]=\"model\" value=\"{{inputValue}}\" (input)=\"onFieldChange($event)\" (focusout)=\"onFieldFocusOut($event)\" autofocus/>\n    ",
-            styles: ['width:100%']
-        })
-    ], FocusableInput);
     return FocusableInput;
 }());
+__decorate([
+    core_1.ViewChild('focusinput'),
+    __metadata("design:type", core_1.ElementRef)
+], FocusableInput.prototype, "focusInput", void 0);
+__decorate([
+    core_1.Input('model'),
+    __metadata("design:type", Object)
+], FocusableInput.prototype, "model", void 0);
+__decorate([
+    core_1.Input('inputValue'),
+    __metadata("design:type", String)
+], FocusableInput.prototype, "inputValue", void 0);
+__decorate([
+    core_1.Output('onFieldChange'),
+    __metadata("design:type", core_1.EventEmitter)
+], FocusableInput.prototype, "onFieldChangeEvent", void 0);
+__decorate([
+    core_1.Output('onFieldFocusOut'),
+    __metadata("design:type", core_1.EventEmitter)
+], FocusableInput.prototype, "onFieldFocusOutEvent", void 0);
+FocusableInput = __decorate([
+    core_1.Component({
+        selector: 'focusable-input',
+        template: "\n        <input #focusinput [(ngModel)]=\"model\" value=\"{{inputValue}}\" (input)=\"onFieldChange($event)\" (focusout)=\"onFieldFocusOut($event)\" autofocus/>\n    ",
+        styles: ['width:100%']
+    })
+], FocusableInput);
 exports.FocusableInput = FocusableInput;

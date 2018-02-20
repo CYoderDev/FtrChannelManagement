@@ -67,10 +67,10 @@ var ChannelService = (function () {
         else
             return Observable_1.Observable.throw(error || 'Backend Server Error');
     };
-    ChannelService = __decorate([
-        core_1.Injectable(),
-        __metadata("design:paramtypes", [http_1.Http])
-    ], ChannelService);
     return ChannelService;
 }());
+ChannelService = __decorate([
+    core_1.Injectable(),
+    __metadata("design:paramtypes", [http_1.Http])
+], ChannelService);
 exports.ChannelService = ChannelService;

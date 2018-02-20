@@ -293,25 +293,25 @@ var ChannelComponent = (function () {
             });
         });
     };
-    __decorate([
-        core_1.ViewChild(editlogo_component_1.EditLogoForm),
-        __metadata("design:type", editlogo_component_1.EditLogoForm)
-    ], ChannelComponent.prototype, "editLogoForm", void 0);
-    __decorate([
-        core_1.HostListener('window:resize', ['$event']),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object]),
-        __metadata("design:returntype", void 0)
-    ], ChannelComponent.prototype, "onWindowResize", null);
-    ChannelComponent = __decorate([
-        core_1.Component({
-            selector: 'channel-manager',
-            templateUrl: 'app/Components/channel.component.html',
-        }),
-        __metadata("design:paramtypes", [channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService, default_logger_service_1.Logger])
-    ], ChannelComponent);
     return ChannelComponent;
 }());
+__decorate([
+    core_1.ViewChild(editlogo_component_1.EditLogoForm),
+    __metadata("design:type", editlogo_component_1.EditLogoForm)
+], ChannelComponent.prototype, "editLogoForm", void 0);
+__decorate([
+    core_1.HostListener('window:resize', ['$event']),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ChannelComponent.prototype, "onWindowResize", null);
+ChannelComponent = __decorate([
+    core_1.Component({
+        selector: 'channel-manager',
+        templateUrl: 'app/Components/channel.component.html',
+    }),
+    __metadata("design:paramtypes", [channel_service_1.ChannelService, channellogo_service_1.ChannelLogoService, default_logger_service_1.Logger])
+], ChannelComponent);
 exports.ChannelComponent = ChannelComponent;
 function actionCellRenderer(params) {
     var htmlElements = '<button type="button" class="btn btn-primary btn-xs btn-edit-img" data-action-type="editlogo" title="Edit" (click)="editChannel(channel.id)">Edit</button>';
