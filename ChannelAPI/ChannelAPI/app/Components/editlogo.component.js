@@ -235,31 +235,31 @@ var EditLogoForm = (function () {
         this.isSuccess = false;
         this.stations = undefined;
     };
+    __decorate([
+        core_1.ViewChild('modalChLogo'),
+        __metadata("design:type", ng2_bs3_modal_1.BsModalComponent)
+    ], EditLogoForm.prototype, "modalChLogo", void 0);
+    __decorate([
+        core_1.ViewChild('inputImg'),
+        __metadata("design:type", core_1.ElementRef)
+    ], EditLogoForm.prototype, "inputImg", void 0);
+    __decorate([
+        core_1.Input(),
+        __metadata("design:type", Object),
+        __metadata("design:paramtypes", [Object])
+    ], EditLogoForm.prototype, "channel", null);
+    __decorate([
+        core_1.Output(),
+        __metadata("design:type", core_1.EventEmitter)
+    ], EditLogoForm.prototype, "channelchange", void 0);
+    EditLogoForm = __decorate([
+        core_1.Component({
+            selector: 'editLogoForm',
+            templateUrl: 'app/Components/editlogo.component.html',
+            styleUrls: ['app/Styles/editlogo.component.css']
+        }),
+        __metadata("design:paramtypes", [channellogo_service_1.ChannelLogoService, default_logger_service_1.Logger])
+    ], EditLogoForm);
     return EditLogoForm;
 }());
-__decorate([
-    core_1.ViewChild('modalChLogo'),
-    __metadata("design:type", ng2_bs3_modal_1.BsModalComponent)
-], EditLogoForm.prototype, "modalChLogo", void 0);
-__decorate([
-    core_1.ViewChild('inputImg'),
-    __metadata("design:type", core_1.ElementRef)
-], EditLogoForm.prototype, "inputImg", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Object),
-    __metadata("design:paramtypes", [Object])
-], EditLogoForm.prototype, "channel", null);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", core_1.EventEmitter)
-], EditLogoForm.prototype, "channelchange", void 0);
-EditLogoForm = __decorate([
-    core_1.Component({
-        selector: 'editLogoForm',
-        templateUrl: 'app/Components/editlogo.component.html',
-        styleUrls: ['app/Styles/editlogo.component.css']
-    }),
-    __metadata("design:paramtypes", [channellogo_service_1.ChannelLogoService, default_logger_service_1.Logger])
-], EditLogoForm);
 exports.EditLogoForm = EditLogoForm;

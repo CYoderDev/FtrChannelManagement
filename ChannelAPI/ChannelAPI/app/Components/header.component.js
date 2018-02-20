@@ -47,13 +47,13 @@ var HeaderComponent = (function () {
     HeaderComponent.prototype.querySelector = function (selector) {
         return this.elementRef.nativeElement.querySelector('.customHeaderMenuButton', selector);
     };
+    HeaderComponent = __decorate([
+        core_1.Component({
+            templateUrl: 'app/Components/header.component.html',
+            styleUrls: ['app/Components/header.component.css']
+        }),
+        __metadata("design:paramtypes", [core_1.ElementRef, default_logger_service_1.Logger])
+    ], HeaderComponent);
     return HeaderComponent;
 }());
-HeaderComponent = __decorate([
-    core_1.Component({
-        templateUrl: 'app/Components/header.component.html',
-        styleUrls: ['app/Components/header.component.css']
-    }),
-    __metadata("design:paramtypes", [core_1.ElementRef, default_logger_service_1.Logger])
-], HeaderComponent);
 exports.HeaderComponent = HeaderComponent;

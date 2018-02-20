@@ -138,10 +138,10 @@ var ChannelLogoService = (function () {
         else
             return Observable_1.Observable.throw(error || 'Backend Server Error');
     };
+    ChannelLogoService = __decorate([
+        core_1.Injectable(),
+        __metadata("design:paramtypes", [http_1.Http])
+    ], ChannelLogoService);
     return ChannelLogoService;
 }());
-ChannelLogoService = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http])
-], ChannelLogoService);
 exports.ChannelLogoService = ChannelLogoService;

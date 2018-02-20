@@ -31,6 +31,7 @@ namespace ChannelAPI.Repositories
 
         public BitmapRepository(IConfiguration config, ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
         {
+            //Get variables from the configuration file
             this._bitmapDirectory = Path.Combine(hostingEnvironment.WebRootPath, "ChannelLogoRepository");
             this._logoHeight = config.GetValue<int>("FiosChannelData:LogoHeight");
             this._logoWidth = config.GetValue<int>("FiosChannelData:LogoWidth");
@@ -42,6 +43,11 @@ namespace ChannelAPI.Repositories
             this._logger = loggerFactory.CreateLogger<BitmapRepository>();
         }
 
+        /// <summary>
+        /// Gets the imagefile by the service ID
+        /// </summary>
+        /// <param name="id">Bitmap ID</param>
+        /// <returns>The image file as an IO stream</returns>
         public Stream GetBitmapById(string id)
         {
             _logger.LogDebug("Getting bitmap by id {0}", id);
@@ -55,6 +61,11 @@ namespace ChannelAPI.Repositories
             return File.OpenRead(bitmapFullPath);
         }
 
+        /// <summary>
+        /// Returns all stations that are mapped to the Bitmap ID
+        /// </summary>
+        /// <param name="bitmapId">Bitmap ID</param>
+        /// <returns>Fios stations mapped to the provided Bitmap ID</returns>
         public async Task<IEnumerable<dynamic>> GetStationsByBitmapId(int bitmapId)
         {
             StringBuilder query = new StringBuilder();
@@ -75,6 +86,12 @@ namespace ChannelAPI.Repositories
             }
         }
 
+        /// <summary>
+        /// Creates the image file from the provided image in the repository.
+        /// </summary>
+        /// <param name="logo">Image that represents the logo</param>
+        /// <param name="id">The bitmap ID to assign to the image</param>
+        /// <returns></returns>
         public async Task InsertBitmap(Image logo, string id)
         {
             if (logo.Height != this._logoHeight || logo.Width != this._logoWidth)
@@ -96,6 +113,7 @@ namespace ChannelAPI.Repositories
                 catch (Exception ex)
                 {
                     tskException = ex;
+                    this._logger.LogError("Failed to save image file. {0} - {1}", ex.Message, ex.StackTrace);
                 }
             });
 
@@ -103,6 +121,12 @@ namespace ChannelAPI.Repositories
                 throw tskException;
         }
 
+        /// <summary>
+        /// Updates an existing image file, archiving the old one.
+        /// </summary>
+        /// <param name="logo">Image that will overwite the existing one</param>
+        /// <param name="id">Bitmap ID of the image</param>
+        /// <returns></returns>
         public async Task UpdateBitmap(Image logo, string id)
         {
             if (logo.Height != this._logoHeight || logo.Width != this._logoWidth)
@@ -120,14 +144,26 @@ namespace ChannelAPI.Repositories
             }
         }
 
+        /// <summary>
+        /// Updates the station's assigned bitmap ID
+        /// </summary>
+        /// <param name="newBitmapId">The new bitmap ID to assign to the station</param>
+        /// <returns></returns>
         public async Task<int> UpdateChannelBitmap(int newBitmapId)
         {
+            //Get the image stream from the existing bitmap
             using (var stream = this.GetBitmapById(newBitmapId.ToString()))
             {
                 return await UpdateChannelBitmap(newBitmapId, Image.FromStream(stream));
             }
         }
 
+        /// <summary>
+        /// Updates the station's assigned bitmap ID and version
+        /// </summary>
+        /// <param name="newBitmapId"></param>
+        /// <param name="logo"></param>
+        /// <returns></returns>
         public async Task<int> UpdateChannelBitmap(int newBitmapId, Image logo)
         {
             int retVal = 0;
@@ -151,6 +187,10 @@ namespace ChannelAPI.Repositories
             return retVal;
         }
 
+        /// <summary>
+        /// Delete the image file from the repository.
+        /// </summary>
+        /// <param name="id"></param>
         public void DeleteBitmap(string id)
         {
             var fileName = Path.Combine(this._bitmapDirectory, (id + this._logoFormat));
@@ -161,6 +201,10 @@ namespace ChannelAPI.Repositories
                 File.Delete(fileName);
         }
 
+        /// <summary>
+        /// Get all BitmapID's that currently exist in the repository directory.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<int> GetAllRepositoryIds()
         {
             return Directory.EnumerateFiles(this._bitmapDirectory, "*" + _logoFormat, SearchOption.TopDirectoryOnly).Select(x =>
@@ -173,18 +217,31 @@ namespace ChannelAPI.Repositories
             }).Where(x => x > 0).Distinct();
         }
 
+        /// <summary>
+        /// Returns any duplicate images if any exist.
+        /// </summary>
+        /// <param name="originalImg">The original image to compare against.</param>
+        /// <returns>The Bitmap Id's of any duplicate images, or null if none are returned</returns>
         public int? GetDuplicates(Image originalImg)
         {
             int? matchedId = null;
+
+            //Make sure the provided image dimensions match the standard height/width of the logo
+            //for comparison reasons.
             if (originalImg.Height != this._logoHeight ||
                 originalImg.Width != this._logoWidth)
             {
                 resizeImage(ref originalImg);
             }
+
+
             using (var ms = new MemoryStream())
             {
                 originalImg.Save(ms, this.getImageFormat());
                 var imgBytes = ms.ToArray();
+
+                //Spend some extra CPU resources to increase the speed of the comparison between each file
+                //by having the iteration run in parallel. A max of 20 threads will be used, if available on the host.
                 ParallelOptions po = new ParallelOptions() { MaxDegreeOfParallelism = 20 };
                 Parallel.ForEach(Directory.EnumerateFiles(this._bitmapDirectory), (file) =>
                 {
@@ -196,8 +253,11 @@ namespace ChannelAPI.Repositories
                         {
                             img.Save(msSrc, img.RawFormat);
                             var srcBytes = msSrc.ToArray();
+
+                            //Skip comparison if the number of bytes between both images are not the same
                             if (imgBytes.Count() != srcBytes.Count())
                                 return;
+
                             //If bytes are equal, or the number of differences are less than 10
                             if (imgBytes.SequenceEqual(srcBytes) ||
                                 imgBytes.Where((x, i) => x != srcBytes[i]).Count() < 10)
@@ -214,6 +274,10 @@ namespace ChannelAPI.Repositories
             return matchedId;
         }
 
+        /// <summary>
+        /// Gets the next unused Bitmap Id from the repository.
+        /// </summary>
+        /// <returns></returns>
         public int GetNextAvailableId()
         {
             for (int i = 1; i < this._maxBitmapId; i++)
@@ -230,6 +294,11 @@ namespace ChannelAPI.Repositories
             throw new ApplicationException("No available bitmap ids. Please contact administrator.");
         }
 
+        /// <summary>
+        /// Converts a file path to a Bitmap ID.
+        /// </summary>
+        /// <param name="path">Full path to the image file.</param>
+        /// <returns></returns>
         private int? filePathToBitmapId(string path)
         {
             string fileName = Path.GetFileNameWithoutExtension(path);
@@ -246,9 +315,20 @@ namespace ChannelAPI.Repositories
             }
         }
 
+        /// <summary>
+        /// Updates the Bitmap details in the database to prompt the STB to update the
+        /// cache and download the newest image.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="transaction"></param>
+        /// <param name="bitmapId"></param>
+        /// <param name="logo"></param>
+        /// <returns></returns>
         private async Task<int> updateBitmapDTO(IDbConnection connection, IDbTransaction transaction, int bitmapId, Image logo)
         {
+            //Get the bitmap details from the database, if they do not exist then it will return a bitmap ID of 0
             var bmDTO = await connection.GetAsync<FiosBitmap>(bitmapId, transaction: transaction);
+
             if (bmDTO.intBitmapId == 0)
             {
                 bmDTO = new FiosBitmap();
@@ -272,6 +352,14 @@ namespace ChannelAPI.Repositories
             return 0;
         }
 
+        /// <summary>
+        /// Updates the Bitmap Version table with the new bitmap details.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="transaction"></param>
+        /// <param name="bitmapId"></param>
+        /// <param name="logo"></param>
+        /// <returns></returns>
         private async Task<int> updateBitmapVersionDTO(IDbConnection connection, IDbTransaction transaction, int bitmapId, Image logo)
         {
             string query = "SELECT * FROM tFIOSBitmapVersion a WHERE a.intBitMapId = @bmId AND a.strFIOSVersionAliasId = @version";
@@ -298,6 +386,11 @@ namespace ChannelAPI.Repositories
             }
         }
 
+        /// <summary>
+        /// Generate an MD5 hash for the provided image.
+        /// </summary>
+        /// <param name="img"></param>
+        /// <returns></returns>
         private string getMD5(Image img)
         {
             byte[] bytImg = null;
@@ -314,6 +407,11 @@ namespace ChannelAPI.Repositories
             }
         }
 
+        /// <summary>
+        /// Moves an existing image file to the archive directory.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private bool moveFileToArchive(string filePath)
         {
             if (!File.Exists(filePath))
@@ -339,6 +437,10 @@ namespace ChannelAPI.Repositories
             return File.Exists(newFilePath) && !File.Exists(fileName);
         }
 
+        /// <summary>
+        /// Restores an image file from the archive directory.
+        /// </summary>
+        /// <param name="fileName"></param>
         private void restoreFileFromArchive(string fileName)
         {
             string archiveDirectory = Path.Combine(this._bitmapDirectory, "Archive");
@@ -355,12 +457,20 @@ namespace ChannelAPI.Repositories
             File.Delete(archiveFile);
         }
 
+        /// <summary>
+        /// Resize an image to match the standard logo specifications.
+        /// </summary>
+        /// <param name="originalImg"></param>
         private void resizeImage(ref Image originalImg)
         {
             Size size = new Size(this._logoWidth, this._logoHeight);
             originalImg = new Bitmap(originalImg, size);
         }
 
+        /// <summary>
+        /// Get the image file format.
+        /// </summary>
+        /// <returns></returns>
         private ImageFormat getImageFormat()
         {
             switch (this._logoFormat.ToLower())

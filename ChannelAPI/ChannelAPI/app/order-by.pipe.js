@@ -7,9 +7,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var OrderBy = OrderBy_1 = (function () {
+var OrderBy = (function () {
     function OrderBy() {
     }
+    OrderBy_1 = OrderBy;
     OrderBy._orderByComparator = function (a, b) {
         if ((isNaN(parseFloat(a)) || !isFinite(a)) || (isNaN(parseFloat(b)) || !isFinite(b))) {
             if (a.toLowerCase() < b.toLowerCase())
@@ -63,10 +64,10 @@ var OrderBy = OrderBy_1 = (function () {
             });
         }
     };
+    OrderBy = OrderBy_1 = __decorate([
+        core_1.Pipe({ name: 'orderBy', pure: false })
+    ], OrderBy);
     return OrderBy;
+    var OrderBy_1;
 }());
-OrderBy = OrderBy_1 = __decorate([
-    core_1.Pipe({ name: 'orderBy', pure: false })
-], OrderBy);
 exports.OrderBy = OrderBy;
-var OrderBy_1;
